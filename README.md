@@ -1,37 +1,44 @@
 # **Takım İsmi**
 
-Takım X
+Takım 306
 
 # Ürün İle İlgili Bilgiler
 
 ## Takım Elemanları
 
-- John Doe: Product Owner
-- Jane Doe: Scrum Master
-- Atıl Samancıoğlu: Team Member/Developer
+- Samet Coşkun: Product Owner
+- Gülsüm Bilgen: Scrum Master
+- Eren Osma: Team Member/Developer
+- Batuhan Demirbas: Team Member/Developer
+- Fırat Özcan: Team Member/Developer
 
 ## Ürün İsmi
 
---Movie App--
+--FINSIM--
 
 ## Ürün Açıklaması
 
-- Movie App uygulamamız ile insanların izlemek istediği filmlere ve dizilere daha kolay karar vermesini sağlayacağız. İçerisinde binlerce filmi barındıran uygulamamız aynı zamanda Netflix, Prime vb. platformlarda yayınlanıp yayınlanmadığını ve IMDB puanlarını da gösterecek.
+- FINSIM, kullanıcıların finansal kararlarını oyunlaştırılmış bir simülasyon içinde deneyimlemelerini sağlayan tarayıcı tabanlı bir finansal davranış simülasyon oyunudur. Kullanıcı, yıllar içinde yatırım kararları alır, ekonomik olaylarla karşılaşır ve oyun sonunda kendi kararlarının sonuçlarını alternatif senaryolarla karşılaştırır.
 
 ## Ürün Özellikleri
 
-- Filmleri türüne göre ayırma
-- Filmlerin yönetmen, aktör, aktris vb. bilgilerini posteriyle birlikte gösterme
-- IMDB ve Rotten Tomatoes puanlarını gösterme
-- Netflix'te ve Prime'da bulunurluğunu gösterme
+- Karakter oluşturma testi
+- Para, sabır ve mutluluk barları
+- Yıllık finansal karar döngüsü
+- Borsa, altın, döviz, gayrimenkul ve mevduat seçenekleri
+- Enflasyon etkisini simüle eden ekonomik sistem
+- Yaşam standartları menüsü
+- Rastgele finansal ve yaşam olayları
+- Oyun sonu alternatif senaryo karşılaştırması
+- AI destekli kişiselleştirilmiş finansal davranış raporu
 
 ## Hedef Kitle
 
-- Netflix kullanıcıları
-- Prime kullanıcıları
-- Sinema severler
-- Dizi severler
-- 15 - 65 yaş arası kullanıcılar
+- Finansal okuryazarlığını geliştirmek isteyen kullanıcılar
+- Enflasyon, reel getiri ve fırsat maliyetini deneyimleyerek öğrenmek isteyen bireyler
+- Yatırım kararlarının uzun vadeli etkisini görmek isteyen kullanıcılar
+- Oyunlaştırılmış öğrenme deneyimlerini seven genç yetişkinler
+- Finansal kararlarında farkındalık kazanmak isteyen genel kullanıcı kitlesi
 
 ## Product Backlog URL
 
