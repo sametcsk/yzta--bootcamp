@@ -25,6 +25,9 @@ export default function App() {
   const [sonuc, setSonuc] = useState(null)
   const [loading, setLoading] = useState(false)
   const [gecmis, setGecmis] = useState([])
+  const [bars, setBars] = useState({ sabir: 50, mutluluk: 50 })
+  const [nakit, setNakit] = useState(25000) 
+
 
   async function yilAtla() {
     setLoading(true)
@@ -85,6 +88,42 @@ export default function App() {
           {krizMi ? "🔴 KRİZ" : "🟢 Sakin"}
         </div>
       </div>
+      
+        {/* Barlar */}
+  <div style={{ background: "#141720", borderRadius: 12, padding: 16, marginBottom: 16 }}>
+    <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Durum</div>
+    
+    <div style={{ marginBottom: 4, display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+      <span style={{ color: "#60a8f0" }}>🧘 Sabır</span>
+      <span style={{ color: "#6b7280" }}>{bars.sabir}/100</span>
+    </div>
+    <div style={{ height: 8, background: "#1c2030", borderRadius: 4, marginBottom: 12, overflow: "hidden" }}>
+      <div style={{ height: "100%", width: `${bars.sabir}%`, background: "#2060c0", borderRadius: 4, transition: "width 0.3s" }} />
+    </div>
+
+    <div style={{ marginBottom: 4, display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+      <span style={{ color: "#f07080" }}>😊 Mutluluk</span>
+      <span style={{ color: "#6b7280" }}>{bars.mutluluk}/100</span>
+    </div>
+    <div style={{ height: 8, background: "#1c2030", borderRadius: 4, overflow: "hidden" }}>
+      <div style={{ height: "100%", width: `${bars.mutluluk}%`, background: "#c03050", borderRadius: 4, transition: "width 0.3s" }} />
+    </div>
+  </div>
+
+  {/* Nakit */}
+  <div style={{ background: "#141720", borderRadius: 12, padding: 16, marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div>
+      <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Nakit</div>
+      <div style={{ fontSize: 22, fontWeight: 600, color: "#f5c842" }}>₺{nakit.toLocaleString("tr-TR")}</div>
+    </div>
+    <div style={{ textAlign: "right" }}>
+      <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 4 }}>Toplam Portföy</div>
+      <div style={{ fontSize: 14, color: "#e8eaf0" }}>₺{nakit.toLocaleString("tr-TR")}</div>
+      <div style={{ fontSize: 11, color: "#6b7280" }}>varlıklar yakında</div>
+    </div>
+  </div>
+
+
 
       {/* Varlıklar */}
       <div style={{ background: "#141720", borderRadius: 12, padding: 16, marginBottom: 16 }}>
