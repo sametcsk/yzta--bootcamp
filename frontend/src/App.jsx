@@ -1,4 +1,7 @@
 import { useState } from "react"
+import IntroEkrani from "./IntroEkrani"
+import { YASAM_GIDERI } from "./data/sorular"
+
 
 const INITIAL_STATE = {
   enf_rejim: 0,
@@ -27,7 +30,9 @@ export default function App() {
   const [gecmis, setGecmis] = useState([])
   const [bars, setBars] = useState({ sabir: 50, mutluluk: 50 })
   const [nakit, setNakit] = useState(25000) 
-
+  const [introTamamlandi, setIntroTamamlandi] = useState(false)
+  const [yillikGelir, setYillikGelir] = useState(0)
+  const [yasamGideri, setYasamGideri] = useState(YASAM_GIDERI)
 
   async function yilAtla() {
     setLoading(true)
@@ -57,6 +62,22 @@ export default function App() {
         mevduat_birikim: data.mevduat_birikim,
       })
 
+      // Gelir ve gider enflasyonla güncelle
+      const yeniGelir = Math.round(yillikGelir * (1 + data.yil_sonucu.enflasyon / 100))
+      const yeniGider = Math.round(yasamGideri * (1 + data.yil_sonucu.enflasyon / 100))
+      setYillikGelir(yeniGelir)
+      setYasamGideri(yeniGider)
+
+      // Nakit güncelle
+      let yeniNakit = nakit + yeniGelir - yeniGider
+      if (data.yil_sonucu.redenominasyon) {
+        yeniNakit = Math.round(yeniNakit / 1000)
+        setYillikGelir(Math.round(yeniGelir / 1000))
+        setYasamGideri(Math.round(yeniGider / 1000))
+      }
+      setNakit(yeniNakit)
+
+
       const yeniYil = yil + 1
       const yeniYas = yas + 1
       setYil(yeniYil)
@@ -69,8 +90,17 @@ export default function App() {
     setLoading(false)
   }
 
-  const krizMi = gameState.enf_rejim === 1
+  function introyuBitir(sonuc) {
+  setBars({ sabir: sonuc.sabir, mutluluk: sonuc.mutluluk })
+  setNakit(sonuc.nakit)
+  setYillikGelir(sonuc.yillikGelir)
+  setIntroTamamlandi(true)
+}  
 
+  const krizMi = gameState.enf_rejim === 1
+  if (!introTamamlandi) {
+  return <IntroEkrani onBitis={introyuBitir} />
+}
   return (
     <div style={{ maxWidth: 480, margin: "0 auto", padding: 24, fontFamily: "monospace", background: "#0d0f12", minHeight: "100vh", color: "#e8eaf0" }}>
       
@@ -123,7 +153,12 @@ export default function App() {
     </div>
   </div>
 
-
+  <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>
+  Yıllık gelir: ₺{yillikGelir.toLocaleString("tr-TR")}
+  </div>
+  <div style={{ fontSize: 11, color: "#6b7280" }}>
+    Yaşam gideri: ₺{yasamGideri.toLocaleString("tr-TR")}
+  </div>
 
       {/* Varlıklar */}
       <div style={{ background: "#141720", borderRadius: 12, padding: 16, marginBottom: 16 }}>
