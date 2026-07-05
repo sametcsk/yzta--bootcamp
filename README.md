@@ -59,6 +59,7 @@ Story'ler modüllerine göre aşağıdaki başlıklar altında organize edilmiş
 - Intro & Karakter Oluşturma
 - Event Sistemi
 - UI – Sprint 1
+  
 Her story ekip üyeleri arasında görev dağılımı yapılarak sprint board üzerinde takip edilmektedir.
 - **Daily Scrum**:
 Takım üyeleri proje fikrinin netleştirilmesi, teknik mimarinin belirlenmesi ve Sprint 1 planlamasının yapılması amacıyla çevrim içi toplantılar gerçekleştirmiştir.
