@@ -71,8 +71,8 @@ Daily Scrum toplantılarının Slack üzerinden yürütülmesine karar verilmiş
 ![Sprint Board](sprint1-board.jpg)
 
 - **Ürün Durumu**: Ekran görüntüleri:
-  ![Screenshot 1](https://github.com/OyunveUygulamaAkademisi/BootcampScrumTemplate/blob/main/ProjectManagement/Sprint1Documents/productss1.png?raw=true)
-  ![Screenshot 2](https://github.com/OyunveUygulamaAkademisi/BootcampScrumTemplate/blob/main/ProjectManagement/Sprint1Documents/productss2.png?raw=true)
+  ![Screenshot 1](docs/images/urundurumu1.png)
+  ![Screenshot 2](docs/images/urundurumu2.png)
 
 - **Sprint Review**: 
 Alınan kararlar:
