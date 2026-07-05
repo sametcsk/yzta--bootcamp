@@ -230,6 +230,12 @@ def yil_atla(state: dict):
             "reel_altin": round(altin_try_getiri - enf, 1),
             "reel_mevduat": round(mev_faiz - enf, 1),
             "reel_doviz": round(doviz_degisim - enf, 1),
+            "fiyatlar": {
+            "altin_try_gram": round(altin_usd * kur * 0.032, 2),  # ons→gram dönüşümü
+            "bist_endeks": round(bist, 2),
+            "dolar_try": round(kur, 2),
+            "mev_faiz_oran": round(mev_faiz / 100, 4),
+            }
         }
     }
 
