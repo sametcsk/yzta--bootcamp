@@ -71,6 +71,7 @@ Daily Scrum toplantılarının Slack üzerinden yürütülmesine karar verilmiş
 - **Ürün Durumu**: Ekran görüntüleri:
   ![Screenshot 1](docs/images/urundurumu1.png)
   ![Screenshot 2](docs/images/urundurumu2.png)
+  ![Screenshot 3](docs/images/varliklar.png)
 
 - **Sprint Review**: 
 Alınan kararlar:
