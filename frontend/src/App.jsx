@@ -1,7 +1,6 @@
+import { useRef, useState } from "react"
 import IntroEkrani from "./IntroEkrani"
 import { YASAM_GIDERI } from "./data/sorular"
-import { useState, useRef } from "react"
-
 
 const INITIAL_STATE = {
   enf_rejim: 0,
@@ -21,6 +20,13 @@ const INITIAL_STATE = {
   mevduat_birikim: 100.0,
 }
 
+const VARLIK_META = {
+  altin: { icon: "Au", ad: "Altın", tone: "gold" },
+  bist: { icon: "BI", ad: "BIST", tone: "green" },
+  dolar: { icon: "$", ad: "Dolar", tone: "blue" },
+  mevduat: { icon: "%", ad: "Mevduat", tone: "violet" },
+}
+
 export default function App() {
   const [gameState, setGameState] = useState(INITIAL_STATE)
   const [yil, setYil] = useState(2025)
@@ -29,29 +35,29 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [gecmis, setGecmis] = useState([])
   const [bars, setBars] = useState({ sabir: 50, mutluluk: 50 })
-  const [nakit, setNakit] = useState(25000) 
+  const [nakit, setNakit] = useState(25000)
   const [introTamamlandi, setIntroTamamlandi] = useState(false)
   const [yillikGelir, setYillikGelir] = useState(0)
   const [yasamGideri, setYasamGideri] = useState(YASAM_GIDERI)
   const [portfoy, setPortfoy] = useState({
-  altin_gram: 0,
-  bist_adet: 0,
-  dolar: 0,
-  mevduat_tl: 0,
+    altin_gram: 0,
+    bist_adet: 0,
+    dolar: 0,
+    mevduat_tl: 0,
   })
-const [fiyatlar, setFiyatlar] = useState({
-  altin_try_gram: 2600 * 40 / 31.1,
-  bist_endeks: 100,
-  dolar_try: 40,
-  mev_faiz_oran: 0.12,
+  const [fiyatlar, setFiyatlar] = useState({
+    altin_try_gram: (2600 * 40) / 31.1,
+    bist_endeks: 100,
+    dolar_try: 40,
+    mev_faiz_oran: 0.12,
   })
 
-const nakitRef = useRef(nakit)
+  const nakitRef = useRef(nakit)
 
-const nakitiGuncelle = (yeniNakit) => {
-  nakitRef.current = yeniNakit
-  setNakit(yeniNakit)
-}
+  const nakitiGuncelle = (yeniNakit) => {
+    nakitRef.current = yeniNakit
+    setNakit(yeniNakit)
+  }
 
   async function yilAtla() {
     setLoading(true)
@@ -62,7 +68,7 @@ const nakitiGuncelle = (yeniNakit) => {
         body: JSON.stringify(gameState),
       })
       const data = await res.json()
-      
+
       setGameState({
         enf_rejim: data.enf_rejim,
         enf_sakin_yil: data.enf_sakin_yil,
@@ -81,13 +87,11 @@ const nakitiGuncelle = (yeniNakit) => {
         mevduat_birikim: data.mevduat_birikim,
       })
 
-      // Gelir ve gider enflasyonla güncelle
       const yeniGelir = Math.round(yillikGelir * (1 + data.yil_sonucu.enflasyon / 100))
       const yeniGider = Math.round(yasamGideri * (1 + data.yil_sonucu.enflasyon / 100))
       setYillikGelir(yeniGelir)
       setYasamGideri(yeniGider)
 
-      // Nakit güncelle
       let yeniNakit = nakitRef.current + yeniGelir - yeniGider
       if (data.yil_sonucu.redenominasyon) {
         yeniNakit = Math.round(yeniNakit / 1000)
@@ -96,18 +100,15 @@ const nakitiGuncelle = (yeniNakit) => {
       }
       nakitiGuncelle(yeniNakit)
 
-      // Fiyatları güncelle
       if (data.yil_sonucu.fiyatlar) {
         setFiyatlar(data.yil_sonucu.fiyatlar)
       }
 
-      // Mevduat faiz işle
       setPortfoy(prev => ({
         ...prev,
-        mevduat_tl: Math.round(prev.mevduat_tl * (1 + data.yil_sonucu.mev_faiz / 100))
+        mevduat_tl: Math.round(prev.mevduat_tl * (1 + data.yil_sonucu.mev_faiz / 100)),
       }))
 
-      // Redenominasyon — portföyü de etkile
       if (data.yil_sonucu.redenominasyon) {
         setPortfoy(prev => ({
           ...prev,
@@ -120,7 +121,6 @@ const nakitiGuncelle = (yeniNakit) => {
           mev_faiz_oran: prev.mev_faiz_oran,
         }))
       }
-
 
       const yeniYil = yil + 1
       const yeniYas = yas + 1
@@ -135,262 +135,235 @@ const nakitiGuncelle = (yeniNakit) => {
   }
 
   function introyuBitir(sonuc) {
-  setBars({ sabir: sonuc.sabir, mutluluk: sonuc.mutluluk })
-  nakitiGuncelle(sonuc.nakit)  // setNakit yerine bunu kullan
-  setYillikGelir(sonuc.yillikGelir)
-  setIntroTamamlandi(true)
-}
+    setBars({ sabir: sonuc.sabir, mutluluk: sonuc.mutluluk })
+    nakitiGuncelle(sonuc.nakit)
+    setYillikGelir(sonuc.yillikGelir)
+    setIntroTamamlandi(true)
+  }
 
   function varlikAl(varlik, miktar) {
-  const miktarSayi = parseFloat(miktar)
-  if (!miktarSayi || miktarSayi <= 0) return
+    const miktarSayi = parseFloat(miktar)
+    if (!miktarSayi || miktarSayi <= 0) return
 
-  let maliyet = 0
-  if (varlik === "altin")   maliyet = miktarSayi * fiyatlar.altin_try_gram
-  if (varlik === "bist")    maliyet = miktarSayi * fiyatlar.bist_endeks
-  if (varlik === "dolar")   maliyet = miktarSayi * fiyatlar.dolar_try
-  if (varlik === "mevduat") maliyet = miktarSayi
+    let maliyet = 0
+    if (varlik === "altin") maliyet = miktarSayi * fiyatlar.altin_try_gram
+    if (varlik === "bist") maliyet = miktarSayi * fiyatlar.bist_endeks
+    if (varlik === "dolar") maliyet = miktarSayi * fiyatlar.dolar_try
+    if (varlik === "mevduat") maliyet = miktarSayi
 
-  if (maliyet > nakitRef.current) {
-    alert("Yeterli nakit yok!")
-    return
+    if (maliyet > nakitRef.current) {
+      alert("Yeterli nakit yok!")
+      return
+    }
+
+    nakitiGuncelle(Math.round(nakitRef.current - maliyet))
+    setPortfoy(prev => ({
+      ...prev,
+      altin_gram: varlik === "altin" ? prev.altin_gram + miktarSayi : prev.altin_gram,
+      bist_adet: varlik === "bist" ? prev.bist_adet + miktarSayi : prev.bist_adet,
+      dolar: varlik === "dolar" ? prev.dolar + miktarSayi : prev.dolar,
+      mevduat_tl: varlik === "mevduat" ? prev.mevduat_tl + miktarSayi : prev.mevduat_tl,
+    }))
   }
 
-  nakitiGuncelle(Math.round(nakitRef.current - maliyet))
-  setPortfoy(prev => ({
-    ...prev,
-    altin_gram:  varlik === "altin"   ? prev.altin_gram + miktarSayi : prev.altin_gram,
-    bist_adet:   varlik === "bist"    ? prev.bist_adet + miktarSayi  : prev.bist_adet,
-    dolar:       varlik === "dolar"   ? prev.dolar + miktarSayi      : prev.dolar,
-    mevduat_tl:  varlik === "mevduat" ? prev.mevduat_tl + miktarSayi : prev.mevduat_tl,
-  }))
-}
+  function varlikSat(varlik, miktar) {
+    const miktarSayi = parseFloat(miktar)
+    if (!miktarSayi || miktarSayi <= 0) return
 
-function varlikSat(varlik, miktar) {
-  const miktarSayi = parseFloat(miktar)
-  if (!miktarSayi || miktarSayi <= 0) return
+    let gelir = 0
+    if (varlik === "altin" && portfoy.altin_gram >= miktarSayi) gelir = miktarSayi * fiyatlar.altin_try_gram
+    if (varlik === "bist" && portfoy.bist_adet >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_endeks
+    if (varlik === "dolar" && portfoy.dolar >= miktarSayi) gelir = miktarSayi * fiyatlar.dolar_try
+    if (varlik === "mevduat" && portfoy.mevduat_tl >= miktarSayi) gelir = miktarSayi
 
-  let gelir = 0
-  if (varlik === "altin"   && portfoy.altin_gram >= miktarSayi)  gelir = miktarSayi * fiyatlar.altin_try_gram
-  if (varlik === "bist"    && portfoy.bist_adet >= miktarSayi)   gelir = miktarSayi * fiyatlar.bist_endeks
-  if (varlik === "dolar"   && portfoy.dolar >= miktarSayi)       gelir = miktarSayi * fiyatlar.dolar_try
-  if (varlik === "mevduat" && portfoy.mevduat_tl >= miktarSayi)  gelir = miktarSayi
+    if (gelir === 0) {
+      alert("Yeterli varlık yok!")
+      return
+    }
 
-  if (gelir === 0) {
-    alert("Yeterli varlık yok!")
-    return
+    nakitiGuncelle(Math.round(nakitRef.current + gelir))
+    setPortfoy(prev => ({
+      ...prev,
+      altin_gram: varlik === "altin" ? prev.altin_gram - miktarSayi : prev.altin_gram,
+      bist_adet: varlik === "bist" ? prev.bist_adet - miktarSayi : prev.bist_adet,
+      dolar: varlik === "dolar" ? prev.dolar - miktarSayi : prev.dolar,
+      mevduat_tl: varlik === "mevduat" ? prev.mevduat_tl - miktarSayi : prev.mevduat_tl,
+    }))
   }
-
-  nakitiGuncelle(Math.round(nakitRef.current + gelir))
-  setPortfoy(prev => ({
-    ...prev,
-    altin_gram:  varlik === "altin"   ? prev.altin_gram - miktarSayi : prev.altin_gram,
-    bist_adet:   varlik === "bist"    ? prev.bist_adet - miktarSayi  : prev.bist_adet,
-    dolar:       varlik === "dolar"   ? prev.dolar - miktarSayi      : prev.dolar,
-    mevduat_tl:  varlik === "mevduat" ? prev.mevduat_tl - miktarSayi : prev.mevduat_tl,
-  }))
-}
-
 
   const portfoyDegeri = Math.round(
-  portfoy.altin_gram * fiyatlar.altin_try_gram +
-  portfoy.bist_adet * fiyatlar.bist_endeks +
-  portfoy.dolar * fiyatlar.dolar_try +
-  portfoy.mevduat_tl
+    portfoy.altin_gram * fiyatlar.altin_try_gram +
+    portfoy.bist_adet * fiyatlar.bist_endeks +
+    portfoy.dolar * fiyatlar.dolar_try +
+    portfoy.mevduat_tl
   )
   const toplamDeger = nakit + portfoyDegeri
-
-
-
+  const netAkis = yillikGelir - yasamGideri
   const krizMi = gameState.enf_rejim === 1
+
   if (!introTamamlandi) {
-  return <IntroEkrani onBitis={introyuBitir} />
-}
+    return <IntroEkrani onBitis={introyuBitir} />
+  }
+
   return (
-    <div style={{ maxWidth: 480, margin: "0 auto", padding: 24, fontFamily: "monospace", background: "#0d0f12", minHeight: "100vh", color: "#e8eaf0" }}>
-      
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+    <main className="app-shell">
+      <section className="hero-panel">
         <div>
-          <div style={{ fontSize: 22, fontWeight: 700 }}>{yas} yaş</div>
-          <div style={{ fontSize: 12, color: "#6b7280" }}>{yil} · FinSim</div>
+          <div className="eyebrow">FinSim / {yil}</div>
+          <h1>{yas} yaşında finansal yolculuk</h1>
+          <p className="hero-copy">Portföyünü yönet, piyasa şartlarını oku ve bir sonraki yılın kararını ver.</p>
         </div>
-        <div style={{ 
-          padding: "4px 12px", borderRadius: 6, fontSize: 13, fontWeight: 600,
-          background: krizMi ? "#7f1d1d" : "#14532d",
-          color: krizMi ? "#fca5a5" : "#86efac"
-        }}>
-          {krizMi ? "🔴 KRİZ" : "🟢 Sakin"}
+        <div className={`market-badge ${krizMi ? "danger" : "calm"}`}>
+          <span>{krizMi ? "KRİZ" : "SAKİN"}</span>
+          <strong>{sonuc ? `%${sonuc.enflasyon}` : "Başlangıç"}</strong>
         </div>
+      </section>
+
+      <section className="summary-grid">
+        <MetricCard label="Toplam Değer" value={money(toplamDeger)} hint={`Portföy: ${money(portfoyDegeri)}`} tone="primary" />
+        <MetricCard label="Nakit" value={money(nakit)} hint={`Yıllık akış: ${money(netAkis)}`} tone="gold" />
+        <MetricCard label="Gelir" value={money(yillikGelir)} hint={`Gider: ${money(yasamGideri)}`} />
+        <MetricCard label="Dolar Kuru" value={`${fiyatlar.dolar_try.toFixed(2)} TL`} hint={sonuc ? `Yıllık ${formatPct(sonuc.doviz_degisim)}` : "İlk fiyat"} />
+      </section>
+
+      <div className="content-grid">
+        <section className="panel">
+          <PanelHeader title="Durum" action={`${yil + 1}'e hazırlan`} />
+          <ProgressRow label="Sabır" value={bars.sabir} tone="blue" />
+          <ProgressRow label="Mutluluk" value={bars.mutluluk} tone="rose" />
+          <button className="primary-action" onClick={yilAtla} disabled={loading}>
+            {loading ? "Hesaplanıyor..." : `${yil + 1}'e atla`}
+          </button>
+        </section>
+
+        <section className="panel">
+          <PanelHeader title="Piyasa" action={krizMi ? "Volatil" : "Dengeli"} />
+          <DataRow label="Enflasyon" value={sonuc ? `%${sonuc.enflasyon}` : "-"} valueClass={krizMi ? "negative" : ""} />
+          <DataRow label="BIST" value={sonuc ? formatPct(sonuc.bist_pct) : "-"} valueClass={sonuc ? pctClass(sonuc.bist_pct) : ""} />
+          <DataRow label="Altın" value={sonuc ? formatPct(sonuc.altin_try_getiri) : "-"} valueClass={sonuc ? pctClass(sonuc.altin_try_getiri) : ""} />
+          <DataRow label="Mevduat" value={`%${(fiyatlar.mev_faiz_oran * 100).toFixed(1)}`} />
+        </section>
       </div>
-      
-      
-      
 
-        {/* Barlar */}
-  <div style={{ background: "#141720", borderRadius: 12, padding: 16, marginBottom: 16 }}>
-    <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Durum</div>
-    
-    <div style={{ marginBottom: 4, display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-      <span style={{ color: "#60a8f0" }}>🧘 Sabır</span>
-      <span style={{ color: "#6b7280" }}>{bars.sabir}/100</span>
-    </div>
-    <div style={{ height: 8, background: "#1c2030", borderRadius: 4, marginBottom: 12, overflow: "hidden" }}>
-      <div style={{ height: "100%", width: `${bars.sabir}%`, background: "#2060c0", borderRadius: 4, transition: "width 0.3s" }} />
-    </div>
+      <section className="panel asset-panel">
+        <PanelHeader title="Varlıklar" action={`${money(portfoyDegeri)} yatırım`} />
+        <div className="asset-list">
+          <VarlikSatir
+            fiyat={money(Math.round(fiyatlar.altin_try_gram)) + "/gr"}
+            miktar={`${portfoy.altin_gram.toFixed(2)} gr`}
+            deger={Math.round(portfoy.altin_gram * fiyatlar.altin_try_gram)}
+            getiri={sonuc ? sonuc.altin_try_getiri : null}
+            varlik="altin"
+            onAl={varlikAl}
+            onSat={varlikSat}
+          />
+          <VarlikSatir
+            fiyat={`${Math.round(fiyatlar.bist_endeks).toLocaleString("tr-TR")} endeks`}
+            miktar={`${portfoy.bist_adet.toFixed(0)} adet`}
+            deger={Math.round(portfoy.bist_adet * fiyatlar.bist_endeks)}
+            getiri={sonuc ? sonuc.bist_pct : null}
+            varlik="bist"
+            onAl={varlikAl}
+            onSat={varlikSat}
+          />
+          <VarlikSatir
+            fiyat={`${fiyatlar.dolar_try.toFixed(2)} TL/$`}
+            miktar={`$${portfoy.dolar.toFixed(0)}`}
+            deger={Math.round(portfoy.dolar * fiyatlar.dolar_try)}
+            getiri={sonuc ? sonuc.doviz_degisim : null}
+            varlik="dolar"
+            onAl={varlikAl}
+            onSat={varlikSat}
+          />
+          <VarlikSatir
+            fiyat={`%${(fiyatlar.mev_faiz_oran * 100).toFixed(1)} faiz`}
+            miktar={money(Math.round(portfoy.mevduat_tl))}
+            deger={portfoy.mevduat_tl}
+            getiri={sonuc ? sonuc.mev_faiz : null}
+            varlik="mevduat"
+            onAl={varlikAl}
+            onSat={varlikSat}
+          />
+        </div>
+      </section>
 
-    <div style={{ marginBottom: 4, display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-      <span style={{ color: "#f07080" }}>😊 Mutluluk</span>
-      <span style={{ color: "#6b7280" }}>{bars.mutluluk}/100</span>
-    </div>
-    <div style={{ height: 8, background: "#1c2030", borderRadius: 4, overflow: "hidden" }}>
-      <div style={{ height: "100%", width: `${bars.mutluluk}%`, background: "#c03050", borderRadius: 4, transition: "width 0.3s" }} />
-    </div>
-  </div>
-
-  {/* Nakit */}
-  <div style={{ background: "#141720", borderRadius: 12, padding: 16, marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-    <div>
-      <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Nakit</div>
-      <div style={{ fontSize: 22, fontWeight: 600, color: "#f5c842" }}>₺{nakit.toLocaleString("tr-TR")}</div>
-    </div>
-    <div style={{ textAlign: "right" }}>
-      <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 4 }}>Toplam Portföy</div>
-      <div style={{ fontSize: 14, color: "#e8eaf0" }}>₺{toplamDeger.toLocaleString("tr-TR")}</div>
-      <div style={{ fontSize: 11, color: "#6b7280" }}></div>
-    </div>
-  </div>
-
-  <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>
-  Yıllık gelir: ₺{yillikGelir.toLocaleString("tr-TR")}
-  </div>
-  <div style={{ fontSize: 11, color: "#6b7280" }}>
-    Yaşam gideri: ₺{yasamGideri.toLocaleString("tr-TR")}
-  </div>
-
-    {/* Varlıklar */}
-    <div style={{ background: "#141720", borderRadius: 12, padding: 16, marginBottom: 16 }}>
-      <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Varlıklar</div>
-      
-      <Satir label="Enflasyon" value={sonuc ? `%${sonuc.enflasyon}` : "—"} color={krizMi ? "#f87171" : "#e8eaf0"} />
-      <Satir label="Kur" value={`${fiyatlar.dolar_try.toFixed(2)} ₺/$`} />
-      
-      <VarlikSatir
-        label="🥇 Altın"
-        fiyat={`₺${Math.round(fiyatlar.altin_try_gram).toLocaleString("tr-TR")}/gr`}
-        miktar={`${portfoy.altin_gram.toFixed(2)} gr`}
-        deger={Math.round(portfoy.altin_gram * fiyatlar.altin_try_gram)}
-        getiri={sonuc ? sonuc.altin_try_getiri : null}
-        varlik="altin"
-        onAl={varlikAl}
-        onSat={varlikSat}
-      />
-      
-      <VarlikSatir
-        label="📈 BIST"
-        fiyat={`${Math.round(fiyatlar.bist_endeks).toLocaleString("tr-TR")} endeks`}
-        miktar={`${portfoy.bist_adet.toFixed(0)} adet`}
-        deger={Math.round(portfoy.bist_adet * fiyatlar.bist_endeks)}
-        getiri={sonuc ? sonuc.bist_pct : null}
-        varlik="bist"
-        onAl={varlikAl}
-        onSat={varlikSat}
-      />
-
-      <VarlikSatir
-        label="💵 Dolar"
-        fiyat={`₺${fiyatlar.dolar_try.toFixed(2)}/$`}
-        miktar={`$${portfoy.dolar.toFixed(0)}`}
-        deger={Math.round(portfoy.dolar * fiyatlar.dolar_try)}
-        getiri={sonuc ? sonuc.doviz_degisim : null}
-        varlik="dolar"
-        onAl={varlikAl}
-        onSat={varlikSat}
-      />
-
-      <VarlikSatir
-        label="🏦 Mevduat"
-        fiyat={`%${(fiyatlar.mev_faiz_oran * 100).toFixed(1)} faiz`}
-        miktar={`₺${Math.round(portfoy.mevduat_tl).toLocaleString("tr-TR")}`}
-        deger={portfoy.mevduat_tl}
-        getiri={sonuc ? sonuc.mev_faiz : null}
-        varlik="mevduat"
-        onAl={varlikAl}
-        onSat={varlikSat}
-      />
-    </div>
-
-      {/* Son olay */}
       {sonuc && (
-        <div style={{ background: "#1c2030", borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: `3px solid ${krizMi ? "#ef4444" : "#22c55e"}` }}>
-          <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Bu yılın özeti</div>
-          <div style={{ fontSize: 13, color: "#c8d0e0", lineHeight: 1.6 }}>
-            Enflasyon <b style={{ color: krizMi ? "#f87171" : "#86efac" }}>%{sonuc.enflasyon}</b> olarak gerçekleşti.
-            Borsa bu yıl <b style={{ color: pctColor(sonuc.bist_pct) }}>{formatPct(sonuc.bist_pct)}</b> getiri sağladı
-            {" "}(reel: <b style={{ color: pctColor(sonuc.reel_bist) }}>{formatPct(sonuc.reel_bist)}</b>).
-            Altın <b style={{ color: pctColor(sonuc.altin_try_getiri) }}>{formatPct(sonuc.altin_try_getiri)}</b> değer {sonuc.altin_try_getiri >= 0 ? "kazandı" : "kaybetti"}.
-          </div>
-          {sonuc.redenominasyon && (
-            <div style={{ marginTop: 8, padding: "8px 12px", background: "#7c3aed22", border: "1px solid #7c3aed", borderRadius: 8, fontSize: 12, color: "#c4b5fd" }}>
-              ⚡ {sonuc.redenominasyon} — Para birimi yenilendi!
-            </div>
-          )}
-        </div>
+        <section className={`panel year-card ${krizMi ? "danger" : "calm"}`}>
+          <PanelHeader title="Bu Yılın Özeti" action={sonuc.enf_durum} />
+          <p>
+            Enflasyon <strong>%{sonuc.enflasyon}</strong> oldu. BIST reel olarak{" "}
+            <strong className={pctClass(sonuc.reel_bist)}>{formatPct(sonuc.reel_bist)}</strong>, altın reel olarak{" "}
+            <strong className={pctClass(sonuc.reel_altin)}>{formatPct(sonuc.reel_altin)}</strong> performans gösterdi.
+          </p>
+          {sonuc.redenominasyon && <div className="notice">{sonuc.redenominasyon}: Para birimi yenilendi.</div>}
+        </section>
       )}
 
-      {/* Yıl atla butonu */}
-      <button
-        onClick={yilAtla}
-        disabled={loading}
-        style={{
-          width: "100%", padding: "14px 0", borderRadius: 12,
-          background: loading ? "#374151" : "#f5c842",
-          color: loading ? "#9ca3af" : "#1a1200",
-          fontWeight: 700, fontSize: 16, border: "none",
-          cursor: loading ? "not-allowed" : "pointer",
-          marginBottom: 16,
-        }}
-      >
-        {loading ? "Hesaplanıyor..." : `${yil + 1}'e atla →`}
-      </button>
-
-      {/* Geçmiş */}
       {gecmis.length > 0 && (
-        <div style={{ background: "#141720", borderRadius: 12, padding: 16 }}>
-          <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Geçmiş</div>
-          {[...gecmis].reverse().slice(0, 5).map((g, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #1c2030", fontSize: 12 }}>
-              <span style={{ color: "#6b7280" }}>{g.yil} · {g.yas} yaş</span>
-              <span>Enf <b style={{ color: "#f87171" }}>%{g.enflasyon}</b></span>
-              <span>BIST <b style={{ color: pctColor(g.bist_pct) }}>{formatPct(g.bist_pct)}</b></span>
-              <span>Altın <b style={{ color: pctColor(g.altin_try_getiri) }}>{formatPct(g.altin_try_getiri)}</b></span>
-            </div>
-          ))}
-        </div>
+        <section className="panel">
+          <PanelHeader title="Geçmiş" action="Son 5 yıl" />
+          <div className="history-list">
+            {[...gecmis].reverse().slice(0, 5).map((g, i) => (
+              <div className="history-row" key={i}>
+                <span>{g.yil} / {g.yas} yaş</span>
+                <strong>%{g.enflasyon}</strong>
+                <span className={pctClass(g.bist_pct)}>BIST {formatPct(g.bist_pct)}</span>
+                <span className={pctClass(g.altin_try_getiri)}>Altın {formatPct(g.altin_try_getiri)}</span>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
-    </div>
+    </main>
   )
 }
 
-function Satir({ label, value, color = "#e8eaf0" }) {
+function MetricCard({ label, value, hint, tone = "" }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #1c2030", fontSize: 13 }}>
-      <span style={{ color: "#6b7280" }}>{label}</span>
-      <span style={{ color, fontWeight: 500 }}>{value}</span>
+    <article className={`metric-card ${tone}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{hint}</small>
+    </article>
+  )
+}
+
+function PanelHeader({ title, action }) {
+  return (
+    <div className="panel-header">
+      <h2>{title}</h2>
+      <span>{action}</span>
     </div>
   )
 }
 
-function formatPct(val) {
-  return val >= 0 ? `+%${Math.abs(val).toFixed(1)}` : `-%${Math.abs(val).toFixed(1)}`
+function ProgressRow({ label, value, tone }) {
+  return (
+    <div className="progress-row">
+      <div>
+        <span>{label}</span>
+        <strong>{value}/100</strong>
+      </div>
+      <div className="progress-track">
+        <span className={tone} style={{ width: `${value}%` }} />
+      </div>
+    </div>
+  )
 }
 
-function pctColor(val) {
-  return val >= 0 ? "#34d399" : "#f87171"
+function DataRow({ label, value, valueClass = "" }) {
+  return (
+    <div className="data-row">
+      <span>{label}</span>
+      <strong className={valueClass}>{value}</strong>
+    </div>
+  )
 }
-function VarlikSatir({ label, fiyat, miktar, deger, getiri, varlik, onAl, onSat }) {
+
+function VarlikSatir({ fiyat, miktar, deger, getiri, varlik, onAl, onSat }) {
   const [acik, setAcik] = useState(false)
   const [girdi, setGirdi] = useState("")
+  const meta = VARLIK_META[varlik]
 
   function al() {
     onAl(varlik, girdi)
@@ -405,52 +378,43 @@ function VarlikSatir({ label, fiyat, miktar, deger, getiri, varlik, onAl, onSat 
   }
 
   return (
-    <div style={{ borderBottom: "1px solid #1c2030", paddingBottom: 8, marginBottom: 8 }}>
-      <div
-        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", padding: "6px 0" }}
-        onClick={() => setAcik(!acik)}
-      >
-        <div>
-          <div style={{ fontSize: 13, color: "#e8eaf0", fontWeight: 500 }}>{label}</div>
-          <div style={{ fontSize: 11, color: "#6b7280" }}>{fiyat} · {miktar}</div>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          {deger > 0 && <div style={{ fontSize: 13, color: "#e8eaf0" }}>₺{deger.toLocaleString("tr-TR")}</div>}
-          {getiri !== null && (
-            <div style={{ fontSize: 11, color: getiri >= 0 ? "#34d399" : "#f87171" }}>
-              {getiri >= 0 ? "+" : ""}{getiri.toFixed(1)}%
-            </div>
-          )}
-          <div style={{ fontSize: 10, color: "#4b5563" }}>{acik ? "▲" : "▼"}</div>
-        </div>
-      </div>
+    <article className={`asset-row ${acik ? "open" : ""}`}>
+      <button className="asset-main" onClick={() => setAcik(!acik)}>
+        <span className={`asset-icon ${meta.tone}`}>{meta.icon}</span>
+        <span className="asset-copy">
+          <strong>{meta.ad}</strong>
+          <small>{fiyat} · {miktar}</small>
+        </span>
+        <span className="asset-value">
+          <strong>{deger > 0 ? money(Math.round(deger)) : "-"}</strong>
+          {getiri !== null && <small className={pctClass(getiri)}>{formatPct(getiri)}</small>}
+        </span>
+      </button>
 
       {acik && (
-        <div style={{ padding: "8px 0", display: "flex", gap: 8, alignItems: "center" }}>
+        <div className="trade-box">
           <input
             type="number"
             value={girdi}
             onChange={e => setGirdi(e.target.value)}
-            placeholder={varlik === "mevduat" ? "₺ miktar" : "miktar"}
-            style={{
-              flex: 1, padding: "8px 12px", borderRadius: 8,
-              background: "#0d0f12", border: "1px solid #2a2f42",
-              color: "#e8eaf0", fontSize: 13, fontFamily: "monospace"
-            }}
+            placeholder={varlik === "mevduat" ? "TL miktarı" : "Miktar"}
           />
-          <button onClick={al} style={{
-            padding: "8px 14px", borderRadius: 8, border: "none",
-            background: "#14532d", color: "#86efac", fontSize: 12,
-            fontWeight: 600, cursor: "pointer"
-          }}>AL</button>
-          <button onClick={sat} style={{
-            padding: "8px 14px", borderRadius: 8, border: "none",
-            background: "#7f1d1d", color: "#fca5a5", fontSize: 12,
-            fontWeight: 600, cursor: "pointer"
-          }}>SAT</button>
+          <button className="buy" onClick={al}>Al</button>
+          <button className="sell" onClick={sat}>Sat</button>
         </div>
       )}
-    </div>
+    </article>
   )
 }
 
+function money(value) {
+  return `₺${Number(value).toLocaleString("tr-TR")}`
+}
+
+function formatPct(val) {
+  return val >= 0 ? `+%${Math.abs(val).toFixed(1)}` : `-%${Math.abs(val).toFixed(1)}`
+}
+
+function pctClass(val) {
+  return val >= 0 ? "positive" : "negative"
+}

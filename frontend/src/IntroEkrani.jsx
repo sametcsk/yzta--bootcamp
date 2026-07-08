@@ -1,10 +1,10 @@
 import { useState } from "react"
-import { SORULAR, BASLANGIC } from "./data/sorular"
+import { BASLANGIC, SORULAR } from "./data/sorular"
 
 function kilitliMi(kilit, nakit, sabir, mutluluk) {
   if (!kilit) return false
-  if (kilit.tur === "nakit")    return nakit < kilit.min
-  if (kilit.tur === "sabir")    return sabir < kilit.min
+  if (kilit.tur === "nakit") return nakit < kilit.min
+  if (kilit.tur === "sabir") return sabir < kilit.min
   if (kilit.tur === "mutluluk") return mutluluk < kilit.min
   return false
 }
@@ -18,14 +18,14 @@ export default function IntroEkrani({ onBitis }) {
   const [gelir, setGelir] = useState(0)
 
   const soru = SORULAR[soruIndex]
-  const ilerleme = ((soruIndex) / SORULAR.length) * 100
+  const ilerleme = ((soruIndex + 1) / SORULAR.length) * 100
 
   function devamEt() {
     if (secim === null) return
     const s = soru.secenekler[secim]
 
-    const yeniNakit  = Math.max(20000, nakit + s.nakit)
-    const yeniSabir  = Math.min(80, Math.max(20, sabir + s.sabir))
+    const yeniNakit = Math.max(20000, nakit + s.nakit)
+    const yeniSabir = Math.min(80, Math.max(20, sabir + s.sabir))
     const yeniMutluluk = Math.min(80, Math.max(20, mutluluk + s.mutluluk))
 
     setNakit(yeniNakit)
@@ -48,124 +48,82 @@ export default function IntroEkrani({ onBitis }) {
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: "0 auto", padding: 24, fontFamily: "monospace", background: "#0d0f12", minHeight: "100vh", color: "#e8eaf0" }}>
-
-      {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
-          Hikayen Başlıyor · {soruIndex + 1} / {SORULAR.length}
+    <main className="intro-shell">
+      <section className="intro-card">
+        <div className="intro-top">
+          <div>
+            <div className="eyebrow">FinSim / Karakter</div>
+            <h1>Finansal hikayeni kur</h1>
+          </div>
+          <span>{soruIndex + 1}/{SORULAR.length}</span>
         </div>
-        <div style={{ height: 4, background: "#1c2030", borderRadius: 2, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${ilerleme}%`, background: "#f5c842", borderRadius: 2, transition: "width 0.3s" }} />
+
+        <div className="intro-progress">
+          <span style={{ width: `${ilerleme}%` }} />
         </div>
-      </div>
 
-      {/* Anlık değerler */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-        <Chip label="💰" value={`₺${(nakit/1000).toFixed(0)}k`} color="#f5c842" />
-        <Chip label="🧘" value={`${sabir}`} color="#60a8f0" />
-        <Chip label="😊" value={`${mutluluk}`} color="#f07080" />
-      </div>
-
-      {/* Kategori + Soru */}
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: 11, color: "#f5c842", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>
-          GEÇMİŞİN · {soru.kategori.toUpperCase()}
+        <div className="intro-stats">
+          <Stat label="Nakit" value={`₺${(nakit / 1000).toFixed(0)}k`} />
+          <Stat label="Sabır" value={sabir} />
+          <Stat label="Mutluluk" value={mutluluk} />
         </div>
-        <div style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.4, color: "#e8eaf0" }}>
-          {soru.soru}
+
+        <div className="question-block">
+          <span>{soru.kategori}</span>
+          <h2>{soru.soru}</h2>
         </div>
-      </div>
 
-      {/* Seçenekler */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 32 }}>
-        {soru.secenekler.map((s, i) => {
-          const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk)
-          const secili = secim === i
+        <div className="choice-list">
+          {soru.secenekler.map((s, i) => {
+            const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk)
+            const secili = secim === i
 
-          return (
-            <button
-              key={i}
-              onClick={() => !kilitli && setSecim(i)}
-              disabled={kilitli}
-              style={{
-                background: secili ? "#1a2a1a" : kilitli ? "#111318" : "#141720",
-                border: `1px solid ${secili ? "#3a7a3a" : kilitli ? "#1c2030" : "#2a2f42"}`,
-                borderRadius: 12,
-                padding: "14px 16px",
-                textAlign: "left",
-                cursor: kilitli ? "not-allowed" : "pointer",
-                color: kilitli ? "#374151" : "#e8eaf0",
-                transition: "all 0.15s",
-              }}
-            >
-              <div style={{ fontSize: 14, fontWeight: 500, marginBottom: s.gelir_aciklama ? 6 : 0 }}>
-                {kilitli ? "🔒 " : ""}{s.metin}
-              </div>
+            return (
+              <button
+                className={`choice ${secili ? "selected" : ""}`}
+                key={i}
+                onClick={() => !kilitli && setSecim(i)}
+                disabled={kilitli}
+              >
+                <span className="choice-title">{kilitli ? "Kilitli" : s.metin}</span>
+                {s.gelir_aciklama && !kilitli && <small>{s.gelir_aciklama} maaş</small>}
+                {kilitli && s.kilit && <small>{kilitMetni(s.kilit)}</small>}
+                {secili && (
+                  <span className="effect-list">
+                    {s.nakit !== 0 && <Effect value={`₺${s.nakit > 0 ? "+" : ""}${(s.nakit / 1000).toFixed(0)}k`} positive={s.nakit > 0} />}
+                    {s.sabir !== 0 && <Effect value={`Sabır ${s.sabir > 0 ? "+" : ""}${s.sabir}`} positive={s.sabir > 0} />}
+                    {s.mutluluk !== 0 && <Effect value={`Mutluluk ${s.mutluluk > 0 ? "+" : ""}${s.mutluluk}`} positive={s.mutluluk > 0} />}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
 
-              {/* Gelir açıklaması */}
-              {s.gelir_aciklama && !kilitli && (
-                <div style={{ fontSize: 12, color: "#34d399" }}>
-                  {s.gelir_aciklama} maaş
-                </div>
-              )}
+        <button className="primary-action" onClick={devamEt} disabled={secim === null}>
+          {soruIndex + 1 >= SORULAR.length ? "Oyunu Başlat" : "Devam Et"}
+        </button>
+      </section>
+    </main>
+  )
+}
 
-              {/* Kilit sebebi */}
-              {kilitli && s.kilit && (
-                <div style={{ fontSize: 11, color: "#4b5563", marginTop: 4 }}>
-                  {s.kilit.tur === "nakit" && `₺${(s.kilit.min/1000).toFixed(0)}k nakit gerekiyor`}
-                  {s.kilit.tur === "sabir" && `${s.kilit.min} sabır gerekiyor`}
-                  {s.kilit.tur === "mutluluk" && `${s.kilit.min} mutluluk gerekiyor`}
-                </div>
-              )}
-
-              {/* Seçilince etkileri göster */}
-              {secili && (
-                <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-                  {s.nakit !== 0 && <Etiket label={`₺${s.nakit > 0 ? "+" : ""}${(s.nakit/1000).toFixed(0)}k`} pozitif={s.nakit > 0} />}
-                  {s.sabir !== 0 && <Etiket label={`Sabır ${s.sabir > 0 ? "+" : ""}${s.sabir}`} pozitif={s.sabir > 0} />}
-                  {s.mutluluk !== 0 && <Etiket label={`Mutluluk ${s.mutluluk > 0 ? "+" : ""}${s.mutluluk}`} pozitif={s.mutluluk > 0} />}
-                </div>
-              )}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* İleri butonu */}
-      <button
-        onClick={devamEt}
-        disabled={secim === null}
-        style={{
-          width: "100%", padding: "14px 0", borderRadius: 12,
-          background: secim !== null ? "#f5c842" : "#1c2030",
-          color: secim !== null ? "#1a1200" : "#374151",
-          fontWeight: 700, fontSize: 16, border: "none",
-          cursor: secim !== null ? "pointer" : "not-allowed",
-        }}
-      >
-        {soruIndex + 1 >= SORULAR.length ? "Oyunu Başlat →" : "İleri →"}
-      </button>
+function Stat({ label, value }) {
+  return (
+    <div>
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   )
 }
 
-function Chip({ label, value, color }) {
-  return (
-    <div style={{ background: "#141720", border: "1px solid #2a2f42", borderRadius: 8, padding: "6px 12px", fontSize: 13, color }}>
-      {label} {value}
-    </div>
-  )
+function Effect({ value, positive }) {
+  return <em className={positive ? "positive-chip" : "negative-chip"}>{value}</em>
 }
 
-function Etiket({ label, pozitif }) {
-  return (
-    <span style={{
-      fontSize: 11, padding: "2px 8px", borderRadius: 4,
-      background: pozitif ? "#14532d" : "#7f1d1d",
-      color: pozitif ? "#86efac" : "#fca5a5",
-    }}>
-      {label}
-    </span>
-  )
+function kilitMetni(kilit) {
+  if (kilit.tur === "nakit") return `₺${(kilit.min / 1000).toFixed(0)}k nakit gerekiyor`
+  if (kilit.tur === "sabir") return `${kilit.min} sabır gerekiyor`
+  if (kilit.tur === "mutluluk") return `${kilit.min} mutluluk gerekiyor`
+  return "Kilitli"
 }
