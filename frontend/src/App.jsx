@@ -1,6 +1,8 @@
 import { useRef, useState } from "react"
 import IntroEkrani from "./IntroEkrani"
 import { YASAM_GIDERI } from "./data/sorular"
+import VarlikSayfasi from "./VarlikSayfasi"
+
 
 const INITIAL_STATE = {
   enf_rejim: 0,
@@ -37,6 +39,7 @@ export default function App() {
   const [bars, setBars] = useState({ sabir: 50, mutluluk: 50 })
   const [nakit, setNakit] = useState(25000)
   const [introTamamlandi, setIntroTamamlandi] = useState(false)
+  const [aktifSayfa, setAktifSayfa] = useState("ana")
   const [yillikGelir, setYillikGelir] = useState(0)
   const [yasamGideri, setYasamGideri] = useState(YASAM_GIDERI)
   const [portfoy, setPortfoy] = useState({
@@ -52,6 +55,7 @@ export default function App() {
     mev_faiz_oran: 0.12,
   })
 
+
   const nakitRef = useRef(nakit)
 
   const nakitiGuncelle = (yeniNakit) => {
@@ -62,6 +66,12 @@ export default function App() {
   const [eventGecmisi, setEventGecmisi] = useState({})
   const [tetiklenenler, setTetiklenenler] = useState([])
   const [eventKayitlari, setEventKayitlari] = useState([])
+  const [fiyatGecmisi, setFiyatGecmisi] = useState({
+  altin: [],
+  bist: [],
+  dolar: [],
+  mevduat: []
+})
 
   
   async function yilAtla() {
@@ -139,6 +149,12 @@ export default function App() {
       setYil(yeniYil)
       setYas(yeniYas)
       setSonuc(data.yil_sonucu)
+      setFiyatGecmisi(prev => ({
+        altin: [...prev.altin, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.altin_try_gram }],
+        bist: [...prev.bist, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_endeks }],
+        dolar: [...prev.dolar, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.dolar_try }],
+        mevduat: [...prev.mevduat, { yil: yil + 1, fiyat: data.yil_sonucu.mev_faiz }],
+      }))
       if (data.yil_sonucu.event) {
        setMevcutEvent(data.yil_sonucu.event)
        setEventGecmisi(prev => ({
@@ -229,6 +245,8 @@ export default function App() {
 
   return (
     <main className="app-shell">
+     {aktifSayfa === "ana" && (
+      <>
       <section className="hero-panel">
         <div>
           <div className="eyebrow">FinSim / {yil}</div>
@@ -240,7 +258,7 @@ export default function App() {
           <strong>{sonuc ? `%${sonuc.enflasyon}` : "Başlangıç"}</strong>
         </div>
       </section>
-
+      
       <section className="summary-grid">
         <MetricCard label="Toplam Değer" value={money(toplamDeger)} hint={`Portföy: ${money(portfoyDegeri)}`} tone="primary" />
         <MetricCard label="Nakit" value={money(nakit)} hint={`Yıllık akış: ${money(netAkis)}`} tone="gold" />
@@ -271,7 +289,7 @@ export default function App() {
         const kilitli = s.kilit && (
           (s.kilit.tur === "sabir" && bars.sabir < s.kilit.min) ||
           (s.kilit.tur === "mutluluk" && bars.mutluluk < s.kilit.min) ||
-          (s.kilit.tur === "nakit" && nakitRef.current < s.kilit.min)
+          (s.kilit.tur === "nakit" && nakit < s.kilit.min)
         )
         return (
           <button
@@ -415,6 +433,47 @@ export default function App() {
           </div>
         </section>
       )}
+    </>
+    )}
+
+    {aktifSayfa === "varliklar" && (
+      <VarlikSayfasi
+        fiyatGecmisi={fiyatGecmisi}
+        fiyatlar={fiyatlar}
+        portfoy={portfoy}
+        sonuc={sonuc}
+        varlikAl={varlikAl}
+        varlikSat={varlikSat}
+      />
+    )}
+
+    {/* Bottom Navigation */}
+    <nav style={{
+      position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
+      width: "100%", maxWidth: 480,
+      background: "#0d0f12", borderTop: "1px solid #1c2030",
+      display: "flex", padding: "10px 0 20px", zIndex: 100,
+    }}>
+      {[
+        { id: "ana", label: "Ana Sayfa", icon: "⌂" },
+        { id: "varliklar", label: "Varlıklar", icon: "◈" },
+      ].map(s => (
+        <button
+          key={s.id}
+          onClick={() => setAktifSayfa(s.id)}
+          style={{
+            flex: 1, background: "none", border: "none", cursor: "pointer",
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+            color: aktifSayfa === s.id ? "#f5c842" : "#6b7280",
+            fontSize: 20,
+          }}
+        >
+          {s.icon}
+          <span style={{ fontSize: 10 }}>{s.label}</span>
+        </button>
+      ))}
+    </nav>
+
     </main>
   )
 }
