@@ -58,14 +58,26 @@ export default function App() {
     nakitRef.current = yeniNakit
     setNakit(yeniNakit)
   }
+  const [mevcutEvent, setMevcutEvent] = useState(null)
+  const [eventGecmisi, setEventGecmisi] = useState({})
+  const [tetiklenenler, setTetiklenenler] = useState([])
+  const [eventKayitlari, setEventKayitlari] = useState([])
 
+  
   async function yilAtla() {
     setLoading(true)
     try {
       const res = await fetch("http://127.0.0.1:8000/yil-atla", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(gameState),
+        body: JSON.stringify({
+          ...gameState,
+          yil: yil,
+          yas: yas,
+          event_gecmisi: eventGecmisi,
+          tetiklenenler: tetiklenenler,
+          portfoy: portfoy,
+        }),
       })
       const data = await res.json()
 
@@ -127,6 +139,16 @@ export default function App() {
       setYil(yeniYil)
       setYas(yeniYas)
       setSonuc(data.yil_sonucu)
+      if (data.yil_sonucu.event) {
+       setMevcutEvent(data.yil_sonucu.event)
+       setEventGecmisi(prev => ({
+          ...prev,
+         [data.yil_sonucu.event.id]: yil + 1
+       }))
+        if (data.yil_sonucu.event.tek_seferlik) {
+          setTetiklenenler(prev => [...prev, data.yil_sonucu.event.id])
+       }
+      }
       setGecmis(prev => [...prev, { yil: yeniYil, yas: yeniYas, ...data.yil_sonucu }])
     } catch (e) {
       console.error(e)
@@ -231,9 +253,88 @@ export default function App() {
           <PanelHeader title="Durum" action={`${yil + 1}'e hazırlan`} />
           <ProgressRow label="Sabır" value={bars.sabir} tone="blue" />
           <ProgressRow label="Mutluluk" value={bars.mutluluk} tone="rose" />
-          <button className="primary-action" onClick={yilAtla} disabled={loading}>
-            {loading ? "Hesaplanıyor..." : `${yil + 1}'e atla`}
+
+
+          {mevcutEvent ? (
+  <div style={{ marginTop: 16 }}>
+    <div style={{ fontSize: 11, color: "#f5c842", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
+      ⚡ {yil} Olayı
+    </div>
+    <div style={{ fontSize: 15, fontWeight: 600, color: "#e8eaf0", marginBottom: 6 }}>
+      {mevcutEvent.baslik}
+    </div>
+    <div style={{ fontSize: 13, color: "#b0b8cc", lineHeight: 1.6, marginBottom: 12 }}>
+      {mevcutEvent.metin}
+    </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {mevcutEvent.secenekler.map((s, i) => {
+        const kilitli = s.kilit && (
+          (s.kilit.tur === "sabir" && bars.sabir < s.kilit.min) ||
+          (s.kilit.tur === "mutluluk" && bars.mutluluk < s.kilit.min) ||
+          (s.kilit.tur === "nakit" && nakitRef.current < s.kilit.min)
+        )
+        return (
+          <button
+            key={i}
+            disabled={kilitli}
+            onClick={() => {
+              if (kilitli) return
+              setBars(prev => ({
+                sabir: Math.min(80, Math.max(20, prev.sabir + (s.sabir_etki || 0))),
+                mutluluk: Math.min(80, Math.max(20, prev.mutluluk + (s.mutluluk_etki || 0))),
+              }))
+              if (s.nakit_etki && s.nakit_etki !== 0) {
+                nakitiGuncelle(Math.max(20000, nakitRef.current + s.nakit_etki))
+              }
+              if (s.gelir_degisim) {
+                const { tip, min, max, oran } = s.gelir_degisim
+                if (tip === "randomize") {
+                  const carpan = 1 + (Math.random() * (max - min) + min)
+                  setYillikGelir(prev => Math.round(prev * carpan))
+                } else if (tip === "sabit_oran") {
+                  setYillikGelir(prev => Math.round(prev * oran))
+                }
+              }
+              setEventKayitlari(prev => [...prev, {
+                yil: yil,
+                event_id: mevcutEvent.id,
+                event_baslik: mevcutEvent.baslik,
+                bias: mevcutEvent.bias_etiketi,
+                secim_id: s.id,
+                secim_metin: s.metin,
+              }])
+              setMevcutEvent(null)
+            }}
+            className={kilitli ? "" : "primary-action"}
+            style={{
+              opacity: kilitli ? 0.4 : 1,
+              cursor: kilitli ? "not-allowed" : "pointer",
+              textAlign: "left",
+              fontSize: 13,
+              padding: "10px 14px",
+            }}
+          >
+            {kilitli ? "🔒 " : ""}{s.metin}
+            {kilitli && s.kilit && (
+              <div style={{ fontSize: 11, opacity: 0.6, marginTop: 4 }}>
+                {s.kilit.tur === "sabir" && `${s.kilit.min} sabır gerekiyor`}
+                {s.kilit.tur === "mutluluk" && `${s.kilit.min} mutluluk gerekiyor`}
+                {s.kilit.tur === "nakit" && `₺${(s.kilit.min/1000).toFixed(0)}k gerekiyor`}
+              </div>
+            )}
           </button>
+        )
+      })}
+    </div>
+  </div>
+) : (
+  <button className="primary-action" onClick={yilAtla} disabled={loading}>
+    {loading ? "Hesaplanıyor..." : `${yil + 1}'e atla`}
+  </button>
+)}
+
+
+
         </section>
 
         <section className="panel">

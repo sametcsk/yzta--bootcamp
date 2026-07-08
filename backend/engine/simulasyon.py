@@ -3,8 +3,14 @@ from .doviz import doviz_sim
 from .altin import altin_sim
 from .bist import faiz_uret, bist_getiri_uret
 from .mevduat import mevduat_faizi_uret
+from events.event_engine import event_sec
 
-def yil_hesapla(state: dict) -> dict:
+def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None, tetiklenenler: list = None) -> dict:
+    if event_gecmisi is None:
+        event_gecmisi = {}
+    if tetiklenenler is None:
+        tetiklenenler = []
+
     enf_rejim        = state.get("enf_rejim", 0)
     enf_sakin_yil    = state.get("enf_sakin_yil", 0)
     enf_kriz_mevcut  = state.get("enf_kriz_mevcut", None)
@@ -20,6 +26,7 @@ def yil_hesapla(state: dict) -> dict:
     faiz             = state.get("faiz", 12.0)
     bist             = state.get("bist", 100.0)
     mevduat_birikim  = state.get("mevduat_birikim", 100.0)
+    mevcut_yas       = state.get("yas", 25)
 
     # 1. Enflasyon
     enf, enf_rejim, enf_sakin_yil, enf_kriz_mevcut, enf_kriz_dusus, enf_durum = \
@@ -50,6 +57,16 @@ def yil_hesapla(state: dict) -> dict:
     # 5. Mevduat
     mev_faiz, mev_carpan, mev_reel = mevduat_faizi_uret(enf, enf_rejim)
     mevduat_birikim = round(mevduat_birikim * (1 + mev_faiz / 100), 2)
+
+    # 6. Event
+    secilen_event = event_sec(
+        mevcut_yil=mevcut_yil,
+        mevcut_yas=mevcut_yas,
+        event_gecmisi=event_gecmisi,
+        enf_rejim=enf_rejim,
+        tetiklenenler=tetiklenenler,
+        portfoy=state.get("portfoy", {})
+    )
 
     return {
         "enf_rejim": enf_rejim,
@@ -87,6 +104,14 @@ def yil_hesapla(state: dict) -> dict:
                 "bist_endeks": round(bist, 2),
                 "dolar_try": round(kur, 2),
                 "mev_faiz_oran": round(mev_faiz / 100, 4),
-            }
+            },
+            "event": {
+                "id": secilen_event["id"],
+                "baslik": secilen_event["baslik"],
+                "metin": secilen_event["metin"],
+                "bias_etiketi": secilen_event["bias_etiketi"],
+                "tek_seferlik": secilen_event.get("tek_seferlik", False),
+                "secenekler": secilen_event["secenekler"],
+            } if secilen_event else None,
         }
     }
