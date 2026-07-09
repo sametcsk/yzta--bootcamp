@@ -18,7 +18,7 @@ export default function IntroEkrani({ onBitis }) {
   const [gelir, setGelir] = useState(0)
 
   const soru = SORULAR[soruIndex]
-  const ilerleme = ((soruIndex + 1) / SORULAR.length) * 100
+  const seciliSecenek = secim !== null ? soru.secenekler[secim] : null
 
   function devamEt() {
     if (secim === null) return
@@ -56,79 +56,96 @@ export default function IntroEkrani({ onBitis }) {
         mutluluk: 60,
         yillikGelir: 300000,
       })}
-      style={{
-        width: "100%", padding: "8px 0", borderRadius: 8,
-        background: "transparent", border: "1px dashed #374151",
-        color: "#4b5563", fontSize: 11, cursor: "pointer", marginBottom: 8,
-      }}
+      className="dev-skip"
     >
       [geliştirme] introyu atla
     </button>
 
-    <main className="intro-shell">
-      <section className="intro-card">
-        <div className="intro-top">
-          <div>
-            <div className="eyebrow">FinSim / Karakter</div>
-            <h1>Finansal hikayeni kur</h1>
+    <main className="intro-shell intro-command">
+      <section className="intro-card mission-board">
+        <aside className="mission-map-panel">
+          <div className="mission-chapter">
+            <strong>Bölüm {soruIndex + 1} / {SORULAR.length}</strong>
+            <div className="quest-map" aria-label={`Bölüm ${soruIndex + 1}/${SORULAR.length}`}>
+              {SORULAR.map((_, i) => (
+                <span key={i} className={i <= soruIndex ? "done" : ""} />
+              ))}
+            </div>
           </div>
-          <span>{soruIndex + 1}/{SORULAR.length}</span>
-        </div>
-
-        <div className="intro-progress">
-          <span style={{ width: `${ilerleme}%` }} />
-        </div>
-
-        <div className="intro-stats">
-          <Stat label="Nakit" value={`₺${(nakit / 1000).toFixed(0)}k`} />
-          <Stat label="Sabır" value={sabir} />
-          <Stat label="Mutluluk" value={mutluluk} />
-        </div>
-
-        <div className="question-block">
-          <span>{soru.kategori}</span>
-          <h2>{soru.soru}</h2>
-        </div>
-
-        <div className="choice-list">
-          {soru.secenekler.map((s, i) => {
-            const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk)
-            const secili = secim === i
-
-            return (
-              <button
-                className={`choice ${secili ? "selected" : ""}`}
-                key={i}
-                onClick={() => !kilitli && setSecim(i)}
-                disabled={kilitli}
-              >
-                <span className="choice-title">{kilitli ? "Kilitli" : s.metin}</span>
-                {s.gelir_aciklama && !kilitli && <small>{s.gelir_aciklama} maaş</small>}
-                {kilitli && s.kilit && <small>{kilitMetni(s.kilit)}</small>}
-                {secili && (
-                  <span className="effect-list">
-                    {s.nakit !== 0 && <Effect value={`₺${s.nakit > 0 ? "+" : ""}${(s.nakit / 1000).toFixed(0)}k`} positive={s.nakit > 0} />}
-                    {s.sabir !== 0 && <Effect value={`Sabır ${s.sabir > 0 ? "+" : ""}${s.sabir}`} positive={s.sabir > 0} />}
-                    {s.mutluluk !== 0 && <Effect value={`Mutluluk ${s.mutluluk > 0 ? "+" : ""}${s.mutluluk}`} positive={s.mutluluk > 0} />}
-                  </span>
-                )}
+          <div className="mission-nodes">
+            {SORULAR.map((gorev, i) => (
+              <button key={gorev.kategori} className={i === soruIndex ? "current" : i < soruIndex ? "done" : "locked"} type="button">
+                <i>{i < soruIndex ? "✓" : i === soruIndex ? "●" : "⌁"}</i>
+                <span>{gorev.kategori}</span>
               </button>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+          <div className="active-quest">
+            <span>Aktif Görev</span>
+            <strong>{soru.soru}</strong>
+          </div>
+        </aside>
 
-        <button className="primary-action" onClick={devamEt} disabled={secim === null}>
-          {soruIndex + 1 >= SORULAR.length ? "Oyunu Başlat" : "Devam Et"}
-        </button>
+        <section className="mission-main">
+          <div className="intro-stats">
+            <Stat icon="TL" label="Nakit" value={`₺${(nakit / 1000).toFixed(0)}k`} />
+            <Stat icon="SP" label="Sabır" value={sabir} />
+            <Stat icon="HP" label="Mutluluk" value={mutluluk} />
+          </div>
+
+          <div className="question-block">
+            <span>Görev</span>
+            <h2>{soru.soru}</h2>
+            <p>Seçimin karakterini ve geleceğini etkileyecek.</p>
+          </div>
+
+          <div className="choice-list">
+            {soru.secenekler.map((s, i) => {
+              const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk)
+              const secili = secim === i
+
+              return (
+                <button
+                  className={`choice choice-${i + 1} ${secili ? "selected" : ""}`}
+                  key={i}
+                  onClick={() => !kilitli && setSecim(i)}
+                  disabled={kilitli}
+                >
+                  <span className="choice-symbol">{kilitli ? "⌁" : ["₺", "▣", "◆"][i] || "◇"}</span>
+                  <span className="choice-title">{kilitli ? "Kilitli Karar" : s.metin}</span>
+                  {s.gelir_aciklama && !kilitli && <small>{s.gelir_aciklama} maaş</small>}
+                  {kilitli && s.kilit && <small>{kilitMetni(s.kilit)}</small>}
+                  <span className="effect-list">
+                    {s.nakit !== 0 && <Effect value={`Nakit ${s.nakit > 0 ? "+" : "-"}`} positive={s.nakit > 0} />}
+                    {s.sabir !== 0 && <Effect value={`Sabır ${s.sabir > 0 ? "+" : "-"}`} positive={s.sabir > 0} />}
+                    {s.mutluluk !== 0 && <Effect value={`Mutluluk ${s.mutluluk > 0 ? "+" : "-"}`} positive={s.mutluluk > 0} />}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+
+        <aside className="choice-result">
+          <div className="result-frame">
+            <span>Seçimin Sonucu</span>
+            <strong>{seciliSecenek ? seciliSecenek.metin : "Henüz seçim yok"}</strong>
+            <p>{seciliSecenek ? "Karar onaylanınca karakter istatistiklerine işlenecek." : "Seçimin sonrası burada görünecek."}</p>
+          </div>
+          <button className="primary-action confirm-action" onClick={devamEt} disabled={secim === null}>
+            {soruIndex + 1 >= SORULAR.length ? "Oyunu Başlat" : "Kararı Onayla"}
+          </button>
+        </aside>
       </section>
     </main>
   </>
 )
 }
 
-function Stat({ label, value }) {
+function Stat({ icon, label, value }) {
   return (
     <div>
+      <i>{icon}</i>
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
@@ -145,4 +162,3 @@ function kilitMetni(kilit) {
   if (kilit.tur === "mutluluk") return `${kilit.min} mutluluk gerekiyor`
   return "Kilitli"
 }
-

@@ -53,7 +53,7 @@ export default function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portf
 
   // Grafik 1 — Varlık performansı (katsayıdan)
   const varlikSatir = Object.entries(varlikKatsayilari)
-    .filter(([_, v]) => v !== null)
+    .filter(([, v]) => v !== null)
     .map(([varlik, katsayi]) => ({
       varlik,
       yuzde: Math.round((katsayi - 1) * 100),
@@ -77,76 +77,64 @@ export default function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portf
   ].filter(d => d.value > 0)
 
   const tooltipStyle = {
-    contentStyle: { background: "#1c2030", border: "1px solid #2a2f42", borderRadius: 8, fontSize: 11 },
-    labelStyle: { color: "#6b7280" },
+    contentStyle: { background: "#101725", border: "1px solid rgba(96, 165, 250, 0.35)", borderRadius: 8, fontSize: 11 },
+    labelStyle: { color: "#93a4b8" },
   }
 
   return (
-    <div style={{ padding: "16px 0 80px" }}>
+    <div className="subpage portfolio-page">
 
-      {/* Zaman aralığı */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+      <div className="segment-control">
         {ARALIKLAR.map(a => (
           <button
             key={a.id}
             onClick={() => setAralik(a.id)}
-            style={{
-              flex: 1, padding: "6px 0", borderRadius: 8, border: "none",
-              background: aralik === a.id ? "#f5c842" : "#141720",
-              color: aralik === a.id ? "#1a1200" : "#6b7280",
-              fontSize: 12, fontWeight: aralik === a.id ? 700 : 400,
-              cursor: "pointer",
-            }}
+            className={aralik === a.id ? "active" : ""}
           >
             {a.label}
           </button>
         ))}
       </div>
 
-      {/* Grafik 1 — Varlık Performansı */}
-      <div style={{ background: "#141720", border: "1px solid #2a2f42", borderRadius: 16, padding: 20, marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>
+      <section className="panel chart-panel">
+        <div className="panel-kicker">
           Varlık Performansı
         </div>
-        <div style={{ fontSize: 11, color: "#4b5563", marginBottom: 16 }}>
+        <div className="panel-subtitle">
           Satın alındığından bu yana kümülatif % değişim
         </div>
 
         {varlikSatir.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="performance-list">
             {varlikSatir.map(v => (
-              <div key={v.varlik}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ fontSize: 12, color: "#b0b8cc" }}>{v.ad}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: v.yuzde >= 0 ? "#34d399" : "#f87171" }}>
+              <div className="performance-row" key={v.varlik}>
+                <div>
+                  <span>{v.ad}</span>
+                  <strong className={v.yuzde >= 0 ? "positive" : "negative"}>
                     {v.yuzde >= 0 ? "+" : ""}{v.yuzde}%
-                  </span>
+                  </strong>
                 </div>
-                <div style={{ height: 6, background: "#1c2030", borderRadius: 3, overflow: "hidden" }}>
+                <div className="mini-track">
                   <div style={{
-                    height: "100%",
                     width: `${Math.min(100, Math.abs(v.yuzde))}%`,
                     background: v.yuzde >= 0 ? v.renk : "#f87171",
-                    borderRadius: 3,
-                    transition: "width 0.3s",
                   }} />
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div style={{ height: 80, display: "flex", alignItems: "center", justifyContent: "center", color: "#374151", fontSize: 13 }}>
+          <div className="empty-chart">
             Varlık satın alınca görünür
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Grafik 2 — Portföy vs Enflasyon */}
-      <div style={{ background: "#141720", border: "1px solid #2a2f42", borderRadius: 16, padding: 20, marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>
+      <section className="panel chart-panel">
+        <div className="panel-kicker">
           Portföy vs Enflasyon
         </div>
-        <div style={{ fontSize: 11, color: "#4b5563", marginBottom: 16 }}>
+        <div className="panel-subtitle">
           Başlangıç = 100 endeks
         </div>
 
@@ -162,19 +150,18 @@ export default function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portf
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: "#374151", fontSize: 13 }}>
+          <div className="empty-chart tall">
             Grafik için yıl atla
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Pie Chart — Dağılım */}
-      <div style={{ background: "#141720", border: "1px solid #2a2f42", borderRadius: 16, padding: 20, marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
+      <section className="panel chart-panel">
+        <div className="panel-kicker with-gap">
           Portföy Dağılımı
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div className="allocation-grid">
           <PieChart width={140} height={140}>
             <Pie
               data={pieData}
@@ -194,21 +181,21 @@ export default function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portf
             />
           </PieChart>
 
-          <div style={{ flex: 1 }}>
+          <div className="allocation-list">
             {pieData.map(d => (
-              <div key={d.name} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 12 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: d.renk }} />
-                  <span style={{ color: "#b0b8cc" }}>{d.name}</span>
+              <div key={d.name}>
+                <div>
+                  <i style={{ background: d.renk }} />
+                  <span>{d.name}</span>
                 </div>
-                <span style={{ color: "#e8eaf0" }}>
+                <strong>
                   %{Math.round(d.value / toplamDeger * 100)}
-                </span>
+                </strong>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
     </div>
   )

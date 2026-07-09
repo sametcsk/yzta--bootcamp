@@ -1,10 +1,10 @@
 import { useRef, useState } from "react"
 import IntroEkrani from "./IntroEkrani"
-import { YASAM_GIDERI } from "./data/sorular"
 import VarlikSayfasi from "./VarlikSayfasi"
 import YasamStandartlari from "./YasamStandartlari"
 import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalitesiEtkisi } from "./data/standartlar"
 import PortfoySayfasi from "./PortfoySayfasi"
+import characterAvatar from "./assets/character-avatar.png"
 
 
 
@@ -27,10 +27,10 @@ const INITIAL_STATE = {
 }
 
 const VARLIK_META = {
-  altin: { icon: "Au", ad: "Altın", tone: "gold" },
-  bist: { icon: "BI", ad: "BIST", tone: "green" },
-  dolar: { icon: "$", ad: "Dolar", tone: "blue" },
-  mevduat: { icon: "%", ad: "Mevduat", tone: "violet" },
+  altin: { icon: "Au", ad: "Altın", type: "Nadir Varlık", risk: "Orta", tone: "gold", score: 2 },
+  bist: { icon: "BI", ad: "BIST", type: "Riskli Varlık", risk: "Yüksek", tone: "green", score: 3 },
+  dolar: { icon: "$", ad: "Dolar", type: "Döviz", risk: "Orta", tone: "blue", score: 2 },
+  mevduat: { icon: "%", ad: "Mevduat", type: "Güvenli Alan", risk: "Düşük", tone: "violet", score: 1 },
 }
 
 export default function App() {
@@ -71,7 +71,7 @@ export default function App() {
   const [mevcutEvent, setMevcutEvent] = useState(null)
   const [eventGecmisi, setEventGecmisi] = useState({})
   const [tetiklenenler, setTetiklenenler] = useState([])
-  const [eventKayitlari, setEventKayitlari] = useState([])
+  const [, setEventKayitlari] = useState([])
   const [fiyatGecmisi, setFiyatGecmisi] = useState({
   altin: [],
   bist: [],
@@ -186,7 +186,6 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
       const kalite = yasamKalitesiEtkisi(standartlar, YASAM_STANDARTLARI)
 
       // Finansal debuff
-      const netAkis = nakitRef.current  // mevcut nakit durumu
       let finansalDebuff = { mutluluk: 0, sabir: 0 }
       if (yeniGelir < yeniGider) {
         finansalDebuff = { mutluluk: -8, sabir: -5 }
@@ -331,6 +330,17 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
   const toplamDeger = nakit + portfoyDegeri
   const netAkis = yillikGelir - yasamGideri
   const krizMi = gameState.enf_rejim === 1
+  const riskIstahi = Math.min(95, Math.max(15, Math.round((portfoyDegeri / Math.max(toplamDeger, 1)) * 100 + (bars.mutluluk - 50) / 2)))
+  const guvenlik = Math.min(95, Math.max(10, Math.round(100 - riskIstahi + bars.sabir / 4)))
+  const riskProfili = riskIstahi > 65 ? "Riskli" : riskIstahi > 38 ? "Dengeli" : "Güvenli"
+  const seviye = Math.max(1, yas - 24)
+  const piyasaPuani = Math.min(100, Math.max(1, Math.round(50 + (sonuc?.bist_pct || 0) / 2 + (sonuc?.altin_try_getiri || 0) / 3 - (sonuc?.enflasyon || 0) / 4)))
+  const piyasaOlaylari = [
+    { tone: "rose", icon: "!", title: krizMi ? "Enflasyon yükseliyor" : "Enflasyon izleniyor", copy: krizMi ? "Fiyat baskısı karakter bütçesini zorluyor." : "Piyasa fiyatları şimdilik kontrol altında.", time: "aktif" },
+    { tone: sonuc && sonuc.bist_pct < 0 ? "rose" : "blue", icon: "BI", title: sonuc && sonuc.bist_pct < 0 ? "BIST dalgalı" : "BIST takipte", copy: "Riskli varlıklar yıl kararından etkilenebilir.", time: "piyasa" },
+    { tone: "gold", icon: "Au", title: sonuc && sonuc.altin_try_getiri > 0 ? "Altın güçleniyor" : "Altın sakin", copy: "Nadir varlık savunma rolünü koruyor.", time: "envanter" },
+    { tone: "green", icon: "%", title: "Mevduat cazip", copy: "Güvenli getiri alanı hazır bekliyor.", time: "banka" },
+  ]
 
   if (!introTamamlandi) {
     return <IntroEkrani onBitis={introyuBitir} />
@@ -338,46 +348,90 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
 
   return (
     <main className="app-shell">
+    <nav className="game-nav">
+      <div className="nav-brand">
+        <strong>FinSim</strong>
+        <span>{yil}</span>
+      </div>
+      <div className="nav-links">
+        {[
+          { id: "ana", label: "Ana Sayfa", icon: "HQ" },
+          { id: "varliklar", label: "Varlıklar", icon: "IV" },
+          { id: "portfoy", label: "Portföy", icon: "CH" },
+          { id: "standartlar", label: "Yaşam", icon: "LS" },
+        ].map(s => (
+          <button
+            key={s.id}
+            onClick={() => setAktifSayfa(s.id)}
+            className={aktifSayfa === s.id ? "active" : ""}
+          >
+            <strong>{s.icon}</strong>
+            <span>{s.label}</span>
+          </button>
+        ))}
+      </div>
+      <div className="nav-year">
+        <span>Yıl</span>
+        <strong>{yil}</strong>
+        <button onClick={yilAtla} disabled={loading || !!mevcutEvent}>
+          {loading ? "..." : `${yil + 1}'e Atla`}
+        </button>
+      </div>
+    </nav>
+
+    <section className="game-stage">
      {aktifSayfa === "ana" && (
       <>
-      <section className="hero-panel">
-        <div>
-          <div className="eyebrow">FinSim / {yil}</div>
-          <h1>{yas} yaşında finansal yolculuk</h1>
-          <p className="hero-copy">Portföyünü yönet, piyasa şartlarını oku ve bir sonraki yılın kararını ver.</p>
-        </div>
-        <div className={`market-badge ${krizMi ? "danger" : "calm"}`}>
-          <span>{krizMi ? "KRİZ" : "SAKİN"}</span>
-          <strong>{sonuc ? `%${sonuc.enflasyon}` : "Başlangıç"}</strong>
-        </div>
+      <section className="command-top">
+        <CharacterCard yas={yas} seviye={seviye} riskProfili={riskProfili} />
+        <section className="hero-panel">
+          <div>
+            <div className="eyebrow">{yas} yaşında</div>
+            <h1>Finansal Yolculuk</h1>
+            <p className="hero-copy">Portföyünü yönet, doğru kararlar al ve finansal geleceğini şekillendir.</p>
+          </div>
+          <div className="hero-status">
+            <div className="chapter-block">
+              <span>Bölüm 3 / 10</span>
+              <i><b /><b /><b /><b /><b /><b /><b /><b /><b /><b /></i>
+            </div>
+            <div className="hero-badges">
+              <span className="good">Başlangıç</span>
+              <span>{riskProfili}</span>
+            </div>
+          </div>
+        </section>
       </section>
       
       <section className="summary-grid">
-        <MetricCard label="Toplam Değer" value={money(toplamDeger)} hint={`Portföy: ${money(portfoyDegeri)}`} tone="primary" />
-        <MetricCard label="Nakit" value={money(nakit)} hint={`Yıllık akış: ${money(netAkis)}`} tone="gold" />
-        <MetricCard label="Gelir" value={money(yillikGelir)} hint={`Gider: ${money(yasamGideri)}`} />
-        <MetricCard label="Dolar Kuru" value={`${fiyatlar.dolar_try.toFixed(2)} TL`} hint={sonuc ? `Yıllık ${formatPct(sonuc.doviz_degisim)}` : "İlk fiyat"} />
+        <MetricCard icon="₺" label="Servet" value={money(toplamDeger)} hint="Portföy Değeri" tone="gold" />
+        <MetricCard icon="₺" label="Kalan Nakit" value={money(nakit)} hint="Harcanabilir bakiye" tone="cash" />
+        <MetricCard icon="⚡" label="Aylık Gelir" value={money(yillikGelir)} hint={`Net akış: ${money(netAkis)}`} tone="green" />
+        <MetricCard icon="◆" label="Güvenlik" value={`%${(fiyatlar.mev_faiz_oran * 100).toFixed(0)}`} hint="Mevduat Oranı" tone="primary" />
+        <MetricCard icon="▰" label="Piyasa Puanı" value={`${piyasaPuani} / 100`} hint="Piyasa Hakimiyeti" tone="violet" />
       </section>
 
-      <div className="content-grid">
-        <section className="panel">
-          <PanelHeader title="Durum" action={`${yil + 1}'e hazırlan`} />
-          <ProgressRow label="Sabır" value={bars.sabir} tone="blue" />
-          <ProgressRow label="Mutluluk" value={bars.mutluluk} tone="rose" />
+      <div className="command-grid">
+        <section className="panel character-panel">
+          <PanelHeader title="Karakter Durumu" action="120 / 250 XP" />
+          <ProgressRow icon="AB" label="Sabır" value={bars.sabir} tone="blue" />
+          <ProgressRow icon="☺" label="Mutluluk" value={bars.mutluluk} tone="gold" />
+          <ProgressRow icon="火" label="Risk İştahı" value={riskIstahi} tone="rose" />
+          <ProgressRow icon="⬡" label="Güvenlik" value={guvenlik} tone="green" />
 
 
           {mevcutEvent ? (
-  <div style={{ marginTop: 16 }}>
-    <div style={{ fontSize: 11, color: "#f5c842", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
-      ⚡ {yil} Olayı
+  <div className="event-panel">
+    <div className="event-kicker">
+      {yil} Olayı
     </div>
-    <div style={{ fontSize: 15, fontWeight: 600, color: "#e8eaf0", marginBottom: 6 }}>
+    <div className="event-title">
       {mevcutEvent.baslik}
     </div>
-    <div style={{ fontSize: 13, color: "#b0b8cc", lineHeight: 1.6, marginBottom: 12 }}>
+    <div className="event-copy">
       {mevcutEvent.metin}
     </div>
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <div className="event-choice-list">
       {mevcutEvent.secenekler.map((s, i) => {
         const kilitli = s.kilit && (
           (s.kilit.tur === "sabir" && bars.sabir < s.kilit.min) ||
@@ -416,22 +470,16 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
               }])
               setMevcutEvent(null)
             }}
-            className={kilitli ? "" : "primary-action"}
-            style={{
-              opacity: kilitli ? 0.4 : 1,
-              cursor: kilitli ? "not-allowed" : "pointer",
-              textAlign: "left",
-              fontSize: 13,
-              padding: "10px 14px",
-            }}
+            className={`event-choice ${kilitli ? "locked" : ""}`}
           >
-            {kilitli ? "🔒 " : ""}{s.metin}
+            <span>{kilitli ? "Kilitli" : `Seçenek ${i + 1}`}</span>
+            <strong>{s.metin}</strong>
             {kilitli && s.kilit && (
-              <div style={{ fontSize: 11, opacity: 0.6, marginTop: 4 }}>
+              <small>
                 {s.kilit.tur === "sabir" && `${s.kilit.min} sabır gerekiyor`}
                 {s.kilit.tur === "mutluluk" && `${s.kilit.min} mutluluk gerekiyor`}
                 {s.kilit.tur === "nakit" && `₺${(s.kilit.min/1000).toFixed(0)}k gerekiyor`}
-              </div>
+              </small>
             )}
           </button>
         )
@@ -439,65 +487,62 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
     </div>
   </div>
 ) : (
-  <button className="primary-action" onClick={yilAtla} disabled={loading}>
+  <button className="primary-action year-jump" onClick={yilAtla} disabled={loading}>
     {loading ? "Hesaplanıyor..." : `${yil + 1}'e atla`}
   </button>
 )}
 
-
-
         </section>
 
-        <section className="panel">
-          <PanelHeader title="Piyasa" action={krizMi ? "Volatil" : "Dengeli"} />
-          <DataRow label="Enflasyon" value={sonuc ? `%${sonuc.enflasyon}` : "-"} valueClass={krizMi ? "negative" : ""} />
-          <DataRow label="BIST" value={sonuc ? formatPct(sonuc.bist_pct) : "-"} valueClass={sonuc ? pctClass(sonuc.bist_pct) : ""} />
-          <DataRow label="Altın" value={sonuc ? formatPct(sonuc.altin_try_getiri) : "-"} valueClass={sonuc ? pctClass(sonuc.altin_try_getiri) : ""} />
-          <DataRow label="Mevduat" value={`%${(fiyatlar.mev_faiz_oran * 100).toFixed(1)}`} />
+        <section className="panel asset-panel">
+          <PanelHeader title="Varlıklar" action="Envanter" />
+          <div className="asset-list">
+            <VarlikSatir
+              fiyat={money(Math.round(fiyatlar.altin_try_gram)) + "/gr"}
+              miktar={`${portfoy.altin_gram.toFixed(2)} gr`}
+              deger={Math.round(portfoy.altin_gram * fiyatlar.altin_try_gram)}
+              getiri={sonuc ? sonuc.altin_try_getiri : null}
+              varlik="altin"
+              onAl={varlikAl}
+              onSat={varlikSat}
+            />
+            <VarlikSatir
+              fiyat={`${Math.round(fiyatlar.bist_endeks).toLocaleString("tr-TR")} endeks`}
+              miktar={`${portfoy.bist_adet.toFixed(0)} adet`}
+              deger={Math.round(portfoy.bist_adet * fiyatlar.bist_endeks)}
+              getiri={sonuc ? sonuc.bist_pct : null}
+              varlik="bist"
+              onAl={varlikAl}
+              onSat={varlikSat}
+            />
+            <VarlikSatir
+              fiyat={`${fiyatlar.dolar_try.toFixed(2)} TL/$`}
+              miktar={`$${portfoy.dolar.toFixed(0)}`}
+              deger={Math.round(portfoy.dolar * fiyatlar.dolar_try)}
+              getiri={sonuc ? sonuc.doviz_degisim : null}
+              varlik="dolar"
+              onAl={varlikAl}
+              onSat={varlikSat}
+            />
+            <VarlikSatir
+              fiyat={`%${(fiyatlar.mev_faiz_oran * 100).toFixed(1)} faiz`}
+              miktar={money(Math.round(portfoy.mevduat_tl))}
+              deger={portfoy.mevduat_tl}
+              getiri={sonuc ? sonuc.mev_faiz : null}
+              varlik="mevduat"
+              onAl={varlikAl}
+              onSat={varlikSat}
+            />
+          </div>
+        </section>
+
+        <section className="panel world-panel">
+          <PanelHeader title="Piyasa Haberleri" action={krizMi ? "Volatil" : "Dengeli"} />
+          {piyasaOlaylari.map((o) => (
+            <DataRow key={o.title} icon={o.icon} label={o.title} detail={o.copy} value={o.time} valueClass={o.tone === "rose" ? "negative" : o.tone === "green" ? "positive" : ""} />
+          ))}
         </section>
       </div>
-
-      <section className="panel asset-panel">
-        <PanelHeader title="Varlıklar" action={`${money(portfoyDegeri)} yatırım`} />
-        <div className="asset-list">
-          <VarlikSatir
-            fiyat={money(Math.round(fiyatlar.altin_try_gram)) + "/gr"}
-            miktar={`${portfoy.altin_gram.toFixed(2)} gr`}
-            deger={Math.round(portfoy.altin_gram * fiyatlar.altin_try_gram)}
-            getiri={sonuc ? sonuc.altin_try_getiri : null}
-            varlik="altin"
-            onAl={varlikAl}
-            onSat={varlikSat}
-          />
-          <VarlikSatir
-            fiyat={`${Math.round(fiyatlar.bist_endeks).toLocaleString("tr-TR")} endeks`}
-            miktar={`${portfoy.bist_adet.toFixed(0)} adet`}
-            deger={Math.round(portfoy.bist_adet * fiyatlar.bist_endeks)}
-            getiri={sonuc ? sonuc.bist_pct : null}
-            varlik="bist"
-            onAl={varlikAl}
-            onSat={varlikSat}
-          />
-          <VarlikSatir
-            fiyat={`${fiyatlar.dolar_try.toFixed(2)} TL/$`}
-            miktar={`$${portfoy.dolar.toFixed(0)}`}
-            deger={Math.round(portfoy.dolar * fiyatlar.dolar_try)}
-            getiri={sonuc ? sonuc.doviz_degisim : null}
-            varlik="dolar"
-            onAl={varlikAl}
-            onSat={varlikSat}
-          />
-          <VarlikSatir
-            fiyat={`%${(fiyatlar.mev_faiz_oran * 100).toFixed(1)} faiz`}
-            miktar={money(Math.round(portfoy.mevduat_tl))}
-            deger={portfoy.mevduat_tl}
-            getiri={sonuc ? sonuc.mev_faiz : null}
-            varlik="mevduat"
-            onAl={varlikAl}
-            onSat={varlikSat}
-          />
-        </div>
-      </section>
 
       {sonuc && (
         <section className={`panel year-card ${krizMi ? "danger" : "calm"}`}>
@@ -553,7 +598,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
     )}
 
     {aktifSayfa === "portfoy" && (
-      <div style={{ paddingBottom: 80 }}>
+    <div className="page-pad">
         <PortfoySayfasi
           fiyatGecmisi={fiyatGecmisi}
           portfoyGecmisi={portfoyGecmisi}
@@ -567,44 +612,47 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
         />
       </div>
     )}
-
-    {/* Bottom Navigation */}
-    <nav style={{
-      position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
-      width: "100%", maxWidth: 480,
-      background: "#0d0f12", borderTop: "1px solid #1c2030",
-      display: "flex", padding: "10px 0 20px", zIndex: 100,
-    }}>
-      {[
-        { id: "ana", label: "Ana Sayfa", icon: "⌂" },
-        { id: "varliklar", label: "Varlıklar", icon: "◈" },
-        { id: "portfoy", label: "Portföy", icon: "📊" },
-        { id: "standartlar", label: "Yaşam", icon: "⚖" },
-      ].map(s => (
-        <button
-          key={s.id}
-          onClick={() => setAktifSayfa(s.id)}
-          style={{
-            flex: 1, background: "none", border: "none", cursor: "pointer",
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-            color: aktifSayfa === s.id ? "#f5c842" : "#6b7280",
-            fontSize: 20,
-          }}
-        >
-          {s.icon}
-          <span style={{ fontSize: 10 }}>{s.label}</span>
-        </button>
-      ))}
-    </nav>
-
+    </section>
     </main>
   )
 }
 
-function MetricCard({ label, value, hint, tone = "" }) {
+function CharacterCard({ yas, seviye, riskProfili }) {
+  return (
+    <section className="character-card">
+      <div className="panel-kicker">Karakterin</div>
+      <div className="avatar-card">
+        <div className="avatar">
+          <img src={characterAvatar} alt="FinSim karakter portresi" />
+        </div>
+        <div className="character-meta">
+          <small>Yaş</small>
+          <strong>{yas}</strong>
+          <small>Sınıf</small>
+          <b>Temkinli Yatırımcı</b>
+          <small>Risk Profili</small>
+          <em>{riskProfili}</em>
+        </div>
+        <div className="level-badge">
+          <span>Seviye</span>
+          <strong>{seviye}</strong>
+        </div>
+      </div>
+      <div className="xp-line">
+        <span />
+        <small>120 / 250 XP</small>
+      </div>
+    </section>
+  )
+}
+
+function MetricCard({ icon, label, value, hint, tone = "" }) {
   return (
     <article className={`metric-card ${tone}`}>
-      <span>{label}</span>
+      <div className="metric-top">
+        <i>{icon}</i>
+        <span>{label}</span>
+      </div>
       <strong>{value}</strong>
       <small>{hint}</small>
     </article>
@@ -620,24 +668,29 @@ function PanelHeader({ title, action }) {
   )
 }
 
-function ProgressRow({ label, value, tone }) {
+function ProgressRow({ icon, label, value, tone }) {
   return (
     <div className="progress-row">
+      <i>{icon}</i>
       <div>
         <span>{label}</span>
-        <strong>{value}/100</strong>
+        <div className="progress-track">
+          <span className={tone} style={{ width: `${value}%` }} />
+        </div>
       </div>
-      <div className="progress-track">
-        <span className={tone} style={{ width: `${value}%` }} />
-      </div>
+      <strong>{value} / 100</strong>
     </div>
   )
 }
 
-function DataRow({ label, value, valueClass = "" }) {
+function DataRow({ icon, label, detail, value, valueClass = "" }) {
   return (
     <div className="data-row">
-      <span>{label}</span>
+      <span className="feed-icon">{icon}</span>
+      <span>
+        <b>{label}</b>
+        <small>{detail}</small>
+      </span>
       <strong className={valueClass}>{value}</strong>
     </div>
   )
@@ -647,14 +700,17 @@ function VarlikSatir({ fiyat, miktar, deger, getiri, varlik, onAl, onSat }) {
   const [acik, setAcik] = useState(false)
   const [girdi, setGirdi] = useState("")
   const meta = VARLIK_META[varlik]
+  const miktarGecerli = Number(girdi) > 0
 
   function al() {
+    if (!miktarGecerli) return
     onAl(varlik, girdi)
     setGirdi("")
     setAcik(false)
   }
 
   function sat() {
+    if (!miktarGecerli) return
     onSat(varlik, girdi)
     setGirdi("")
     setAcik(false)
@@ -666,7 +722,11 @@ function VarlikSatir({ fiyat, miktar, deger, getiri, varlik, onAl, onSat }) {
         <span className={`asset-icon ${meta.tone}`}>{meta.icon}</span>
         <span className="asset-copy">
           <strong>{meta.ad}</strong>
-          <small>{fiyat} · {miktar}</small>
+          <small>{meta.type} · Risk: {meta.risk}</small>
+          <em>{fiyat} · {miktar}</em>
+          <span className="risk-dots">
+            {[1, 2, 3].map((dot) => <b key={dot} className={dot <= meta.score ? "on" : ""} />)}
+          </span>
         </span>
         <span className="asset-value">
           <strong>{deger > 0 ? money(Math.round(deger)) : "-"}</strong>
@@ -675,15 +735,17 @@ function VarlikSatir({ fiyat, miktar, deger, getiri, varlik, onAl, onSat }) {
       </button>
 
       {acik && (
-        <div className="trade-box">
+        <div className="trade-box inventory-trade-box">
           <input
             type="number"
+            min="0"
+            step="any"
             value={girdi}
             onChange={e => setGirdi(e.target.value)}
-            placeholder={varlik === "mevduat" ? "TL miktarı" : "Miktar"}
+            placeholder={varlik === "mevduat" ? "TL miktarı gir" : "Miktar gir"}
           />
-          <button className="buy" onClick={al}>Al</button>
-          <button className="sell" onClick={sat}>Sat</button>
+          <button className="buy" disabled={!miktarGecerli} onClick={al}>Al</button>
+          <button className="sell" disabled={!miktarGecerli} onClick={sat}>Sat</button>
         </div>
       )}
     </article>
