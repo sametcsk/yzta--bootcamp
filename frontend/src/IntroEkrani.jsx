@@ -48,6 +48,23 @@ export default function IntroEkrani({ onBitis }) {
   }
 
   return (
+  <>
+    <button
+      onClick={() => onBitis({
+        nakit: 250000,
+        sabir: 60,
+        mutluluk: 60,
+        yillikGelir: 300000,
+      })}
+      style={{
+        width: "100%", padding: "8px 0", borderRadius: 8,
+        background: "transparent", border: "1px dashed #374151",
+        color: "#4b5563", fontSize: 11, cursor: "pointer", marginBottom: 8,
+      }}
+    >
+      [geliştirme] introyu atla
+    </button>
+
     <main className="intro-shell">
       <section className="intro-card">
         <div className="intro-top">
@@ -105,7 +122,8 @@ export default function IntroEkrani({ onBitis }) {
         </button>
       </section>
     </main>
-  )
+  </>
+)
 }
 
 function Stat({ label, value }) {
@@ -127,3 +145,4 @@ function kilitMetni(kilit) {
   if (kilit.tur === "mutluluk") return `${kilit.min} mutluluk gerekiyor`
   return "Kilitli"
 }
+

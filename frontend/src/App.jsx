@@ -2,6 +2,8 @@ import { useRef, useState } from "react"
 import IntroEkrani from "./IntroEkrani"
 import { YASAM_GIDERI } from "./data/sorular"
 import VarlikSayfasi from "./VarlikSayfasi"
+import YasamStandartlari from "./YasamStandartlari"
+import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalitesiEtkisi } from "./data/standartlar"
 
 
 const INITIAL_STATE = {
@@ -41,7 +43,9 @@ export default function App() {
   const [introTamamlandi, setIntroTamamlandi] = useState(false)
   const [aktifSayfa, setAktifSayfa] = useState("ana")
   const [yillikGelir, setYillikGelir] = useState(0)
-  const [yasamGideri, setYasamGideri] = useState(YASAM_GIDERI)
+  const [yasamGideri, setYasamGideri] = useState(
+  toplamAylikUsd(VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI) * 40 * 12
+)
   const [portfoy, setPortfoy] = useState({
     altin_gram: 0,
     bist_adet: 0,
@@ -54,7 +58,7 @@ export default function App() {
     dolar_try: 40,
     mev_faiz_oran: 0.12,
   })
-
+  const [standartlar, setStandartlar] = useState(VARSAYILAN_STANDARTLAR)
 
   const nakitRef = useRef(nakit)
 
@@ -112,7 +116,9 @@ export default function App() {
       const yeniGelir = Math.round(yillikGelir * (1 + data.yil_sonucu.enflasyon / 100))
       const yeniGider = Math.round(yasamGideri * (1 + data.yil_sonucu.enflasyon / 100))
       setYillikGelir(yeniGelir)
-      setYasamGideri(yeniGider)
+      
+      const yeniDolarKuru = data.yil_sonucu.fiyatlar.dolar_try
+      setYasamGideri(Math.round(toplamAylikUsd(standartlar, YASAM_STANDARTLARI) * yeniDolarKuru * 12))
 
       let yeniNakit = nakitRef.current + yeniGelir - yeniGider
       if (data.yil_sonucu.redenominasyon) {
@@ -132,22 +138,48 @@ export default function App() {
       }))
 
       if (data.yil_sonucu.redenominasyon) {
-        setPortfoy(prev => ({
-          ...prev,
-          mevduat_tl: Math.round(prev.mevduat_tl / 1000),
-        }))
-        setFiyatlar(prev => ({
-          altin_try_gram: Math.round(prev.altin_try_gram / 1000),
-          bist_endeks: Math.round(prev.bist_endeks / 1000),
-          dolar_try: Math.round(prev.dolar_try / 1000),
-          mev_faiz_oran: prev.mev_faiz_oran,
-        }))
-      }
+          setPortfoy(prev => ({
+            ...prev,
+            mevduat_tl: Math.round(prev.mevduat_tl / 1000),
+          }))
+          setFiyatlar(prev => ({
+            altin_try_gram: Math.round(prev.altin_try_gram / 1000),
+            bist_endeks: Math.round(prev.bist_endeks / 1000),
+            dolar_try: Math.round(prev.dolar_try / 1000),
+            mev_faiz_oran: prev.mev_faiz_oran,
+          }))
+          // Geçmiş fiyatları da böl
+          setFiyatGecmisi(prev => ({
+            altin: prev.altin.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
+            bist: prev.bist,
+            dolar: prev.dolar.map(p => ({ ...p, fiyat: p.fiyat / 1000 })),
+            mevduat: prev.mevduat,  // mevduat faiz oranı, bölünmez
+          }))
+        }
 
       const yeniYil = yil + 1
       const yeniYas = yas + 1
       setYil(yeniYil)
       setYas(yeniYas)
+
+      // Yaşam kalitesi debuff
+      const kalite = yasamKalitesiEtkisi(standartlar, YASAM_STANDARTLARI)
+
+      // Finansal debuff
+      const netAkis = nakitRef.current  // mevcut nakit durumu
+      let finansalDebuff = { mutluluk: 0, sabir: 0 }
+      if (yeniGelir < yeniGider) {
+        finansalDebuff = { mutluluk: -8, sabir: -5 }
+      } else if (yeniGelir < yeniGider * 1.2) {
+        finansalDebuff = { mutluluk: -3, sabir: -2 }
+      }
+
+      // Barları güncelle
+      setBars(prev => ({
+        sabir: Math.min(80, Math.max(20, prev.sabir + kalite.sabir + finansalDebuff.sabir)),
+        mutluluk: Math.min(80, Math.max(20, prev.mutluluk + kalite.mutluluk + finansalDebuff.mutluluk)),
+      }))
+      
       setSonuc(data.yil_sonucu)
       setFiyatGecmisi(prev => ({
         altin: [...prev.altin, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.altin_try_gram }],
@@ -155,6 +187,8 @@ export default function App() {
         dolar: [...prev.dolar, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.dolar_try }],
         mevduat: [...prev.mevduat, { yil: yil + 1, fiyat: data.yil_sonucu.mev_faiz }],
       }))
+      
+
       if (data.yil_sonucu.event) {
        setMevcutEvent(data.yil_sonucu.event)
        setEventGecmisi(prev => ({
@@ -178,6 +212,12 @@ export default function App() {
     setYillikGelir(sonuc.yillikGelir)
     setIntroTamamlandi(true)
   }
+
+  function standartDegis(kategori, secimId) {
+  const yeniSecimler = { ...standartlar, [kategori]: secimId }
+  setStandartlar(yeniSecimler)
+  setYasamGideri(Math.round(toplamAylikUsd(yeniSecimler, YASAM_STANDARTLARI) * fiyatlar.dolar_try * 12))
+}
 
   function varlikAl(varlik, miktar) {
     const miktarSayi = parseFloat(miktar)
@@ -447,6 +487,17 @@ export default function App() {
       />
     )}
 
+    {aktifSayfa === "standartlar" && (
+      <YasamStandartlari
+        secimler={standartlar}
+        onSecimDegis={standartDegis}
+        nakit={nakit}
+        portfoy={portfoy}
+        dolarKuru={fiyatlar.dolar_try}
+        yasamGideri={yasamGideri}
+
+      />
+    )}
     {/* Bottom Navigation */}
     <nav style={{
       position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
@@ -457,6 +508,7 @@ export default function App() {
       {[
         { id: "ana", label: "Ana Sayfa", icon: "⌂" },
         { id: "varliklar", label: "Varlıklar", icon: "◈" },
+        { id: "standartlar", label: "Yaşam", icon: "⚖" },
       ].map(s => (
         <button
           key={s.id}
