@@ -4,6 +4,8 @@ import { YASAM_GIDERI } from "./data/sorular"
 import VarlikSayfasi from "./VarlikSayfasi"
 import YasamStandartlari from "./YasamStandartlari"
 import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalitesiEtkisi } from "./data/standartlar"
+import PortfoySayfasi from "./PortfoySayfasi"
+
 
 
 const INITIAL_STATE = {
@@ -76,6 +78,15 @@ export default function App() {
   dolar: [],
   mevduat: []
 })
+const [portfoyGecmisi, setPortfoyGecmisi] = useState([])
+const [enflasyonEndeksi, setEnflasyonEndeksi] = useState(100)
+const [enflasyonGecmisi, setEnflasyonGecmisi] = useState([])
+const [varlikKatsayilari, setVarlikKatsayilari] = useState({
+  altin: null,   // null = hiç alınmadı
+  bist: null,
+  dolar: null,
+  mevduat: null,
+})
 
   
   async function yilAtla() {
@@ -138,6 +149,9 @@ export default function App() {
       }))
 
       if (data.yil_sonucu.redenominasyon) {
+        setEnflasyonEndeksi(prev => prev / 1000)
+        setEnflasyonGecmisi(prev => prev.map(p => ({ ...p, deger: Math.round(p.deger / 1000) })))
+        setPortfoyGecmisi(prev => prev.map(p => ({ ...p, deger: Math.round(p.deger / 1000) })))
           setPortfoy(prev => ({
             ...prev,
             mevduat_tl: Math.round(prev.mevduat_tl / 1000),
@@ -150,11 +164,17 @@ export default function App() {
           }))
           // Geçmiş fiyatları da böl
           setFiyatGecmisi(prev => ({
-            altin: prev.altin.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
-            bist: prev.bist,
-            dolar: prev.dolar.map(p => ({ ...p, fiyat: p.fiyat / 1000 })),
-            mevduat: prev.mevduat,  // mevduat faiz oranı, bölünmez
-          }))
+          altin: prev.altin.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
+          bist: prev.bist.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
+          dolar: prev.dolar.map(p => ({ ...p, fiyat: p.fiyat / 1000 })),
+          mevduat: prev.mevduat,
+        }))
+          setVarlikKatsayilari(prev => ({
+          altin:   prev.altin   !== null ? prev.altin   / 1000 : null,
+          bist:    prev.bist,
+          dolar:   prev.dolar   !== null ? prev.dolar   / 1000 : null,
+          mevduat: prev.mevduat !== null ? prev.mevduat / 1000 : null,
+        }))
         }
 
       const yeniYil = yil + 1
@@ -187,6 +207,21 @@ export default function App() {
         dolar: [...prev.dolar, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.dolar_try }],
         mevduat: [...prev.mevduat, { yil: yil + 1, fiyat: data.yil_sonucu.mev_faiz }],
       }))
+      // Varlık katsayılarını güncelle
+      setVarlikKatsayilari(prev => {
+        const getiriler = {
+          altin: data.yil_sonucu.altin_try_getiri / 100,
+          bist: data.yil_sonucu.bist_pct / 100,
+          dolar: data.yil_sonucu.doviz_degisim / 100,
+          mevduat: data.yil_sonucu.mev_faiz / 100,
+        }
+        return {
+          altin:   prev.altin   !== null ? prev.altin   * (1 + getiriler.altin)   : null,
+          bist:    prev.bist    !== null ? prev.bist    * (1 + getiriler.bist)    : null,
+          dolar:   prev.dolar   !== null ? prev.dolar   * (1 + getiriler.dolar)   : null,
+          mevduat: prev.mevduat !== null ? prev.mevduat * (1 + getiriler.mevduat) : null,
+        }
+      })
       
 
       if (data.yil_sonucu.event) {
@@ -200,6 +235,19 @@ export default function App() {
        }
       }
       setGecmis(prev => [...prev, { yil: yeniYil, yas: yeniYas, ...data.yil_sonucu }])
+      // Enflasyon endeksi güncelle
+      const yeniEnflasyonEndeksi = enflasyonEndeksi * (1 + data.yil_sonucu.enflasyon / 100)
+      setEnflasyonEndeksi(yeniEnflasyonEndeksi)
+      setEnflasyonGecmisi(prev => [...prev, { yil: yil + 1, deger: Math.round(yeniEnflasyonEndeksi) }])
+
+      // Portföy toplam değeri geçmişi
+      const yeniPortfoyDegeri = nakitRef.current + Math.round(
+        portfoy.altin_gram * data.yil_sonucu.fiyatlar.altin_try_gram +
+        portfoy.bist_adet * data.yil_sonucu.fiyatlar.bist_endeks +
+        portfoy.dolar * data.yil_sonucu.fiyatlar.dolar_try +
+        portfoy.mevduat_tl
+      )
+      setPortfoyGecmisi(prev => [...prev, { yil: yil + 1, deger: yeniPortfoyDegeri }])
     } catch (e) {
       console.error(e)
     }
@@ -235,6 +283,11 @@ export default function App() {
     }
 
     nakitiGuncelle(Math.round(nakitRef.current - maliyet))
+    // Katsayıyı başlat — null ise 1.0'dan başla, değilse devam et
+    setVarlikKatsayilari(prev => ({
+      ...prev,
+      [varlik]: prev[varlik] === null ? 1.0 : prev[varlik]
+    }))
     setPortfoy(prev => ({
       ...prev,
       altin_gram: varlik === "altin" ? prev.altin_gram + miktarSayi : prev.altin_gram,
@@ -498,6 +551,23 @@ export default function App() {
 
       />
     )}
+
+    {aktifSayfa === "portfoy" && (
+      <div style={{ paddingBottom: 80 }}>
+        <PortfoySayfasi
+          fiyatGecmisi={fiyatGecmisi}
+          portfoyGecmisi={portfoyGecmisi}
+          enflasyonGecmisi={enflasyonGecmisi}
+          portfoy={portfoy}
+          fiyatlar={fiyatlar}
+          nakit={nakit}
+          varlikKatsayilari={varlikKatsayilari}
+
+
+        />
+      </div>
+    )}
+
     {/* Bottom Navigation */}
     <nav style={{
       position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
@@ -508,6 +578,7 @@ export default function App() {
       {[
         { id: "ana", label: "Ana Sayfa", icon: "⌂" },
         { id: "varliklar", label: "Varlıklar", icon: "◈" },
+        { id: "portfoy", label: "Portföy", icon: "📊" },
         { id: "standartlar", label: "Yaşam", icon: "⚖" },
       ].map(s => (
         <button

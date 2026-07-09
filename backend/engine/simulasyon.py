@@ -39,6 +39,7 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     redenominasyon = None
     if kur >= 1000:
         kur = round(kur / 1000, 2)
+        bist = round(bist / 1000, 2)
         reden_sayaci += 1
         redenominasyon = f"YENİ TL #{reden_sayaci}"
 
