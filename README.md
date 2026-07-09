@@ -94,6 +94,57 @@ Sprint Review Katılımcıları:
 # Sprint 2
 
 
+- **Backlog düzeni ve Story seçimleri**:
+
+- **Daily Scrum**:
+
+- **Sprint board update**: Sprint board screenshotları: 
+![Sprint Board](sprint1-board.jpg)
+
+- **Ürün Durumu**: Ekran görüntüleri:
+  ![Screenshot 1](docs/images/urundurumu1.png)
+  ![Screenshot 2](docs/images/urundurumu2.png)
+  ![Screenshot 3](docs/images/varliklar.png)
+
+- **Sprint Review**: 
+Alınan kararlar:
+- **Sprint board update**: Sprint board screenshotları: 
+![Sprint Board](sprint1-board.jpg)
+
+- **Ürün Durumu**: Ekran görüntüleri:
+  ![Screenshot 1](docs/images/urundurumu1.png)
+  ![Screenshot 2](docs/images/urundurumu2.png)
+  ![Screenshot 3](docs/images/varliklar.png)
+
+- **Sprint Review**: 
+Alınan kararlar:
+Sprint 1 sonunda ürünün temel geliştirme planı tamamlanmış, Product Backlog oluşturulmuş ve görev dağılımı netleştirilmiştir.
+Sprint kapsamında geliştirilecek modüller belirlenmiş, Miro Board üzerinde sprint yönetimi oluşturulmuş ve geliştirme sürecine başlanmıştır.
+Bir sonraki sprintte oyun motorunun (Core Engine), karakter oluşturma sistemi ve temel kullanıcı arayüzünün geliştirilmesine ağırlık verilmesi kararlaştırılmıştır.
+Sprint Review Katılımcıları:
+- Product Owner
+- Scrum Master
+- Development Team
+
+- **Sprint Retrospective:**
+- Takım içindeki görev dağılımının ve sorumlulukların daha dengeli olacak şekilde yeniden düzenlenmesi.
+- Daily Scrum toplantılarının düzenli ve planlı bir şekilde gerçekleştirilmesi.
+-  GitHub üzerinde daha sık commit yapılması.
+- Sprint Board'un geliştirme süreci boyunca güncel tutulması.
+- Story'lerin gerektiğinde daha küçük görevlere (task) bölünerek geliştirme sürecinin kolaylaştırılması.
+Sprint Review Katılımcıları:
+- Product Owner
+- Scrum Master
+- Development Team
+
+- **Sprint Retrospective:**
+- Takım içindeki görev dağılımının ve sorumlulukların daha dengeli olacak şekilde yeniden düzenlenmesi.
+- Daily Scrum toplantılarının düzenli ve planlı bir şekilde gerçekleştirilmesi.
+-  GitHub üzerinde daha sık commit yapılması.
+- Sprint Board'un geliştirme süreci boyunca güncel tutulması.
+- Story'lerin gerektiğinde daha küçük görevlere (task) bölünerek geliştirme sürecinin kolaylaştırılması.
+  
+
 ---
 
 # Sprint 3
