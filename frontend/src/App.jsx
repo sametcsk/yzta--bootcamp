@@ -462,430 +462,269 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
   }
 
   return (
-    <main className="app-shell">
-    <nav className="game-nav">
-      <div className="nav-brand">
-        <strong>FinSim</strong>
-        <span>{yil}</span>
-      </div>
-      <div className="nav-links">
-        {[
-          { id: "ana", label: "Ana Sayfa", icon: "HQ" },
-          { id: "varliklar", label: "Varlıklar", icon: "IV" },
-          { id: "portfoy", label: "Portföy", icon: "CH" },
-          { id: "standartlar", label: "Yaşam", icon: "LS" },
-        ].map(s => (
-          <button
-            key={s.id}
-            onClick={() => setAktifSayfa(s.id)}
-            className={aktifSayfa === s.id ? "active" : ""}
-          >
-            <strong>{s.icon}</strong>
-            <span>{s.label}</span>
+    <div className="bg-surface text-on-surface min-h-screen flex flex-col md:flex-row relative font-body-md">
+      {/* Mobile Top Nav */}
+      <header className="md:hidden flex justify-between items-center px-margin-mobile py-stack-sm w-full bg-surface border-b border-outline-variant shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sticky top-0 z-50">
+        <div className="font-headline-lg text-headline-lg font-black text-primary uppercase tracking-tighter">
+          FINSIM_OS
+        </div>
+        <div className="flex gap-4">
+          <button onClick={() => setAktifSayfa("ana")}>
+             <span className={`material-symbols-outlined ${aktifSayfa === "ana" ? "text-primary" : "text-on-surface-variant"}`}>terminal</span>
           </button>
-        ))}
-      </div>
-      <div className="nav-year">
-        <span>Yıl</span>
-        <strong>{yil}</strong>
-        <button onClick={yilAtla} disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent}>
-          {loading ? "..." : `${yil + 1}'e Atla`}
-        </button>
-      </div>
-    </nav>
-
-    <section className="game-stage">
-     {aktifSayfa === "ana" && (
-      <>
-      <section className="command-top">
-        <CharacterCard yas={yas} seviye={seviye} profilAdi={profilAdi} />
-        <section className="hero-panel">
-          <div>
-            <div className="eyebrow">{yas} yaşında</div>
-            <h1>Finansal Yolculuk</h1>
-            <p className="hero-copy">Portföyünü yönet, doğru kararlar al ve finansal geleceğini şekillendir.</p>
-          </div>
-          <div className="hero-status">
-            <div className="chapter-block">
-              <span>Bölüm 3 / 10</span>
-              <i><b /><b /><b /><b /><b /><b /><b /><b /><b /><b /></i>
-            </div>
-            <div className="hero-badges">
-              <span className="good">Başlangıç</span>
-              <span>{riskProfili}</span>
-            </div>
-          </div>
-        </section>
-      </section>
-      
-      <section className="summary-grid">
-        <MetricCard icon="₺" label="Servet" value={money(toplamDeger)} hint="Portföy Değeri" tone="gold" />
-        <MetricCard icon="₺" label="Kalan Nakit" value={money(nakit)} hint="Harcanabilir bakiye" tone="cash" />
-        <MetricCard icon="⚡" label="Aylık Gelir" value={money(yillikGelir)} hint={`Net akış: ${money(netAkis)}`} tone="green" />
-        <MetricCard
-          icon="%"
-          label="Enflasyon Oranı"
-          value={sonuc ? `%${sonuc.enflasyon}` : "—"}
-          hint={sonuc ? `Durum: ${sonuc.enf_durum}` : "Sakin"}
-          tone={krizMi ? "rose" : "primary"}
-        />
-      </section>
-
-      <div className="command-grid">
-        <section className="panel character-panel">
-          <PanelHeader title="Karakter Durumu" action="120 / 250 XP" />
-          <ProgressRow icon="AB" label="Sabır" value={bars.sabir} tone="blue" />
-          <ProgressRow icon="☺" label="Mutluluk" value={bars.mutluluk} tone="gold" />
-
-
-          {mevcutEvent ? (
-  <div className="event-panel">
-    <div className="event-kicker">
-      {yil} Olayı
-    </div>
-    <div className="event-title">
-      {mevcutEvent.baslik}
-    </div>
-    <div className="event-copy">
-      {mevcutEvent.metin}
-    </div>
-    <div className="event-choice-list">
-      {mevcutEvent.secenekler.map((s, i) => {
-        const kilitli = s.kilit && (
-          (s.kilit.tur === "sabir" && bars.sabir < s.kilit.min) ||
-          (s.kilit.tur === "mutluluk" && bars.mutluluk < s.kilit.min) ||
-          (s.kilit.tur === "nakit" && nakit < s.kilit.min) ||
-          (s.kilit.tur === "nakit_usd" && nakit < s.kilit.min * fiyatlar.dolar_try)
-        )
-        return (
-          <button
-            key={i}
-            disabled={kilitli}
-            onClick={() => !kilitli && eventSeceneginiSec(s)}
-            className={`event-choice ${kilitli ? "locked" : ""}`}
-          >
-            <span>{kilitli ? "Kilitli" : `Seçenek ${i + 1}`}</span>
-            <strong>{s.metin}</strong>
-            {kilitli && s.kilit && (
-              <small>
-                {s.kilit.tur === "sabir" && `${s.kilit.min} sabır gerekiyor`}
-                {s.kilit.tur === "mutluluk" && `${s.kilit.min} mutluluk gerekiyor`}
-                {s.kilit.tur === "nakit" && `₺${(s.kilit.min/1000).toFixed(0)}k gerekiyor`}
-                {s.kilit.tur === "nakit_usd" && `$${s.kilit.min} (₺${Math.round(s.kilit.min * fiyatlar.dolar_try).toLocaleString("tr-TR")}) gerekiyor`}
-              </small>
-            )}
+          <button onClick={() => setAktifSayfa("varliklar")}>
+             <span className={`material-symbols-outlined ${aktifSayfa === "varliklar" ? "text-primary" : "text-on-surface-variant"}`}>trending_up</span>
           </button>
-        )
-      })}
-    </div>
-  </div>
-) : (
-  <button
-    className="primary-action year-jump"
-    onClick={yilAtla}
-    disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent}
-  >
-    {loading ? "Hesaplanıyor..." : `${yil + 1}'e atla`}
-  </button>
-)}
-
-          {coachLoading && (
-            <div className="agent-loading">AI koç seçimini değerlendiriyor...</div>
-          )}
-
-          {coachYorumu && (
-            <section className="coach-panel" aria-live="polite">
-              <div className="agent-kicker">AI Koç Yorumu</div>
-              <h3>{coachYorumu.coach_title}</h3>
-              <strong>{coachYorumu.bias_name_tr}</strong>
-              <p>{coachYorumu.coach_comment}</p>
-              <blockquote>{coachYorumu.reflection_question}</blockquote>
-              <small>{coachYorumu.disclaimer}</small>
-            </section>
-          )}
-
-        </section>
-
-        <section className="panel asset-panel">
-          <PanelHeader title="Varlıklar" action="Envanter" />
-          <div className="asset-list">
-            <VarlikSatir
-              fiyat={money(Math.round(fiyatlar.altin_try_gram)) + "/gr"}
-              miktar={`${portfoy.altin_gram.toFixed(2)} gr`}
-              deger={Math.round(portfoy.altin_gram * fiyatlar.altin_try_gram)}
-              getiri={sonuc ? sonuc.altin_try_getiri : null}
-              varlik="altin"
-              onAl={varlikAl}
-              onSat={varlikSat}
-            />
-            <VarlikSatir
-              fiyat={`${Math.round(fiyatlar.bist_endeks).toLocaleString("tr-TR")} endeks`}
-              miktar={`${portfoy.bist_adet.toFixed(0)} adet`}
-              deger={Math.round(portfoy.bist_adet * fiyatlar.bist_endeks)}
-              getiri={sonuc ? sonuc.bist_pct : null}
-              varlik="bist"
-              onAl={varlikAl}
-              onSat={varlikSat}
-            />
-            <VarlikSatir
-              fiyat={`${fiyatlar.dolar_try.toFixed(2)} TL/$`}
-              miktar={`$${portfoy.dolar.toFixed(0)}`}
-              deger={Math.round(portfoy.dolar * fiyatlar.dolar_try)}
-              getiri={sonuc ? sonuc.doviz_degisim : null}
-              varlik="dolar"
-              onAl={varlikAl}
-              onSat={varlikSat}
-            />
-            <VarlikSatir
-              fiyat={`%${(fiyatlar.mev_faiz_oran * 100).toFixed(1)} faiz`}
-              miktar={money(Math.round(portfoy.mevduat_tl))}
-              deger={portfoy.mevduat_tl}
-              getiri={sonuc ? sonuc.mev_faiz : null}
-              varlik="mevduat"
-              onAl={varlikAl}
-              onSat={varlikSat}
-            />
-          </div>
-        </section>
-
-
-      </div>
-
-      <section className="panel final-report-section">
-        <div className="final-report-heading">
-          <div>
-            <div className="agent-kicker">AI Analizi</div>
-            <h2>Finansal Davranış Raporu</h2>
-            <p>{eventKayitlari.length} event kararı rapora hazır.</p>
-          </div>
-          <button
-            className="report-action"
-            onClick={finalRaporuOlustur}
-            disabled={finalRaporLoading || !!mevcutEvent || coachLoading}
-          >
-            {finalRaporLoading ? "Rapor hazırlanıyor..." : "Final Raporu Oluştur"}
+          <button onClick={() => setAktifSayfa("portfoy")}>
+             <span className={`material-symbols-outlined ${aktifSayfa === "portfoy" ? "text-primary" : "text-on-surface-variant"}`}>account_balance</span>
+          </button>
+          <button onClick={() => setAktifSayfa("standartlar")}>
+             <span className={`material-symbols-outlined ${aktifSayfa === "standartlar" ? "text-primary" : "text-on-surface-variant"}`}>psychology</span>
           </button>
         </div>
+      </header>
 
-        {finalRapor && (
-          <div className="final-report" aria-live="polite">
-            <div className="final-report-summary">
-              <span>{finalRapor.title}</span>
-              <h3>{finalRapor.profile_name}</h3>
-              <p>{finalRapor.summary}</p>
+      {/* Desktop Side Nav */}
+      <nav className="hidden md:flex flex-col h-screen w-64 bg-surface-container-low border-r border-outline-variant p-stack-md overflow-y-auto sticky top-0 z-40">
+        <div className="mb-stack-lg">
+          <div className="font-headline-md text-headline-md text-primary font-black uppercase tracking-tighter mb-2">FINSIM_OS</div>
+          <div className="flex items-center gap-3 mt-4">
+            <div className="w-10 h-10 bg-surface-variant rounded flex items-center justify-center border border-outline">
+              <span className="material-symbols-outlined text-on-surface-variant">person</span>
             </div>
-            <div className="report-stat">
-              <span>Karar Sayısı</span>
-              <strong>{finalRapor.decision_count}</strong>
+            <div>
+              <div className="font-data-sm text-data-sm uppercase text-on-surface">{profilAdi}</div>
+              <div className="font-data-sm text-data-sm uppercase text-error">Yaş: {yas} | Lvl: {seviye}</div>
             </div>
-            <div className="report-stat">
-              <span>Baskın Eğilim</span>
-              <strong>{finalRapor.dominant_bias_name_tr || "Henüz belirlenmedi"}</strong>
+          </div>
+        </div>
+        <div className="flex-grow">
+          {[
+            { id: "ana", label: "Ana Defter", icon: "terminal" },
+            { id: "varliklar", label: "Piyasa Verileri", icon: "trending_up" },
+            { id: "portfoy", label: "Varlık Portföyü", icon: "account_balance" },
+            { id: "standartlar", label: "Psikolojik Profil", icon: "psychology" },
+          ].map((item) => (
+             <button
+              key={item.id}
+              onClick={() => setAktifSayfa(item.id)}
+              className={`w-full flex items-center p-stack-md mb-stack-sm font-data-sm text-data-sm uppercase transition-colors ${
+                aktifSayfa === item.id 
+                  ? "bg-primary text-on-primary font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" 
+                  : "text-on-surface-variant hover:text-primary hover:bg-surface-container-high"
+              }`}
+            >
+              <span className="material-symbols-outlined mr-3">{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+        </div>
+        <div className="mt-auto">
+          <button 
+            className="w-full bg-primary-container text-background font-data-lg text-data-lg uppercase py-3 btn-shadow border border-outline transition-transform font-bold mb-6 disabled:opacity-50"
+            onClick={yilAtla} 
+            disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent}
+          >
+            {loading ? "SİSTEM_MEŞGUL" : `YIL_${yil + 1} ÇALIŞTIR`}
+          </button>
+        </div>
+      </nav>
+
+      {/* Main Content Area */}
+      <main className="flex-1 p-margin-mobile md:p-margin-desktop overflow-y-auto">
+        {aktifSayfa === "ana" && (
+          <div className="flex flex-col gap-stack-lg">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-outline-variant pb-stack-md">
+              <div>
+                <h1 className="font-headline-lg text-headline-lg text-primary uppercase">Ana Defter</h1>
+                <p className="font-data-sm text-data-sm text-on-surface-variant uppercase mt-1">Yıl: {yil} | {riskProfili}</p>
+              </div>
+              <div className="flex items-center gap-4 bg-surface-container-high p-3 border border-outline card-shadow">
+                <div className="text-right">
+                  <div className="font-data-sm text-data-sm text-on-surface-variant uppercase">Net Servet</div>
+                  <div className="font-data-lg text-data-lg text-primary">{money(toplamDeger)}</div>
+                </div>
+                <div className="h-8 w-px bg-outline-variant mx-2"></div>
+                <div className="text-right">
+                  <div className="font-data-sm text-data-sm text-on-surface-variant uppercase">Nakit Rezervi</div>
+                  <div className="font-data-lg text-data-lg text-primary">{money(nakit)}</div>
+                </div>
+              </div>
             </div>
-            <div className="report-list">
-              <h4>Güçlü Yönler</h4>
-              <ul>
-                {finalRapor.strengths?.map((item, index) => <li key={index}>{item}</li>)}
-              </ul>
+
+            {/* Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+              <MetricCard label="Aylık Gelir" value={money(yillikGelir)} hint={`Net akış: ${money(netAkis)}`} />
+              <MetricCard label="Sabır" value={`${bars.sabir}/100`} hint="Psikolojik" />
+              <MetricCard label="Mutluluk" value={`${bars.mutluluk}/100`} hint="Psikolojik" />
+              <MetricCard 
+                label="Enflasyon" 
+                value={sonuc ? `%${sonuc.enflasyon}` : "—"} 
+                hint={sonuc ? sonuc.enf_durum : "SİSTEM_HAZIR"} 
+                alert={krizMi} 
+              />
             </div>
-            <div className="report-list">
-              <h4>Gelişim Alanları</h4>
-              <ul>
-                {finalRapor.growth_areas?.map((item, index) => <li key={index}>{item}</li>)}
-              </ul>
+
+            {/* Event Panel or Summary */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+              {/* Event Section */}
+              <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col">
+                <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-4">
+                  <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Sistem Olayı</h2>
+                  <span className="material-symbols-outlined text-on-surface-variant">warning</span>
+                </div>
+                {mevcutEvent ? (
+                  <div className="flex flex-col gap-4">
+                    <div className="font-data-sm text-data-sm text-primary uppercase">UYARI_{yil}</div>
+                    <h3 className="font-headline-md text-headline-md text-error">{mevcutEvent.baslik}</h3>
+                    <p className="text-on-surface-variant text-body-md">{mevcutEvent.metin}</p>
+                    <div className="flex flex-col gap-2 mt-4">
+                      {mevcutEvent.secenekler.map((s, i) => {
+                        const kilitli = s.kilit && (
+                          (s.kilit.tur === "sabir" && bars.sabir < s.kilit.min) ||
+                          (s.kilit.tur === "mutluluk" && bars.mutluluk < s.kilit.min) ||
+                          (s.kilit.tur === "nakit" && nakit < s.kilit.min) ||
+                          (s.kilit.tur === "nakit_usd" && nakit < s.kilit.min * fiyatlar.dolar_try)
+                        )
+                        return (
+                          <button
+                            key={i}
+                            disabled={kilitli}
+                            onClick={() => !kilitli && eventSeceneginiSec(s)}
+                            className={`p-3 text-left border ${
+                              kilitli 
+                                ? "bg-surface-container-highest border-outline-variant text-on-surface-variant opacity-50 cursor-not-allowed" 
+                                : "bg-surface-variant border-outline hover:border-primary hover:bg-surface-container-high transition-colors text-on-surface btn-shadow"
+                            }`}
+                          >
+                            <div className="font-data-sm text-data-sm uppercase mb-1">{kilitli ? "KİLİTLİ" : `SEÇ_0${i + 1}`}</div>
+                            <div className="font-bold">{s.metin}</div>
+                            {kilitli && s.kilit && (
+                              <div className="text-error font-data-sm text-data-sm mt-2">
+                                GEREKSİNİM: {s.kilit.tur} {s.kilit.min}
+                              </div>
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center">
+                    <span className="material-symbols-outlined text-4xl mb-2">check_circle</span>
+                    <p className="font-data-sm text-data-sm uppercase">BEKLEYEN OLAY YOK</p>
+                  </div>
+                )}
+              </div>
+
+              {/* AI Coach Panel */}
+              <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col">
+                 <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-4">
+                  <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Yapay Zeka Analiz Kaydı</h2>
+                  <span className="material-symbols-outlined text-on-surface-variant">smart_toy</span>
+                </div>
+                {coachLoading && (
+                  <div className="flex items-center gap-2 text-primary font-data-sm animate-pulse">
+                    <span className="material-symbols-outlined">sync</span>
+                    DAVRANIŞSAL VERİLER İŞLENİYOR...
+                  </div>
+                )}
+                {coachYorumu && (
+                  <div className="flex flex-col gap-3">
+                    <div className="font-data-sm text-data-sm text-primary uppercase">KAYIT_{yil}</div>
+                    <h3 className="font-bold text-lg text-on-surface">{coachYorumu.coach_title}</h3>
+                    <div className="bg-surface-container-high p-2 border-l-2 border-primary font-data-sm text-primary">
+                      TESPİT EDİLEN EĞİLİM: {coachYorumu.bias_name_tr}
+                    </div>
+                    <p className="text-on-surface-variant text-sm">{coachYorumu.coach_comment}</p>
+                    <blockquote className="italic border-l border-outline-variant pl-4 text-on-surface opacity-80 mt-2">
+                      {coachYorumu.reflection_question}
+                    </blockquote>
+                  </div>
+                )}
+                {!coachLoading && !coachYorumu && (
+                   <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center">
+                    <span className="material-symbols-outlined text-4xl mb-2">history</span>
+                    <p className="font-data-sm text-data-sm uppercase">KARAR KAYITLARI BEKLENİYOR</p>
+                  </div>
+                )}
+              </div>
             </div>
-            <small className="report-disclaimer">{finalRapor.disclaimer}</small>
+
+            {/* Year Summary */}
+            {sonuc && (
+              <div className={`border card-shadow p-stack-md flex flex-col ${krizMi ? "bg-error-container border-error" : "bg-surface-container border-outline"}`}>
+                 <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-2">
+                  <h2 className={`font-headline-md text-headline-md uppercase ${krizMi ? "text-on-error-container" : "text-on-surface"}`}>Yıl Özeti</h2>
+                  <span className="font-data-sm text-data-sm uppercase">{sonuc.enf_durum}</span>
+                </div>
+                <p className={krizMi ? "text-on-error-container" : "text-on-surface-variant"}>
+                  Enflasyon: <strong>%{sonuc.enflasyon}</strong>. 
+                  BIST reel getiri: <strong className={sonuc.reel_bist >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_bist)}</strong>, 
+                  Altın reel getiri: <strong className={sonuc.reel_altin >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_altin)}</strong>.
+                </p>
+                {sonuc.redenominasyon && (
+                  <div className="mt-2 text-primary font-bold uppercase text-sm border border-primary p-2 inline-block">
+                    {sonuc.redenominasyon}: Para birimi yenilendi.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
-      </section>
 
-      {sonuc && (
-        <section className={`panel year-card ${krizMi ? "danger" : "calm"}`}>
-          <PanelHeader title="Bu Yılın Özeti" action={sonuc.enf_durum} />
-          <p>
-            Enflasyon <strong>%{sonuc.enflasyon}</strong> oldu. BIST reel olarak{" "}
-            <strong className={pctClass(sonuc.reel_bist)}>{formatPct(sonuc.reel_bist)}</strong>, altın reel olarak{" "}
-            <strong className={pctClass(sonuc.reel_altin)}>{formatPct(sonuc.reel_altin)}</strong> performans gösterdi.
-          </p>
-          {sonuc.redenominasyon && <div className="notice">{sonuc.redenominasyon}: Para birimi yenilendi.</div>}
-        </section>
-      )}
-
-      {gecmis.length > 0 && (
-        <section className="panel">
-          <PanelHeader title="Geçmiş" action="Son 5 yıl" />
-          <div className="history-list">
-            {[...gecmis].reverse().slice(0, 5).map((g, i) => (
-              <div className="history-row" key={i}>
-                <span>{g.yil} / {g.yas} yaş</span>
-                <strong>%{g.enflasyon}</strong>
-                <span className={pctClass(g.bist_pct)}>BIST {formatPct(g.bist_pct)}</span>
-                <span className={pctClass(g.altin_try_getiri)}>Altın {formatPct(g.altin_try_getiri)}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-    </>
-    )}
-
-    {aktifSayfa === "varliklar" && (
-      <VarlikSayfasi
-        fiyatGecmisi={fiyatGecmisi}
-        fiyatlar={fiyatlar}
-        portfoy={portfoy}
-        sonuc={sonuc}
-        varlikAl={varlikAl}
-        varlikSat={varlikSat}
-      />
-    )}
-
-    {aktifSayfa === "standartlar" && (
-      <YasamStandartlari
-        secimler={standartlar}
-        onSecimDegis={standartDegis}
-        nakit={nakit}
-        portfoy={portfoy}
-        dolarKuru={fiyatlar.dolar_try}
-        yasamGideri={yasamGideri}
-
-      />
-    )}
-
-    {aktifSayfa === "portfoy" && (
-    <div className="page-pad">
-        <PortfoySayfasi
-          fiyatGecmisi={fiyatGecmisi}
-          portfoyGecmisi={portfoyGecmisi}
-          enflasyonGecmisi={enflasyonGecmisi}
-          portfoy={portfoy}
-          fiyatlar={fiyatlar}
-          nakit={nakit}
-          varlikKatsayilari={varlikKatsayilari}
-
-
-        />
-      </div>
-    )}
-    </section>
-    </main>
-  )
-}
-
-function CharacterCard({ yas, seviye, profilAdi }) {
-  return (
-    <section className="character-card">
-      <div className="panel-kicker">Karakterin</div>
-      <div className="avatar-card">
-        <div className="avatar">
-          <img src={characterAvatar} alt="FinSim karakter portresi" />
-        </div>
-        <div className="character-meta">
-          <small>Yaş</small>
-          <strong>{yas}</strong>
-          <small>Sınıf</small>
-          <b>{profilAdi}</b>
-        </div>
-        <div className="level-badge">
-          <span>Seviye</span>
-          <strong>{seviye}</strong>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function MetricCard({ icon, label, value, hint, tone = "" }) {
-  return (
-    <article className={`metric-card ${tone}`}>
-      <div className="metric-top">
-        <i>{icon}</i>
-        <span>{label}</span>
-      </div>
-      <strong>{value}</strong>
-      <small>{hint}</small>
-    </article>
-  )
-}
-
-function PanelHeader({ title, action }) {
-  return (
-    <div className="panel-header">
-      <h2>{title}</h2>
-      <span>{action}</span>
-    </div>
-  )
-}
-
-function ProgressRow({ icon, label, value, tone }) {
-  return (
-    <div className="progress-row">
-      <i>{icon}</i>
-      <div>
-        <span>{label}</span>
-        <div className="progress-track">
-          <span className={tone} style={{ width: `${value}%` }} />
-        </div>
-      </div>
-      <strong>{value} / 100</strong>
-    </div>
-  )
-}
-
-
-function VarlikSatir({ fiyat, miktar, deger, getiri, varlik, onAl, onSat }) {
-  const [acik, setAcik] = useState(false)
-  const [girdi, setGirdi] = useState("")
-  const meta = VARLIK_META[varlik]
-  const miktarGecerli = Number(girdi) > 0
-
-  function al() {
-    if (!miktarGecerli) return
-    onAl(varlik, girdi)
-    setGirdi("")
-    setAcik(false)
-  }
-
-  function sat() {
-    if (!miktarGecerli) return
-    onSat(varlik, girdi)
-    setGirdi("")
-    setAcik(false)
-  }
-
-  return (
-    <article className={`asset-row ${acik ? "open" : ""}`}>
-      <button className="asset-main" onClick={() => setAcik(!acik)}>
-        <span className={`asset-icon ${meta.tone}`}>{meta.icon}</span>
-        <span className="asset-copy">
-          <strong>{meta.ad}</strong>
-          <small>{meta.type} · Risk: {meta.risk}</small>
-          <em>{fiyat} · {miktar}</em>
-          <span className="risk-dots">
-            {[1, 2, 3].map((dot) => <b key={dot} className={dot <= meta.score ? "on" : ""} />)}
-          </span>
-        </span>
-        <span className="asset-value">
-          <strong>{deger > 0 ? money(Math.round(deger)) : "-"}</strong>
-          {getiri !== null && <small className={pctClass(getiri)}>{formatPct(getiri)}</small>}
-        </span>
-      </button>
-
-      {acik && (
-        <div className="trade-box inventory-trade-box">
-          <input
-            type="number"
-            min="0"
-            step="any"
-            value={girdi}
-            onChange={e => setGirdi(e.target.value)}
-            placeholder={varlik === "mevduat" ? "TL miktarı gir" : "Miktar gir"}
+        {aktifSayfa === "varliklar" && (
+          <VarlikSayfasi
+            fiyatGecmisi={fiyatGecmisi}
+            fiyatlar={fiyatlar}
+            portfoy={portfoy}
+            sonuc={sonuc}
+            varlikAl={varlikAl}
+            varlikSat={varlikSat}
           />
-          <button className="buy" disabled={!miktarGecerli} onClick={al}>Al</button>
-          <button className="sell" disabled={!miktarGecerli} onClick={sat}>Sat</button>
-        </div>
-      )}
-    </article>
+        )}
+
+        {aktifSayfa === "standartlar" && (
+          <YasamStandartlari
+            secimler={standartlar}
+            onSecimDegis={standartDegis}
+            nakit={nakit}
+            portfoy={portfoy}
+            dolarKuru={fiyatlar.dolar_try}
+            yasamGideri={yasamGideri}
+          />
+        )}
+
+        {aktifSayfa === "portfoy" && (
+          <PortfoySayfasi
+            fiyatGecmisi={fiyatGecmisi}
+            portfoyGecmisi={portfoyGecmisi}
+            enflasyonGecmisi={enflasyonGecmisi}
+            portfoy={portfoy}
+            fiyatlar={fiyatlar}
+            nakit={nakit}
+            varlikKatsayilari={varlikKatsayilari}
+          />
+        )}
+      </main>
+    </div>
+  )
+}
+
+function MetricCard({ label, value, hint, alert }) {
+  return (
+    <div className={`border card-shadow p-stack-md flex flex-col ${alert ? "bg-error-container border-error" : "bg-surface-container border-outline"}`}>
+      <div className={`font-data-sm text-data-sm uppercase mb-1 ${alert ? "text-on-error-container" : "text-on-surface-variant"}`}>
+        {label}
+      </div>
+      <div className={`font-data-lg text-data-lg mb-2 ${alert ? "text-error" : "text-primary"}`}>
+        {value}
+      </div>
+      <div className={`font-data-sm text-data-sm uppercase mt-auto ${alert ? "text-on-error-container opacity-80" : "text-on-surface-variant opacity-50"}`}>
+        {hint}
+      </div>
+    </div>
   )
 }
 

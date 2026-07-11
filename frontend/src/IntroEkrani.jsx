@@ -69,7 +69,7 @@ export default function IntroEkrani({ onBitis }) {
   }
 
   return (
-    <>
+    <div className="bg-surface text-on-surface min-h-screen flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop font-body-md relative">
       <button
         onClick={() => onBitis({
           nakit: 250000,
@@ -78,109 +78,142 @@ export default function IntroEkrani({ onBitis }) {
           yillikGelir: 300000,
           answers: [],
         })}
-        className="dev-skip"
+        className="absolute top-4 right-4 text-data-sm font-data-sm opacity-30 hover:opacity-100 hover:text-primary uppercase"
       >
-        [geliştirme] introyu atla
+        [GELİŞTİRİCİ_ATLA]
       </button>
 
-      <main className="intro-shell intro-command">
-        <section className="intro-card mission-board">
-          <aside className="mission-map-panel">
-            <div className="mission-chapter">
-              <strong>Bölüm {soruIndex + 1} / {SORULAR.length}</strong>
-              <div className="quest-map" aria-label={`Bölüm ${soruIndex + 1}/${SORULAR.length}`}>
-                {SORULAR.map((_, i) => (
-                  <span key={i} className={i <= soruIndex ? "done" : ""} />
-                ))}
+      <div className="w-full max-w-4xl border border-outline bg-surface-container card-shadow flex flex-col md:flex-row">
+        {/* Left Side: Mission Path */}
+        <aside className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-outline-variant p-stack-md flex flex-col bg-surface-container-low">
+          <div className="font-headline-lg text-headline-lg text-primary uppercase tracking-tighter mb-4">
+            BAŞLANGIÇ_DİZİSİ
+          </div>
+          <div className="font-data-sm text-data-sm uppercase text-on-surface-variant mb-6 border-b border-outline-variant pb-2">
+            AŞAMA {soruIndex + 1} / {SORULAR.length}
+          </div>
+          
+          <div className="flex flex-col gap-3 flex-grow">
+            {SORULAR.map((gorev, i) => (
+              <div 
+                key={gorev.kategori} 
+                className={`flex items-center gap-3 font-data-sm text-data-sm uppercase ${
+                  i === soruIndex ? "text-primary font-bold" : 
+                  i < soruIndex ? "text-on-surface opacity-60" : "text-on-surface-variant opacity-30"
+                }`}
+              >
+                <span className="material-symbols-outlined text-sm">
+                  {i < soruIndex ? "check_circle" : i === soruIndex ? "radio_button_checked" : "radio_button_unchecked"}
+                </span>
+                <span>{gorev.kategori}</span>
               </div>
-            </div>
-            <div className="mission-nodes">
-              {SORULAR.map((gorev, i) => (
-                <button key={gorev.kategori} className={i === soruIndex ? "current" : i < soruIndex ? "done" : "locked"} type="button">
-                  <i>{i < soruIndex ? "✓" : i === soruIndex ? "●" : "⌁"}</i>
-                  <span>{gorev.kategori}</span>
-                </button>
-              ))}
-            </div>
-            <div className="active-quest">
-              <span>Aktif Görev</span>
-              <strong>{soru.soru}</strong>
-            </div>
-          </aside>
+            ))}
+          </div>
 
-          <section className="mission-main">
-            <div className="intro-stats">
-              <Stat icon="TL" label="Nakit" value={`₺${(nakit / 1000).toFixed(0)}k`} />
-              <Stat icon="SP" label="Sabır" value={sabir} />
-              <Stat icon="HP" label="Mutluluk" value={mutluluk} />
+          <div className="mt-8 border-t border-outline-variant pt-4">
+            <div className="font-data-sm text-data-sm uppercase text-on-surface-variant mb-2">Anlık Durum</div>
+            <div className="flex flex-col gap-1">
+              <Stat label="NAKİT" value={`₺${(nakit / 1000).toFixed(0)}k`} />
+              <Stat label="SABIR" value={sabir} />
+              <Stat label="MUTLULUK" value={mutluluk} />
             </div>
+          </div>
+        </aside>
 
-            <div className="question-block">
-              <span>Görev</span>
-              <h2>{soru.soru}</h2>
-              <p>Seçimin karakterini ve geleceğini etkileyecek.</p>
-            </div>
+        {/* Right Side: Main Question */}
+        <div className="w-full md:w-2/3 p-stack-lg flex flex-col">
+          <div className="font-data-sm text-data-sm text-primary uppercase mb-2">
+            GİRDİ_BEKLENİYOR
+          </div>
+          <h2 className="font-headline-md text-headline-md text-on-surface mb-6">
+            {soru.soru}
+          </h2>
 
-            <div className="choice-list">
-              {soru.secenekler.map((s, i) => {
-                const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk)
-                const secili = secim === i
+          <div className="flex flex-col gap-3 flex-grow mb-stack-lg">
+            {soru.secenekler.map((s, i) => {
+              const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk)
+              const secili = secim === i
 
-                return (
-                  <button
-                    className={`choice choice-${i + 1} ${secili ? "selected" : ""}`}
-                    key={i}
-                    onClick={() => !kilitli && setSecim(i)}
-                    disabled={kilitli}
-                  >
-                    <span className="choice-symbol">{kilitli ? "⌁" : ["₺", "▣", "◆"][i] || "◇"}</span>
-                    <span className="choice-title">{kilitli ? "Kilitli Karar" : s.metin}</span>
-                    {s.gelir_aciklama && !kilitli && <small>{s.gelir_aciklama} maaş</small>}
-                    {kilitli && s.kilit && <small>{kilitMetni(s.kilit)}</small>}
-                    <span className="effect-list">
-                      {s.nakit !== 0 && <Effect value={`Nakit ${s.nakit > 0 ? "+" : "-"}`} positive={s.nakit > 0} />}
-                      {s.sabir !== 0 && <Effect value={`Sabır ${s.sabir > 0 ? "+" : "-"}`} positive={s.sabir > 0} />}
-                      {s.mutluluk !== 0 && <Effect value={`Mutluluk ${s.mutluluk > 0 ? "+" : "-"}`} positive={s.mutluluk > 0} />}
+              return (
+                <button
+                  key={i}
+                  onClick={() => !kilitli && setSecim(i)}
+                  disabled={kilitli}
+                  className={`flex flex-col p-4 text-left border transition-colors ${
+                    kilitli 
+                      ? "bg-surface-container-highest border-outline-variant opacity-50 cursor-not-allowed" 
+                      : secili 
+                        ? "bg-primary-container border-primary text-background card-shadow font-bold" 
+                        : "bg-surface-variant border-outline hover:border-primary hover:bg-surface-container-high text-on-surface"
+                  }`}
+                >
+                  <div className="flex justify-between items-start w-full">
+                    <span className="font-data-sm text-data-sm uppercase mb-1">
+                      {kilitli ? "KİLİTLİ" : `SEÇ_0${i + 1}`}
                     </span>
-                  </button>
-                )
-              })}
-            </div>
-          </section>
+                    <span className="flex gap-2">
+                      {s.nakit !== 0 && <Effect value={s.nakit > 0 ? "NAKİT+" : "NAKİT-"} positive={s.nakit > 0} />}
+                      {s.sabir !== 0 && <Effect value={s.sabir > 0 ? "SABIR+" : "SABIR-"} positive={s.sabir > 0} />}
+                      {s.mutluluk !== 0 && <Effect value={s.mutluluk > 0 ? "MUTLULUK+" : "MUTLULUK-"} positive={s.mutluluk > 0} />}
+                    </span>
+                  </div>
+                  <div className="text-lg">
+                    {kilitli ? "Gizli" : s.metin}
+                  </div>
+                  {s.gelir_aciklama && !kilitli && (
+                    <div className="text-sm opacity-80 mt-1 font-data-sm uppercase">GELİR: {s.gelir_aciklama}</div>
+                  )}
+                  {kilitli && s.kilit && (
+                    <div className="text-error font-data-sm text-data-sm mt-2 uppercase">
+                      GEREKSİNİM: {kilitMetni(s.kilit)}
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
 
-          <aside className="choice-result">
-            <div className="result-frame">
-              <span>Seçimin Sonucu</span>
-              <strong>{seciliSecenek ? seciliSecenek.metin : "Henüz seçim yok"}</strong>
-              <p>{seciliSecenek ? "Karar onaylanınca karakter istatistiklerine işlenecek." : "Seçimin sonrası burada görünecek."}</p>
+          <div className="flex justify-between items-center border-t border-outline-variant pt-4 mt-auto">
+            <div className="text-on-surface-variant text-sm flex-1 mr-4">
+              {seciliSecenek ? "Onay bekleniyor..." : "Devam etmek için bir seçenek belirleyin."}
             </div>
-            <button className="primary-action confirm-action" onClick={devamEt} disabled={secim === null}>
-              {soruIndex + 1 >= SORULAR.length ? "Oyunu Başlat" : "Kararı Onayla"}
+            <button 
+              className={`bg-primary text-background font-data-lg text-data-lg uppercase py-3 px-8 font-bold border border-outline transition-transform ${
+                secim === null ? "opacity-50 cursor-not-allowed" : "btn-shadow hover:bg-primary-fixed"
+              }`}
+              onClick={devamEt} 
+              disabled={secim === null}
+            >
+              {soruIndex + 1 >= SORULAR.length ? "SİSTEMİ BAŞLAT" : "ONAYLA"}
             </button>
-          </aside>
-        </section>
-      </main>
-    </>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
-function Stat({ icon, label, value }) {
+function Stat({ label, value }) {
   return (
-    <div>
-      <i>{icon}</i>
-      <span>{label}</span>
-      <strong>{value}</strong>
+    <div className="flex justify-between font-data-sm text-data-sm uppercase">
+      <span className="text-on-surface-variant">{label}</span>
+      <strong className="text-primary">{value}</strong>
     </div>
   )
 }
 
 function Effect({ value, positive }) {
-  return <em className={positive ? "positive-chip" : "negative-chip"}>{value}</em>
+  return (
+    <span className={`text-[10px] px-1 font-bold ${positive ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
+      {value}
+    </span>
+  )
 }
 
 function kilitMetni(kilit) {
-  if (kilit.tur === "nakit") return `₺${(kilit.min / 1000).toFixed(0)}k nakit gerekiyor`
-  if (kilit.tur === "sabir") return `${kilit.min} sabır gerekiyor`
-  if (kilit.tur === "mutluluk") return `${kilit.min} mutluluk gerekiyor`
-  return "Kilitli"
+  if (kilit.tur === "nakit") return `₺${(kilit.min / 1000).toFixed(0)}k NAKİT`
+  if (kilit.tur === "sabir") return `${kilit.min} SABIR`
+  if (kilit.tur === "mutluluk") return `${kilit.min} MUTLULUK`
+  return "KİLİTLİ"
 }
+

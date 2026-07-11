@@ -41,82 +41,75 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
   }[varlik] : null
 
   return (
-    <article className={`vault-card ${cfg.tone}`}>
-      <div className="vault-head">
-        <div className="vault-title">
-          <div className={`asset-icon ${cfg.tone}`}>{cfg.icon}</div>
-          <div>
-            <strong>{cfg.ad}</strong>
-            <span>{cfg.sinif} · {cfg.birim}</span>
+    <article className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col">
+      <div className="flex justify-between items-start border-b border-outline-variant pb-2 mb-4">
+        <div>
+          <div className="font-headline-md text-headline-md text-on-surface uppercase flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary">{varlik === "altin" ? "diamond" : varlik === "bist" ? "candlestick_chart" : varlik === "dolar" ? "attach_money" : "account_balance"}</span>
+            {cfg.ad}
+          </div>
+          <div className="font-data-sm text-data-sm text-on-surface-variant uppercase mt-1">
+            {cfg.sinif} · {cfg.birim}
           </div>
         </div>
         {sonFiyat && (
-          <div className="vault-price">
-            <strong>
+          <div className="text-right">
+            <div className="font-data-lg text-data-lg text-primary">
               {varlik === "mevduat" ? `%${sonFiyat.toFixed(1)}` : `₺${Math.round(sonFiyat).toLocaleString("tr-TR")}`}
-            </strong>
+            </div>
             {getiri !== null && (
-              <small className={getiri >= 0 ? "positive" : "negative"}>
+              <div className={`font-data-sm text-data-sm uppercase mt-1 ${getiri >= 0 ? "text-[#34d399]" : "text-error"}`}>
                 {getiri >= 0 ? "+" : ""}{getiri.toFixed(1)}%
-                {reel !== null && (
-                  <span>
-                    reel {reel >= 0 ? "+" : ""}{reel.toFixed(1)}%
-                  </span>
-                )}
-              </small>
+                {reel !== null && <span className="ml-2 opacity-80">(REEL {reel >= 0 ? "+" : ""}{reel.toFixed(1)}%)</span>}
+              </div>
             )}
           </div>
         )}
       </div>
 
-      {gecmis.length > 1 ? (
-        <div className="vault-chart">
-          <ResponsiveContainer width="100%" height={120}>
+      <div className="flex-1 min-h-[120px] bg-surface-dim border border-outline-variant relative mb-4 p-2 flex items-center justify-center">
+        {gecmis.length > 1 ? (
+          <ResponsiveContainer width="100%" height="100%">
             <LineChart data={gecmis}>
-              <XAxis
-                dataKey="yil"
-                tick={{ fontSize: 10, fill: "#6b7280" }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis hide />
+              <XAxis dataKey="yil" hide />
+              <YAxis hide domain={['auto', 'auto']} />
               <Tooltip
-                contentStyle={{ background: "#1c2030", border: "1px solid #2a2f42", borderRadius: 8, fontSize: 12 }}
-                labelStyle={{ color: "#6b7280" }}
+                contentStyle={{ background: "#110e06", border: "1px solid #4e4634", borderRadius: 0, fontFamily: "JetBrains Mono", fontSize: 12 }}
                 itemStyle={{ color: cfg.renk }}
                 formatter={(v) => varlik === "mevduat" ? `%${v.toFixed(1)}` : `₺${Math.round(v).toLocaleString("tr-TR")}`}
+                labelStyle={{ display: 'none' }}
               />
               <Line
-                type="monotone"
+                type="step"
                 dataKey="fiyat"
                 stroke={cfg.renk}
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4, fill: cfg.renk }}
+                isAnimationActive={false}
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
-      ) : (
-        <div className="empty-chart">
-          Grafik için yıl atla
-        </div>
-      )}
+        ) : (
+          <div className="font-data-sm text-data-sm uppercase text-on-surface-variant opacity-50">
+            YETERSİZ VERİ
+          </div>
+        )}
+      </div>
 
-      <div className="vault-stats">
+      <div className="flex flex-col gap-2 mb-4">
         {portfoyMiktar > 0 && (
           <>
-            <Satir label="Portföyde" value={
+            <Satir label="PORTFÖY" value={
               varlik === "altin" ? `${portfoyMiktar.toFixed(2)} gr` :
               varlik === "bist" ? `${Math.round(portfoyMiktar)} adet` :
               varlik === "dolar" ? `$${Math.round(portfoyMiktar).toLocaleString("tr-TR")}` :
               `₺${Math.round(portfoyMiktar).toLocaleString("tr-TR")}`
             } />
-            <Satir label="Değer" value={`₺${Math.round(portfoyDeger).toLocaleString("tr-TR")}`} color="#f5c842" />
+            <Satir label="DEĞER" value={`₺${Math.round(portfoyDeger).toLocaleString("tr-TR")}`} color="#f5c842" />
           </>
         )}
-        {getiri !== null && <Satir label="Bu yıl getiri" value={`${getiri >= 0 ? "+" : ""}${getiri.toFixed(1)}%`} color={getiri >= 0 ? "#34d399" : "#f87171"} />}
-        {reel !== null && <Satir label="Reel getiri" value={`${reel >= 0 ? "+" : ""}${reel.toFixed(1)}%`} color={reel >= 0 ? "#34d399" : "#f87171"} />}
+        {portfoyMiktar === 0 && <Satir label="PORTFÖY" value="0.00" />}
       </div>
 
       <AlSatPanel varlik={varlik} onAl={onAl} onSat={onSat} />
@@ -124,11 +117,11 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
   )
 }
 
-function Satir({ label, value, color = "#b0b8cc" }) {
+function Satir({ label, value, color }) {
   return (
-    <div className="vault-stat-row">
-      <span>{label}</span>
-      <strong style={{ color }}>{value}</strong>
+    <div className="flex justify-between items-center font-data-sm text-data-sm uppercase border-b border-outline-variant pb-1">
+      <span className="text-on-surface-variant">{label}</span>
+      <span className={color ? "" : "text-on-surface"} style={color ? { color } : {}}>{value}</span>
     </div>
   )
 }
@@ -151,26 +144,27 @@ function AlSatPanel({ varlik, onAl, onSat }) {
   }
 
   return (
-    <div className="trade-panel">
+    <div className="mt-auto pt-4 border-t border-outline-variant">
       <button
         type="button"
         onClick={() => setAcik(!acik)}
-        className="trade-toggle"
+        className="w-full bg-surface-variant text-on-surface font-data-sm text-data-sm uppercase py-2 border border-outline hover:border-primary transition-colors"
       >
-        {acik ? "Kapat" : "Al / Sat"}
+        {acik ? "TERMİNALİ KAPAT" : "AL/SAT TERMİNALİ"}
       </button>
       {acik && (
-        <div className="trade-box vault-trade-box">
+        <div className="mt-2 flex gap-2">
           <input
             type="number"
             min="0"
             step="any"
             value={girdi}
             onChange={e => setGirdi(e.target.value)}
-            placeholder={varlik === "mevduat" ? "TL miktarı gir" : "Miktar gir"}
+            placeholder="MİKTAR"
+            className="flex-1 bg-surface-container-lowest border border-outline text-on-surface font-data-sm p-2 focus:border-primary focus:outline-none placeholder-on-surface-variant"
           />
-          <button type="button" className="buy" disabled={!miktarGecerli} onClick={al}>AL</button>
-          <button type="button" className="sell" disabled={!miktarGecerli} onClick={sat}>SAT</button>
+          <button type="button" className="bg-[#34d399] text-black font-data-sm px-4 font-bold disabled:opacity-50" disabled={!miktarGecerli} onClick={al}>AL</button>
+          <button type="button" className="bg-error text-background font-data-sm px-4 font-bold disabled:opacity-50" disabled={!miktarGecerli} onClick={sat}>SAT</button>
         </div>
       )}
     </div>
@@ -179,19 +173,25 @@ function AlSatPanel({ varlik, onAl, onSat }) {
 
 export default function VarlikSayfasi({ fiyatGecmisi, fiyatlar, portfoy, sonuc, varlikAl, varlikSat }) {
   return (
-    <div className="subpage vault-grid">
-      {["altin", "bist", "dolar", "mevduat"].map(varlik => (
-        <VarlikKart
-          key={varlik}
-          varlik={varlik}
-          fiyatGecmisi={fiyatGecmisi}
-          fiyatlar={fiyatlar}
-          portfoy={portfoy}
-          sonuc={sonuc}
-          onAl={varlikAl}
-          onSat={varlikSat}
-        />
-      ))}
+    <div className="flex flex-col gap-stack-lg">
+      <div className="border-b border-outline-variant pb-stack-md">
+        <h1 className="font-headline-lg text-headline-lg text-primary uppercase">Piyasa Verileri</h1>
+        <p className="font-data-sm text-data-sm text-on-surface-variant uppercase mt-1">Canlı Varlık Takip Sistemi</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+        {["altin", "bist", "dolar", "mevduat"].map(varlik => (
+          <VarlikKart
+            key={varlik}
+            varlik={varlik}
+            fiyatGecmisi={fiyatGecmisi}
+            fiyatlar={fiyatlar}
+            portfoy={portfoy}
+            sonuc={sonuc}
+            onAl={varlikAl}
+            onSat={varlikSat}
+          />
+        ))}
+      </div>
     </div>
   )
 }
