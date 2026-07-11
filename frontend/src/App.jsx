@@ -6,7 +6,7 @@ import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalite
 import PortfoySayfasi from "./PortfoySayfasi"
 import characterAvatar from "./assets/character-avatar.png"
 
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
 
 const INITIAL_STATE = {
   enf_rejim: 0,
@@ -43,6 +43,7 @@ export default function App() {
   const [bars, setBars] = useState({ sabir: 50, mutluluk: 50 })
   const [nakit, setNakit] = useState(25000)
   const [introTamamlandi, setIntroTamamlandi] = useState(false)
+  const [karakterProfili, setKarakterProfili] = useState(null)
   const [aktifSayfa, setAktifSayfa] = useState("ana")
   const [yillikGelir, setYillikGelir] = useState(0)
   const [yasamGideri, setYasamGideri] = useState(
@@ -71,7 +72,11 @@ export default function App() {
   const [mevcutEvent, setMevcutEvent] = useState(null)
   const [eventGecmisi, setEventGecmisi] = useState({})
   const [tetiklenenler, setTetiklenenler] = useState([])
-  const [, setEventKayitlari] = useState([])
+  const [eventKayitlari, setEventKayitlari] = useState([])
+  const [coachYorumu, setCoachYorumu] = useState(null)
+  const [coachLoading, setCoachLoading] = useState(false)
+  const [finalRapor, setFinalRapor] = useState(null)
+  const [finalRaporLoading, setFinalRaporLoading] = useState(false)
   const [fiyatGecmisi, setFiyatGecmisi] = useState({
   altin: [],
   bist: [],
@@ -92,7 +97,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
   async function yilAtla() {
     setLoading(true)
     try {
-      const res = await fetch("http://127.0.0.1:8000/yil-atla", {
+      const res = await fetch(`${API_BASE_URL}/yil-atla`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -224,6 +229,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
       
 
       if (data.yil_sonucu.event) {
+       setCoachYorumu(null)
        setMevcutEvent(data.yil_sonucu.event)
        setEventGecmisi(prev => ({
           ...prev,
@@ -253,10 +259,35 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
     setLoading(false)
   }
 
-  function introyuBitir(sonuc) {
+  async function introyuBitir(sonuc) {
     setBars({ sabir: sonuc.sabir, mutluluk: sonuc.mutluluk })
     nakitiGuncelle(sonuc.nakit)
     setYillikGelir(sonuc.yillikGelir)
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/ajanlar/profil`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          answers: sonuc.answers || sonuc.cevaplar || [],
+          cevaplar: sonuc.cevaplar || sonuc.answers || [],
+          nakit: sonuc.nakit,
+          sabir: sonuc.sabir,
+          mutluluk: sonuc.mutluluk,
+          yillik_gelir: sonuc.yillikGelir,
+        }),
+      })
+
+      if (res.ok) {
+        setKarakterProfili(await res.json())
+      } else {
+        setKarakterProfili(null)
+      }
+    } catch (error) {
+      console.error(error)
+      setKarakterProfili(null)
+    }
+
     setIntroTamamlandi(true)
   }
 
@@ -265,6 +296,94 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
   setStandartlar(yeniSecimler)
   setYasamGideri(Math.round(toplamAylikUsd(yeniSecimler, YASAM_STANDARTLARI) * fiyatlar.dolar_try * 12))
 }
+
+  async function eventSeceneginiSec(secenek) {
+    if (!mevcutEvent) return
+
+    const secilenEvent = mevcutEvent
+
+    setBars(prev => ({
+      sabir: Math.min(80, Math.max(20, prev.sabir + (secenek.sabir_etki || 0))),
+      mutluluk: Math.min(80, Math.max(20, prev.mutluluk + (secenek.mutluluk_etki || 0))),
+    }))
+
+    if (secenek.nakit_etki && secenek.nakit_etki !== 0) {
+      nakitiGuncelle(Math.max(20000, nakitRef.current + secenek.nakit_etki))
+    }
+
+    if (secenek.gelir_degisim) {
+      const { tip, min, max, oran } = secenek.gelir_degisim
+      if (tip === "randomize") {
+        const carpan = rastgeleGelirCarpani(min, max)
+        setYillikGelir(prev => Math.round(prev * carpan))
+      } else if (tip === "sabit_oran") {
+        setYillikGelir(prev => Math.round(prev * oran))
+      }
+    }
+
+    const eventKaydi = {
+      year: yil,
+      event_id: secilenEvent.id,
+      event_title: secilenEvent.baslik,
+      selected_option: secenek.metin,
+      bias_label: secilenEvent.bias_etiketi,
+      profile_type: karakterProfili?.profile_type || null,
+      yil,
+      event_baslik: secilenEvent.baslik,
+      bias: secilenEvent.bias_etiketi,
+      secim_id: secenek.id,
+      secim_metin: secenek.metin,
+    }
+
+    setEventKayitlari(prev => [...prev, eventKaydi])
+    setFinalRapor(null)
+    setMevcutEvent(null)
+    setCoachYorumu(null)
+    setCoachLoading(true)
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/ajanlar/koc`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(eventKaydi),
+      })
+
+      if (!res.ok) throw new Error("AI koç yorumu alınamadı.")
+      setCoachYorumu(await res.json())
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setCoachLoading(false)
+    }
+  }
+
+  async function finalRaporuOlustur() {
+    setFinalRaporLoading(true)
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/ajanlar/final-rapor`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          profile: karakterProfili,
+          event_history: eventKayitlari,
+          final_state: {
+            year: yil,
+            age: yas,
+            cash: nakit,
+            net_worth: toplamDeger,
+          },
+        }),
+      })
+
+      if (!res.ok) throw new Error("Final raporu oluşturulamadı.")
+      setFinalRapor(await res.json())
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setFinalRaporLoading(false)
+    }
+  }
 
   function varlikAl(varlik, miktar) {
     const miktarSayi = parseFloat(miktar)
@@ -332,7 +451,10 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
   const krizMi = gameState.enf_rejim === 1
   const riskIstahi = Math.min(95, Math.max(15, Math.round((portfoyDegeri / Math.max(toplamDeger, 1)) * 100 + (bars.mutluluk - 50) / 2)))
   const guvenlik = Math.min(95, Math.max(10, Math.round(100 - riskIstahi + bars.sabir / 4)))
-  const riskProfili = riskIstahi > 65 ? "Riskli" : riskIstahi > 38 ? "Dengeli" : "Güvenli"
+  const riskProfili = karakterProfili?.risk_level
+    ? riskEtiketi(karakterProfili.risk_level)
+    : riskIstahi > 65 ? "Riskli" : riskIstahi > 38 ? "Dengeli" : "Güvenli"
+  const profilAdi = karakterProfili?.profile_name || "Profil Hazırlanıyor"
   const seviye = Math.max(1, yas - 24)
   const piyasaPuani = Math.min(100, Math.max(1, Math.round(50 + (sonuc?.bist_pct || 0) / 2 + (sonuc?.altin_try_getiri || 0) / 3 - (sonuc?.enflasyon || 0) / 4)))
   const piyasaOlaylari = [
@@ -373,7 +495,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
       <div className="nav-year">
         <span>Yıl</span>
         <strong>{yil}</strong>
-        <button onClick={yilAtla} disabled={loading || !!mevcutEvent}>
+        <button onClick={yilAtla} disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent}>
           {loading ? "..." : `${yil + 1}'e Atla`}
         </button>
       </div>
@@ -383,7 +505,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
      {aktifSayfa === "ana" && (
       <>
       <section className="command-top">
-        <CharacterCard yas={yas} seviye={seviye} riskProfili={riskProfili} />
+        <CharacterCard yas={yas} seviye={seviye} riskProfili={riskProfili} profilAdi={profilAdi} />
         <section className="hero-panel">
           <div>
             <div className="eyebrow">{yas} yaşında</div>
@@ -442,34 +564,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
           <button
             key={i}
             disabled={kilitli}
-            onClick={() => {
-              if (kilitli) return
-              setBars(prev => ({
-                sabir: Math.min(80, Math.max(20, prev.sabir + (s.sabir_etki || 0))),
-                mutluluk: Math.min(80, Math.max(20, prev.mutluluk + (s.mutluluk_etki || 0))),
-              }))
-              if (s.nakit_etki && s.nakit_etki !== 0) {
-                nakitiGuncelle(Math.max(20000, nakitRef.current + s.nakit_etki))
-              }
-              if (s.gelir_degisim) {
-                const { tip, min, max, oran } = s.gelir_degisim
-                if (tip === "randomize") {
-                  const carpan = 1 + (Math.random() * (max - min) + min)
-                  setYillikGelir(prev => Math.round(prev * carpan))
-                } else if (tip === "sabit_oran") {
-                  setYillikGelir(prev => Math.round(prev * oran))
-                }
-              }
-              setEventKayitlari(prev => [...prev, {
-                yil: yil,
-                event_id: mevcutEvent.id,
-                event_baslik: mevcutEvent.baslik,
-                bias: mevcutEvent.bias_etiketi,
-                secim_id: s.id,
-                secim_metin: s.metin,
-              }])
-              setMevcutEvent(null)
-            }}
+            onClick={() => !kilitli && eventSeceneginiSec(s)}
             className={`event-choice ${kilitli ? "locked" : ""}`}
           >
             <span>{kilitli ? "Kilitli" : `Seçenek ${i + 1}`}</span>
@@ -487,10 +582,29 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
     </div>
   </div>
 ) : (
-  <button className="primary-action year-jump" onClick={yilAtla} disabled={loading}>
+  <button
+    className="primary-action year-jump"
+    onClick={yilAtla}
+    disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent}
+  >
     {loading ? "Hesaplanıyor..." : `${yil + 1}'e atla`}
   </button>
 )}
+
+          {coachLoading && (
+            <div className="agent-loading">AI koç seçimini değerlendiriyor...</div>
+          )}
+
+          {coachYorumu && (
+            <section className="coach-panel" aria-live="polite">
+              <div className="agent-kicker">AI Koç Yorumu</div>
+              <h3>{coachYorumu.coach_title}</h3>
+              <strong>{coachYorumu.bias_name_tr}</strong>
+              <p>{coachYorumu.coach_comment}</p>
+              <blockquote>{coachYorumu.reflection_question}</blockquote>
+              <small>{coachYorumu.disclaimer}</small>
+            </section>
+          )}
 
         </section>
 
@@ -543,6 +657,54 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
           ))}
         </section>
       </div>
+
+      <section className="panel final-report-section">
+        <div className="final-report-heading">
+          <div>
+            <div className="agent-kicker">AI Analizi</div>
+            <h2>Finansal Davranış Raporu</h2>
+            <p>{eventKayitlari.length} event kararı rapora hazır.</p>
+          </div>
+          <button
+            className="report-action"
+            onClick={finalRaporuOlustur}
+            disabled={finalRaporLoading || !!mevcutEvent || coachLoading}
+          >
+            {finalRaporLoading ? "Rapor hazırlanıyor..." : "Final Raporu Oluştur"}
+          </button>
+        </div>
+
+        {finalRapor && (
+          <div className="final-report" aria-live="polite">
+            <div className="final-report-summary">
+              <span>{finalRapor.title}</span>
+              <h3>{finalRapor.profile_name}</h3>
+              <p>{finalRapor.summary}</p>
+            </div>
+            <div className="report-stat">
+              <span>Karar Sayısı</span>
+              <strong>{finalRapor.decision_count}</strong>
+            </div>
+            <div className="report-stat">
+              <span>Baskın Eğilim</span>
+              <strong>{finalRapor.dominant_bias_name_tr || "Henüz belirlenmedi"}</strong>
+            </div>
+            <div className="report-list">
+              <h4>Güçlü Yönler</h4>
+              <ul>
+                {finalRapor.strengths?.map((item, index) => <li key={index}>{item}</li>)}
+              </ul>
+            </div>
+            <div className="report-list">
+              <h4>Gelişim Alanları</h4>
+              <ul>
+                {finalRapor.growth_areas?.map((item, index) => <li key={index}>{item}</li>)}
+              </ul>
+            </div>
+            <small className="report-disclaimer">{finalRapor.disclaimer}</small>
+          </div>
+        )}
+      </section>
 
       {sonuc && (
         <section className={`panel year-card ${krizMi ? "danger" : "calm"}`}>
@@ -617,7 +779,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
   )
 }
 
-function CharacterCard({ yas, seviye, riskProfili }) {
+function CharacterCard({ yas, seviye, riskProfili, profilAdi }) {
   return (
     <section className="character-card">
       <div className="panel-kicker">Karakterin</div>
@@ -629,7 +791,7 @@ function CharacterCard({ yas, seviye, riskProfili }) {
           <small>Yaş</small>
           <strong>{yas}</strong>
           <small>Sınıf</small>
-          <b>Temkinli Yatırımcı</b>
+          <b>{profilAdi}</b>
           <small>Risk Profili</small>
           <em>{riskProfili}</em>
         </div>
@@ -762,4 +924,14 @@ function formatPct(val) {
 
 function pctClass(val) {
   return val >= 0 ? "positive" : "negative"
+}
+
+function riskEtiketi(riskLevel) {
+  if (riskLevel === "dusuk") return "Düşük"
+  if (riskLevel === "yuksek") return "Yüksek"
+  return "Orta"
+}
+
+function rastgeleGelirCarpani(min, max) {
+  return 1 + (Math.random() * (max - min) + min)
 }

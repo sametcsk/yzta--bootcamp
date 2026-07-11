@@ -16,6 +16,7 @@ export default function IntroEkrani({ onBitis }) {
   const [sabir, setSabir] = useState(BASLANGIC.sabir)
   const [mutluluk, setMutluluk] = useState(BASLANGIC.mutluluk)
   const [gelir, setGelir] = useState(0)
+  const [cevaplar, setCevaplar] = useState([])
 
   const soru = SORULAR[soruIndex]
   const seciliSecenek = secim !== null ? soru.secenekler[secim] : null
@@ -27,10 +28,24 @@ export default function IntroEkrani({ onBitis }) {
     const yeniNakit = Math.max(20000, nakit + s.nakit)
     const yeniSabir = Math.min(80, Math.max(20, sabir + s.sabir))
     const yeniMutluluk = Math.min(80, Math.max(20, mutluluk + s.mutluluk))
+    const yeniCevaplar = [
+      ...cevaplar,
+      {
+        question_id: soru.id,
+        category: soru.kategori,
+        selected_text: s.metin,
+        effects: {
+          nakit: s.nakit,
+          sabir: s.sabir,
+          mutluluk: s.mutluluk,
+        },
+      },
+    ]
 
     setNakit(yeniNakit)
     setSabir(yeniSabir)
     setMutluluk(yeniMutluluk)
+    setCevaplar(yeniCevaplar)
 
     if (s.gelir) setGelir(s.gelir)
 
@@ -40,6 +55,7 @@ export default function IntroEkrani({ onBitis }) {
         sabir: yeniSabir,
         mutluluk: yeniMutluluk,
         yillikGelir: s.gelir || gelir || 216000,
+        answers: yeniCevaplar,
       })
     } else {
       setSoruIndex(soruIndex + 1)
@@ -55,6 +71,7 @@ export default function IntroEkrani({ onBitis }) {
         sabir: 60,
         mutluluk: 60,
         yillikGelir: 300000,
+        answers: [],
       })}
       className="dev-skip"
     >
