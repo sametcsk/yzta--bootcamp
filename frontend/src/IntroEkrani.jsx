@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { BASLANGIC, SORULAR } from "./data/sorular"
 
 function kilitliMi(kilit, nakit, sabir, mutluluk) {
@@ -16,36 +16,40 @@ export default function IntroEkrani({ onBitis }) {
   const [sabir, setSabir] = useState(BASLANGIC.sabir)
   const [mutluluk, setMutluluk] = useState(BASLANGIC.mutluluk)
   const [gelir, setGelir] = useState(0)
-  const [cevaplar, setCevaplar] = useState([])
+  const cevaplarRef = useRef([])
+  const ilerlemeKilitliRef = useRef(false)
 
   const soru = SORULAR[soruIndex]
   const seciliSecenek = secim !== null ? soru.secenekler[secim] : null
 
+  useEffect(() => {
+    ilerlemeKilitliRef.current = false
+  }, [soruIndex])
+
   function devamEt() {
-    if (secim === null) return
+    if (secim === null || ilerlemeKilitliRef.current) return
+    ilerlemeKilitliRef.current = true
     const s = soru.secenekler[secim]
 
     const yeniNakit = Math.max(20000, nakit + s.nakit)
     const yeniSabir = Math.min(80, Math.max(20, sabir + s.sabir))
     const yeniMutluluk = Math.min(80, Math.max(20, mutluluk + s.mutluluk))
-    const yeniCevaplar = [
-      ...cevaplar,
-      {
-        question_id: soru.id,
-        category: soru.kategori,
-        selected_text: s.metin,
-        effects: {
-          nakit: s.nakit,
-          sabir: s.sabir,
-          mutluluk: s.mutluluk,
-        },
+    const yeniCevap = {
+      question_id: soru.id,
+      category: soru.kategori,
+      selected_text: s.metin,
+      effects: {
+        nakit: s.nakit,
+        sabir: s.sabir,
+        mutluluk: s.mutluluk,
       },
-    ]
+    }
+    const yeniCevaplar = [...cevaplarRef.current, yeniCevap]
+    cevaplarRef.current = yeniCevaplar
 
     setNakit(yeniNakit)
     setSabir(yeniSabir)
     setMutluluk(yeniMutluluk)
-    setCevaplar(yeniCevaplar)
 
     if (s.gelir) setGelir(s.gelir)
 
@@ -58,7 +62,7 @@ export default function IntroEkrani({ onBitis }) {
         answers: yeniCevaplar,
       })
     } else {
-      setSoruIndex(soruIndex + 1)
+      setSoruIndex((oncekiIndex) => oncekiIndex + 1)
       setSecim(null)
     }
   }
