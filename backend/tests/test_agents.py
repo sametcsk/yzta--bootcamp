@@ -29,6 +29,28 @@ class ProfileAgentTests(unittest.TestCase):
         self.assertEqual(result["profile_type"], "Dengeli Stratejist")
         self.assertEqual(result["risk_level"], "orta")
 
+    def test_turkish_characters_risk_inference(self):
+        result = generate_profile(
+            {
+                "answers": [
+                    {"selected_text": "Bir şeyler aldım, harcadım"}, # High Risk (score 2)
+                    {"selected_text": "Anı yaşarım, birikim ikinci planda"}, # High Risk (score 2)
+                    {"selected_text": "Gitmedim, erken çalıştım"}, # High Risk (score 2)
+                    {"selected_text": "Evet, aldım ve işe yaradı"}, # High Risk (score 2)
+                    {"selected_text": "Evet, aldım ama olmadı"}, # High Risk (score 2)
+                    {"selected_text": "Her ay birikim yaparım"}, # Low Risk (score 0)
+                    {"selected_text": "Hayır, temkinli davrandım"}, # Low Risk (score 0)
+                ],
+                "nakit": 150000,
+                "sabir": 50,
+                "mutluluk": 55,
+                "yillik_gelir": 216000,
+            }
+        )
+        # 5 high risk (score 10) + 2 low risk (score 0) = 10 total risk score
+        self.assertEqual(result["risk_score"], 10)
+        self.assertEqual(result["risk_level"], "orta")
+
 
 class BiasCoachAgentTests(unittest.TestCase):
     def test_registered_biases_return_their_turkish_names(self):

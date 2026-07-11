@@ -53,20 +53,33 @@ def _answer_effect(answer: dict, key: str, default=0):
     return default if value is None else value
 
 
+def _normalize_turkish(text: str) -> str:
+    mapping = {
+        'ı': 'i', 'ş': 's', 'ğ': 'g', 'ç': 'c', 'ü': 'u', 'ö': 'o',
+        'ı': 'i', 'ş': 's', 'ğ': 'g', 'ç': 'c', 'ü': 'u', 'ö': 'o',
+        'İ': 'i', 'Ş': 's', 'Ğ': 'g', 'Ç': 'c', 'Ü': 'u', 'Ö': 'o'
+    }
+    normalized = ""
+    for char in text:
+        normalized += mapping.get(char, char)
+    return normalized.lower()
+
+
 def _infer_risk_from_text(answer: dict) -> int:
     text = (
         answer.get("selected_text")
         or answer.get("secim_metin")
         or answer.get("metin")
         or ""
-    ).lower()
+    )
+    normalized_text = _normalize_turkish(text)
 
-    high_risk_words = ["risk", "hepsini", "harcadim", "ani yasa", "erken calistim", "ise yaradi"]
-    low_risk_words = ["biriktirdim", "plan", "temkin", "koru", "bekle", "burslu"]
+    high_risk_words = ["risk", "hepsini", "harcadim", "ani yasa", "erken calistim", "ise yaradi", "aldim ama olmadi"]
+    low_risk_words = ["biriktirdim", "plan", "temkin", "koru", "bekle", "burslu", "birikim yap"]
 
-    if any(word in text for word in high_risk_words):
+    if any(word in normalized_text for word in high_risk_words):
         return 2
-    if any(word in text for word in low_risk_words):
+    if any(word in normalized_text for word in low_risk_words):
         return 0
     return 1
 
