@@ -6,6 +6,8 @@ import PortfoySayfasi from "./PortfoySayfasi"
 import AcilisSayfasi from "./AcilisSayfasi"
 import { useEffect, useRef, useState } from "react"
 import BitisSayfasi from "./BitisSayfasi"
+import GirisSayfasi from "./GirisSayfasi"
+import { supabase } from "./supabaseClient"
 
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
@@ -98,12 +100,24 @@ export default function App() {
   })
   const [oyunBitti, setOyunBitti] = useState(false)
   const [bitisSebebi, setBitisSebebi] = useState(null) // "yas_siniri" | "erken_olum"
+  const [oturum, setOturum] = useState(null)
+
 
   useEffect(() => {
     if (oyunBitti && !finalRapor && !finalRaporLoading) {
       finalRaporuOlustur()
     }
   }, [oyunBitti])
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setOturum(data.session))
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setOturum(session)
+    })
+    return () => listener.subscription.unsubscribe()
+  }, [])
+
+
 
   async function yilAtla() {
     setLoading(true)
@@ -488,6 +502,9 @@ export default function App() {
   if (!acilisGecildi) {
     return <AcilisSayfasi onBaslat={() => setAcilisGecildi(true)} fiyatlar={fiyatlar} />
   }
+  if (!oturum) {
+    return <GirisSayfasi onGirisBasarili={(session) => setOturum(session)} />
+  }
   if (!introTamamlandi) {
     return <IntroEkrani onBitis={introyuBitir} />
   }
@@ -504,6 +521,7 @@ export default function App() {
         nakit={nakit}
         onTekrarDene={finalRaporuOlustur}
         onTekrarOyna={tekrarOyna}
+        oturum={oturum}
       />
     )
   }
