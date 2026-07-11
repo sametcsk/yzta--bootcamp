@@ -307,8 +307,9 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
       mutluluk: Math.min(80, Math.max(20, prev.mutluluk + (secenek.mutluluk_etki || 0))),
     }))
 
-    if (secenek.nakit_etki && secenek.nakit_etki !== 0) {
-      nakitiGuncelle(Math.max(20000, nakitRef.current + secenek.nakit_etki))
+    if (secenek.nakit_etki_usd && secenek.nakit_etki_usd !== 0) {
+      const tlEtkisi = Math.round(secenek.nakit_etki_usd * fiyatlar.dolar_try)
+      nakitiGuncelle(Math.max(20000, nakitRef.current + tlEtkisi))
     }
 
     if (secenek.gelir_degisim) {
@@ -558,7 +559,8 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
         const kilitli = s.kilit && (
           (s.kilit.tur === "sabir" && bars.sabir < s.kilit.min) ||
           (s.kilit.tur === "mutluluk" && bars.mutluluk < s.kilit.min) ||
-          (s.kilit.tur === "nakit" && nakit < s.kilit.min)
+          (s.kilit.tur === "nakit" && nakit < s.kilit.min) ||
+          (s.kilit.tur === "nakit_usd" && nakit < s.kilit.min * fiyatlar.dolar_try)
         )
         return (
           <button
@@ -574,6 +576,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
                 {s.kilit.tur === "sabir" && `${s.kilit.min} sabır gerekiyor`}
                 {s.kilit.tur === "mutluluk" && `${s.kilit.min} mutluluk gerekiyor`}
                 {s.kilit.tur === "nakit" && `₺${(s.kilit.min/1000).toFixed(0)}k gerekiyor`}
+                {s.kilit.tur === "nakit_usd" && `$${s.kilit.min} (₺${Math.round(s.kilit.min * fiyatlar.dolar_try).toLocaleString("tr-TR")}) gerekiyor`}
               </small>
             )}
           </button>

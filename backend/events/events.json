@@ -8,17 +8,17 @@
     "agirlik": 3,
     "cooldown_yil": 2,
     "tek_seferlik": false,
-    "gerekli_varlik": "bist",
     "tetik": "her_zaman",
     "min_yas": null,
     "max_yas": null,
+    "gerekli_varlik": "bist",
     "secenekler": [
       {
         "id": "ev_001_a",
         "metin": "Sabırla bekle, toparlanmayı bekle",
         "sabir_etki": -10,
         "mutluluk_etki": -5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": { "tur": "sabir", "min": 40 }
@@ -28,7 +28,7 @@
         "metin": "Pozisyonun yarısını sat, riski azalt",
         "sabir_etki": -5,
         "mutluluk_etki": -10,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": { "tip": "sat", "varlik": "bist", "oran": 0.5 },
         "kilit": null
@@ -38,7 +38,7 @@
         "metin": "Düşüşten faydallan, daha fazla al",
         "sabir_etki": 5,
         "mutluluk_etki": 5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": { "tur": "sabir", "min": 60 }
@@ -54,27 +54,27 @@
     "agirlik": 2,
     "cooldown_yil": 3,
     "tek_seferlik": false,
-    "gerekli_varlik": null,
     "tetik": "her_zaman",
     "min_yas": 25,
     "max_yas": 45,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_002_a",
         "metin": "Git, deneyimler paradan değerlidir",
         "sabir_etki": 5,
         "mutluluk_etki": 20,
-        "nakit_etki": -30000,
+        "nakit_etki_usd": -750,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit", "min": 30000 }
+        "kilit": { "tur": "nakit_usd", "min": 750 }
       },
       {
         "id": "ev_002_b",
         "metin": "Gitme, birikimlerini koru",
         "sabir_etki": 10,
         "mutluluk_etki": -10,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": null
@@ -84,10 +84,10 @@
         "metin": "Yurt içi alternatif öner",
         "sabir_etki": 5,
         "mutluluk_etki": 8,
-        "nakit_etki": -10000,
+        "nakit_etki_usd": -250,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit", "min": 10000 }
+        "kilit": { "tur": "nakit_usd", "min": 250 }
       }
     ]
   },
@@ -100,17 +100,17 @@
     "agirlik": 2,
     "cooldown_yil": 2,
     "tek_seferlik": false,
-    "gerekli_varlik": "altin",
     "tetik": "her_zaman",
     "min_yas": null,
     "max_yas": null,
+    "gerekli_varlik": "altin",
     "secenekler": [
       {
         "id": "ev_003_a",
         "metin": "Aldığım fiyata dönünce satarım, bekleyeyim",
         "sabir_etki": -8,
         "mutluluk_etki": -8,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": { "tur": "sabir", "min": 35 }
@@ -120,7 +120,7 @@
         "metin": "Yarısını sat, zararı sınırla",
         "sabir_etki": -5,
         "mutluluk_etki": -5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": { "tip": "sat", "varlik": "altin", "oran": 0.5 },
         "kilit": null
@@ -130,7 +130,7 @@
         "metin": "Ortalama maliyetimi düşürmek için daha fazla al",
         "sabir_etki": 5,
         "mutluluk_etki": 5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": { "tur": "sabir", "min": 55 }
@@ -146,17 +146,17 @@
     "agirlik": 2,
     "cooldown_yil": 4,
     "tek_seferlik": false,
-    "gerekli_varlik": null,
     "tetik": "her_zaman",
     "min_yas": null,
     "max_yas": null,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_004_a",
         "metin": "Tamamını yatırıma yönlendir",
         "sabir_etki": 15,
         "mutluluk_etki": -5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": null
@@ -166,20 +166,20 @@
         "metin": "Yarısını yatır, yarısıyla kendine bir şey al",
         "sabir_etki": 5,
         "mutluluk_etki": 15,
-        "nakit_etki": -20000,
+        "nakit_etki_usd": -500,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit", "min": 20000 }
+        "kilit": { "tur": "nakit_usd", "min": 500 }
       },
       {
         "id": "ev_004_c",
         "metin": "Hepsini harca, bu zaten ekstra para",
         "sabir_etki": -10,
         "mutluluk_etki": 20,
-        "nakit_etki": -50000,
+        "nakit_etki_usd": -1250,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit", "min": 50000 }
+        "kilit": { "tur": "nakit_usd", "min": 1250 }
       }
     ]
   },
@@ -192,17 +192,17 @@
     "agirlik": 2,
     "cooldown_yil": 3,
     "tek_seferlik": false,
-    "gerekli_varlik": "bist",
     "tetik": "kriz",
     "min_yas": null,
     "max_yas": null,
+    "gerekli_varlik": "bist",
     "secenekler": [
       {
         "id": "ev_005_a",
         "metin": "Borsadaki varlıklarımın yarısını mevduata taşı",
         "sabir_etki": -5,
         "mutluluk_etki": 5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": { "tip": "sat", "varlik": "bist", "oran": 0.5 },
         "kilit": null
@@ -212,7 +212,7 @@
         "metin": "Borsada kal, kısa vadeli panik",
         "sabir_etki": -10,
         "mutluluk_etki": -10,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": { "tur": "sabir", "min": 45 }
@@ -222,7 +222,7 @@
         "metin": "Düşüşten faydallan, borsa al",
         "sabir_etki": 5,
         "mutluluk_etki": 5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": { "tur": "sabir", "min": 65 }
@@ -238,17 +238,17 @@
     "agirlik": 2,
     "cooldown_yil": 5,
     "tek_seferlik": false,
-    "gerekli_varlik": null,
     "tetik": "yas_aralik",
     "min_yas": 25,
     "max_yas": 50,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_006_a",
         "metin": "Teklifi kabul et",
         "sabir_etki": -5,
         "mutluluk_etki": 10,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": { "tip": "randomize", "min": 0.15, "max": 0.40 },
         "aksiyon": null,
         "kilit": null
@@ -258,7 +258,7 @@
         "metin": "Reddet, mevcut işte kal",
         "sabir_etki": 5,
         "mutluluk_etki": -5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": null
@@ -274,40 +274,40 @@
     "agirlik": 1,
     "cooldown_yil": 999,
     "tek_seferlik": true,
-    "gerekli_varlik": null,
     "tetik": "yas_aralik",
     "min_yas": 35,
     "max_yas": 60,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_007_a",
         "metin": "Özel hastanede en iyi tedaviyi al",
         "sabir_etki": -10,
         "mutluluk_etki": 10,
-        "nakit_etki": -80000,
+        "nakit_etki_usd": -2000,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit", "min": 80000 }
+        "kilit": { "tur": "nakit_usd", "min": 2000 }
       },
       {
         "id": "ev_007_b",
         "metin": "Devlet hastanesinde tedavi et",
         "sabir_etki": -5,
         "mutluluk_etki": -5,
-        "nakit_etki": -20000,
+        "nakit_etki_usd": -500,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit", "min": 20000 }
+        "kilit": { "tur": "nakit_usd", "min": 500 }
       },
       {
         "id": "ev_007_c",
         "metin": "Kardeşlerle masrafı paylaş",
         "sabir_etki": -5,
         "mutluluk_etki": 0,
-        "nakit_etki": -30000,
+        "nakit_etki_usd": -750,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit", "min": 30000 }
+        "kilit": { "tur": "nakit_usd", "min": 750 }
       }
     ]
   },
@@ -320,17 +320,17 @@
     "agirlik": 2,
     "cooldown_yil": 4,
     "tek_seferlik": false,
-    "gerekli_varlik": null,
     "tetik": "kriz",
     "min_yas": null,
     "max_yas": null,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_008_a",
         "metin": "TL birikimlerimi dolara çevir",
         "sabir_etki": -5,
         "mutluluk_etki": 5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": null
@@ -340,7 +340,7 @@
         "metin": "Altına yönel, güvenli liman",
         "sabir_etki": 5,
         "mutluluk_etki": 0,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": { "tur": "sabir", "min": 40 }
@@ -350,7 +350,7 @@
         "metin": "Bekle, abartıyorlar",
         "sabir_etki": -10,
         "mutluluk_etki": -5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": { "tur": "sabir", "min": 50 }
@@ -359,37 +359,47 @@
   },
   {
     "id": "ev_009",
-    "kategori": "finansal",
-    "bias_etiketi": "disposition_effect",
-    "baslik": "Kazanan varlığını sat mı?",
-    "metin": "Yatırdığın varlık ciddi değer kazandı. Kârı realize etme zamanı mı, yoksa daha fazlası için beklemeli misin?",
+    "kategori": "sosyal",
+    "bias_etiketi": "present_bias",
+    "baslik": "Kendine iyi bak zamanı",
+    "metin": "Uzun süredir kendin için harcama yapmadın. Bir tatil ya da özel bir şey almak için fırsat var.",
     "agirlik": 2,
     "cooldown_yil": 3,
     "tek_seferlik": false,
-    "gerekli_varlik": null,
-    "tetik": "her_zaman",
+    "tetik": "sakin",
     "min_yas": null,
     "max_yas": null,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_009_a",
-        "metin": "Yarısını sat, kârı realize et",
-        "sabir_etki": 10,
-        "mutluluk_etki": 15,
-        "nakit_etki": 0,
+        "metin": "Hak ettim, kendime güzel bir şey alayım",
+        "sabir_etki": -5,
+        "mutluluk_etki": 20,
+        "nakit_etki_usd": -1000,
         "gelir_degisim": null,
-        "aksiyon": { "tip": "sat", "varlik": "bist", "oran": 0.5 },
-        "kilit": null
+        "aksiyon": null,
+        "kilit": { "tur": "nakit_usd", "min": 1000 }
       },
       {
         "id": "ev_009_b",
-        "metin": "Tamamını tut, daha fazlası gelecek",
-        "sabir_etki": -5,
-        "mutluluk_etki": 5,
-        "nakit_etki": 0,
+        "metin": "Hayır, birikimlerime dokunmayayım",
+        "sabir_etki": 10,
+        "mutluluk_etki": -5,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 50 }
+        "kilit": null
+      },
+      {
+        "id": "ev_009_c",
+        "metin": "Küçük bir şey alayım, dengeyi korum",
+        "sabir_etki": 0,
+        "mutluluk_etki": 10,
+        "nakit_etki_usd": -300,
+        "gelir_degisim": null,
+        "aksiyon": null,
+        "kilit": { "tur": "nakit_usd", "min": 300 }
       }
     ]
   },
@@ -402,17 +412,17 @@
     "agirlik": 2,
     "cooldown_yil": 4,
     "tek_seferlik": false,
-    "gerekli_varlik": null,
     "tetik": "yas_aralik",
     "min_yas": 25,
     "max_yas": 50,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_010_a",
         "metin": "Kabul et, ekstra gelir lazım",
         "sabir_etki": -15,
         "mutluluk_etki": -10,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": { "tip": "sabit_oran", "oran": 1.25 },
         "aksiyon": null,
         "kilit": null
@@ -422,7 +432,7 @@
         "metin": "Reddet, zamanım daha değerli",
         "sabir_etki": 10,
         "mutluluk_etki": 10,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": null
@@ -438,17 +448,17 @@
     "agirlik": 2,
     "cooldown_yil": 3,
     "tek_seferlik": false,
-    "gerekli_varlik": null,
     "tetik": "kriz",
     "min_yas": null,
     "max_yas": null,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_011_a",
         "metin": "Nakit birikimlerimi enflasyona karşı koruyacak varlığa yönlendir",
         "sabir_etki": 5,
         "mutluluk_etki": 0,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": { "tur": "sabir", "min": 40 }
@@ -458,7 +468,7 @@
         "metin": "Mevduatta kal, faiz enflasyonu karşılar",
         "sabir_etki": 0,
         "mutluluk_etki": -5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": null
@@ -468,10 +478,10 @@
         "metin": "Dayanıklı tüketim malı al, değer korur",
         "sabir_etki": -5,
         "mutluluk_etki": 10,
-        "nakit_etki": -40000,
+        "nakit_etki_usd": -1000,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit", "min": 40000 }
+        "kilit": { "tur": "nakit_usd", "min": 1000 }
       }
     ]
   },
@@ -484,10 +494,10 @@
     "agirlik": 1,
     "cooldown_yil": 999,
     "tek_seferlik": true,
-    "gerekli_varlik": null,
     "tetik": "kriz",
     "min_yas": 28,
     "max_yas": 55,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_012_a",
@@ -495,7 +505,7 @@
         "sonuc_metni": "İyi ki erken davrandın. Yeni bir iş buldun.",
         "sabir_etki": -10,
         "mutluluk_etki": -5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": { "tip": "randomize", "min": -0.10, "max": 0.20 },
         "aksiyon": null,
         "kilit": null
@@ -506,7 +516,7 @@
         "sonuc_metni": "Ucuz kurtuldun! Bu sefer atlatıldı.",
         "sabir_etki": -15,
         "mutluluk_etki": -15,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": null
@@ -522,30 +532,30 @@
     "agirlik": 2,
     "cooldown_yil": 5,
     "tek_seferlik": false,
-    "gerekli_varlik": null,
     "tetik": "yas_aralik",
     "min_yas": 25,
     "max_yas": 45,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_013_a",
         "metin": "Cömert ol, özel bir gün",
         "sabir_etki": 0,
         "mutluluk_etki": 15,
-        "nakit_etki": -25000,
+        "nakit_etki_usd": -625,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit", "min": 25000 }
+        "kilit": { "tur": "nakit_usd", "min": 625 }
       },
       {
         "id": "ev_013_b",
         "metin": "Sembolik hediyeyle geç",
         "sabir_etki": 5,
         "mutluluk_etki": 5,
-        "nakit_etki": -8000,
+        "nakit_etki_usd": -200,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit", "min": 8000 }
+        "kilit": { "tur": "nakit_usd", "min": 200 }
       }
     ]
   },
@@ -558,17 +568,17 @@
     "agirlik": 1,
     "cooldown_yil": 999,
     "tek_seferlik": true,
-    "gerekli_varlik": null,
     "tetik": "yas_aralik",
     "min_yas": 60,
     "max_yas": 68,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_014_a",
         "metin": "Emekli ol, dinlenme zamanı",
         "sabir_etki": 20,
         "mutluluk_etki": 20,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": { "tip": "sabit_oran", "oran": 0.35 },
         "aksiyon": null,
         "kilit": null
@@ -578,7 +588,7 @@
         "metin": "Çalışmaya devam et, geliri koru",
         "sabir_etki": -10,
         "mutluluk_etki": -5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": null
@@ -594,17 +604,17 @@
     "agirlik": 2,
     "cooldown_yil": 3,
     "tek_seferlik": false,
-    "gerekli_varlik": null,
     "tetik": "kriz",
     "min_yas": null,
     "max_yas": null,
+    "gerekli_varlik": null,
     "secenekler": [
       {
         "id": "ev_015_a",
         "metin": "Pahalı ama dolar al, TL'yi koru",
         "sabir_etki": -5,
         "mutluluk_etki": 5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": { "tur": "sabir", "min": 35 }
@@ -614,7 +624,7 @@
         "metin": "Düşünce alırım, şimdi çok pahalı",
         "sabir_etki": -10,
         "mutluluk_etki": -5,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": null
@@ -624,7 +634,7 @@
         "metin": "Altına yönel, daha güvenli",
         "sabir_etki": 5,
         "mutluluk_etki": 0,
-        "nakit_etki": 0,
+        "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
         "kilit": { "tur": "sabir", "min": 45 }
