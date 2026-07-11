@@ -341,6 +341,11 @@ p {
   color: var(--violet);
 }
 
+.metric-card.rose .metric-top i,
+.metric-card.rose strong {
+  color: var(--rose);
+}
+
 .panel {
   padding: 20px;
 }
@@ -1727,7 +1732,7 @@ p {
 }
 
 .summary-grid {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   margin: 16px 0;
 }
@@ -2127,7 +2132,7 @@ p {
   }
 
   .summary-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .asset-panel .asset-main {

@@ -450,20 +450,12 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
   const toplamDeger = nakit + portfoyDegeri
   const netAkis = yillikGelir - yasamGideri
   const krizMi = gameState.enf_rejim === 1
-  const riskIstahi = Math.min(95, Math.max(15, Math.round((portfoyDegeri / Math.max(toplamDeger, 1)) * 100 + (bars.mutluluk - 50) / 2)))
-  const guvenlik = Math.min(95, Math.max(10, Math.round(100 - riskIstahi + bars.sabir / 4)))
   const riskProfili = karakterProfili?.risk_level
     ? riskEtiketi(karakterProfili.risk_level)
-    : riskIstahi > 65 ? "Riskli" : riskIstahi > 38 ? "Dengeli" : "Güvenli"
+    : "Belirleniyor"
   const profilAdi = karakterProfili?.profile_name || "Profil Hazırlanıyor"
   const seviye = Math.max(1, yas - 24)
-  const piyasaPuani = Math.min(100, Math.max(1, Math.round(50 + (sonuc?.bist_pct || 0) / 2 + (sonuc?.altin_try_getiri || 0) / 3 - (sonuc?.enflasyon || 0) / 4)))
-  const piyasaOlaylari = [
-    { tone: "rose", icon: "!", title: krizMi ? "Enflasyon yükseliyor" : "Enflasyon izleniyor", copy: krizMi ? "Fiyat baskısı karakter bütçesini zorluyor." : "Piyasa fiyatları şimdilik kontrol altında.", time: "aktif" },
-    { tone: sonuc && sonuc.bist_pct < 0 ? "rose" : "blue", icon: "BI", title: sonuc && sonuc.bist_pct < 0 ? "BIST dalgalı" : "BIST takipte", copy: "Riskli varlıklar yıl kararından etkilenebilir.", time: "piyasa" },
-    { tone: "gold", icon: "Au", title: sonuc && sonuc.altin_try_getiri > 0 ? "Altın güçleniyor" : "Altın sakin", copy: "Nadir varlık savunma rolünü koruyor.", time: "envanter" },
-    { tone: "green", icon: "%", title: "Mevduat cazip", copy: "Güvenli getiri alanı hazır bekliyor.", time: "banka" },
-  ]
+
 
   if (!introTamamlandi) {
     return <IntroEkrani onBitis={introyuBitir} />
@@ -530,8 +522,13 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
         <MetricCard icon="₺" label="Servet" value={money(toplamDeger)} hint="Portföy Değeri" tone="gold" />
         <MetricCard icon="₺" label="Kalan Nakit" value={money(nakit)} hint="Harcanabilir bakiye" tone="cash" />
         <MetricCard icon="⚡" label="Aylık Gelir" value={money(yillikGelir)} hint={`Net akış: ${money(netAkis)}`} tone="green" />
-        <MetricCard icon="◆" label="Güvenlik" value={`%${(fiyatlar.mev_faiz_oran * 100).toFixed(0)}`} hint="Mevduat Oranı" tone="primary" />
-        <MetricCard icon="▰" label="Piyasa Puanı" value={`${piyasaPuani} / 100`} hint="Piyasa Hakimiyeti" tone="violet" />
+        <MetricCard
+          icon="%"
+          label="Enflasyon Oranı"
+          value={sonuc ? `%${sonuc.enflasyon}` : "—"}
+          hint={sonuc ? `Durum: ${sonuc.enf_durum}` : "Sakin"}
+          tone={krizMi ? "rose" : "primary"}
+        />
       </section>
 
       <div className="command-grid">
@@ -539,8 +536,6 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
           <PanelHeader title="Karakter Durumu" action="120 / 250 XP" />
           <ProgressRow icon="AB" label="Sabır" value={bars.sabir} tone="blue" />
           <ProgressRow icon="☺" label="Mutluluk" value={bars.mutluluk} tone="gold" />
-          <ProgressRow icon="火" label="Risk İştahı" value={riskIstahi} tone="rose" />
-          <ProgressRow icon="⬡" label="Güvenlik" value={guvenlik} tone="green" />
 
 
           {mevcutEvent ? (
@@ -653,12 +648,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
           </div>
         </section>
 
-        <section className="panel world-panel">
-          <PanelHeader title="Piyasa Haberleri" action={krizMi ? "Volatil" : "Dengeli"} />
-          {piyasaOlaylari.map((o) => (
-            <DataRow key={o.title} icon={o.icon} label={o.title} detail={o.copy} value={o.time} valueClass={o.tone === "rose" ? "negative" : o.tone === "green" ? "positive" : ""} />
-          ))}
-        </section>
+
       </div>
 
       <section className="panel final-report-section">
@@ -848,18 +838,6 @@ function ProgressRow({ icon, label, value, tone }) {
   )
 }
 
-function DataRow({ icon, label, detail, value, valueClass = "" }) {
-  return (
-    <div className="data-row">
-      <span className="feed-icon">{icon}</span>
-      <span>
-        <b>{label}</b>
-        <small>{detail}</small>
-      </span>
-      <strong className={valueClass}>{value}</strong>
-    </div>
-  )
-}
 
 function VarlikSatir({ fiyat, miktar, deger, getiri, varlik, onAl, onSat }) {
   const [acik, setAcik] = useState(false)
