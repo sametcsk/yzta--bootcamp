@@ -10,30 +10,21 @@ with open(_EVENT_DOSYASI, "r", encoding="utf-8") as f:
 
 
 def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, 
-              enf_rejim: int = 0, tetiklenenler: list = None,portfoy=None) -> dict:
-    """
-    mevcut_yas: kullanıcının yaşı
-    event_gecmisi: {"ev_001": 2031} — son tetiklenme yılları
-    enf_rejim: 0=sakin, 1=kriz
-    tetiklenenler: tek_seferlik eventlerin id listesi
-    """
+              enf_rejim: int = 0, tetiklenenler: list = None, portfoy=None) -> dict:
     if tetiklenenler is None:
         tetiklenenler = []
     if portfoy is None:
         portfoy = {}
-
 
     uygun = []
     for e in EVENT_HAVUZU:
         # Tek seferlik kontrolü
         if e.get("tek_seferlik", False) and e["id"] in tetiklenenler:
             continue
-
         # Cooldown kontrolü
         son_tetik = event_gecmisi.get(e["id"], 0)
         if mevcut_yil - son_tetik < e.get("cooldown_yil", 0):
             continue
-
         # Yaş aralığı kontrolü
         min_yas = e.get("min_yas")
         max_yas = e.get("max_yas")
@@ -41,17 +32,13 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
             continue
         if max_yas and mevcut_yas > max_yas:
             continue
-
         # Tetik tipi kontrolü
         tetik = e.get("tetik", "her_zaman")
         if tetik == "kriz" and enf_rejim != 1:
             continue
         if tetik == "sakin" and enf_rejim != 0:
             continue
-
-        uygun.append(e)
-
-    # Varlık kontrolü
+        # Varlık kontrolü — en sona, tek kez
         gerekli = e.get("gerekli_varlik")
         if gerekli == "bist" and portfoy.get("bist_adet", 0) <= 0:
             continue
@@ -62,25 +49,12 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
         if gerekli == "mevduat" and portfoy.get("mevduat_tl", 0) <= 0:
             continue
 
-        uygun.append(e)# Varlık kontrolü
-        gerekli = e.get("gerekli_varlik")
-        if gerekli == "bist" and portfoy.get("bist_adet", 0) <= 0:
-            continue
-        if gerekli == "altin" and portfoy.get("altin_gram", 0) <= 0:
-            continue
-        if gerekli == "dolar" and portfoy.get("dolar", 0) <= 0:
-            continue
-        if gerekli == "mevduat" and portfoy.get("mevduat_tl", 0) <= 0:
-            continue
+        uygun.append(e)  # ← tek bir kez, tüm kontrollerden sonra
 
-        uygun.append(e)
-
-    # Uygun event yoksa her_zaman olanlardan seç
     if not uygun:
         uygun = [e for e in EVENT_HAVUZU 
                  if e.get("tetik", "her_zaman") == "her_zaman"
                  and e.get("gerekli_varlik") is None]
-
     if not uygun:
         return None
 
