@@ -42,6 +42,7 @@ export default function IntroEkrani({ onBitis }) {
         nakit: s.nakit,
         sabir: s.sabir,
         mutluluk: s.mutluluk,
+        risk: s.risk ?? 1,
       },
     }
     const yeniCevaplar = [...cevaplarRef.current, yeniCevap]
@@ -68,99 +69,99 @@ export default function IntroEkrani({ onBitis }) {
   }
 
   return (
-  <>
-    <button
-      onClick={() => onBitis({
-        nakit: 250000,
-        sabir: 60,
-        mutluluk: 60,
-        yillikGelir: 300000,
-        answers: [],
-      })}
-      className="dev-skip"
-    >
-      [geliştirme] introyu atla
-    </button>
+    <>
+      <button
+        onClick={() => onBitis({
+          nakit: 250000,
+          sabir: 60,
+          mutluluk: 60,
+          yillikGelir: 300000,
+          answers: [],
+        })}
+        className="dev-skip"
+      >
+        [geliştirme] introyu atla
+      </button>
 
-    <main className="intro-shell intro-command">
-      <section className="intro-card mission-board">
-        <aside className="mission-map-panel">
-          <div className="mission-chapter">
-            <strong>Bölüm {soruIndex + 1} / {SORULAR.length}</strong>
-            <div className="quest-map" aria-label={`Bölüm ${soruIndex + 1}/${SORULAR.length}`}>
-              {SORULAR.map((_, i) => (
-                <span key={i} className={i <= soruIndex ? "done" : ""} />
+      <main className="intro-shell intro-command">
+        <section className="intro-card mission-board">
+          <aside className="mission-map-panel">
+            <div className="mission-chapter">
+              <strong>Bölüm {soruIndex + 1} / {SORULAR.length}</strong>
+              <div className="quest-map" aria-label={`Bölüm ${soruIndex + 1}/${SORULAR.length}`}>
+                {SORULAR.map((_, i) => (
+                  <span key={i} className={i <= soruIndex ? "done" : ""} />
+                ))}
+              </div>
+            </div>
+            <div className="mission-nodes">
+              {SORULAR.map((gorev, i) => (
+                <button key={gorev.kategori} className={i === soruIndex ? "current" : i < soruIndex ? "done" : "locked"} type="button">
+                  <i>{i < soruIndex ? "✓" : i === soruIndex ? "●" : "⌁"}</i>
+                  <span>{gorev.kategori}</span>
+                </button>
               ))}
             </div>
-          </div>
-          <div className="mission-nodes">
-            {SORULAR.map((gorev, i) => (
-              <button key={gorev.kategori} className={i === soruIndex ? "current" : i < soruIndex ? "done" : "locked"} type="button">
-                <i>{i < soruIndex ? "✓" : i === soruIndex ? "●" : "⌁"}</i>
-                <span>{gorev.kategori}</span>
-              </button>
-            ))}
-          </div>
-          <div className="active-quest">
-            <span>Aktif Görev</span>
-            <strong>{soru.soru}</strong>
-          </div>
-        </aside>
+            <div className="active-quest">
+              <span>Aktif Görev</span>
+              <strong>{soru.soru}</strong>
+            </div>
+          </aside>
 
-        <section className="mission-main">
-          <div className="intro-stats">
-            <Stat icon="TL" label="Nakit" value={`₺${(nakit / 1000).toFixed(0)}k`} />
-            <Stat icon="SP" label="Sabır" value={sabir} />
-            <Stat icon="HP" label="Mutluluk" value={mutluluk} />
-          </div>
+          <section className="mission-main">
+            <div className="intro-stats">
+              <Stat icon="TL" label="Nakit" value={`₺${(nakit / 1000).toFixed(0)}k`} />
+              <Stat icon="SP" label="Sabır" value={sabir} />
+              <Stat icon="HP" label="Mutluluk" value={mutluluk} />
+            </div>
 
-          <div className="question-block">
-            <span>Görev</span>
-            <h2>{soru.soru}</h2>
-            <p>Seçimin karakterini ve geleceğini etkileyecek.</p>
-          </div>
+            <div className="question-block">
+              <span>Görev</span>
+              <h2>{soru.soru}</h2>
+              <p>Seçimin karakterini ve geleceğini etkileyecek.</p>
+            </div>
 
-          <div className="choice-list">
-            {soru.secenekler.map((s, i) => {
-              const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk)
-              const secili = secim === i
+            <div className="choice-list">
+              {soru.secenekler.map((s, i) => {
+                const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk)
+                const secili = secim === i
 
-              return (
-                <button
-                  className={`choice choice-${i + 1} ${secili ? "selected" : ""}`}
-                  key={i}
-                  onClick={() => !kilitli && setSecim(i)}
-                  disabled={kilitli}
-                >
-                  <span className="choice-symbol">{kilitli ? "⌁" : ["₺", "▣", "◆"][i] || "◇"}</span>
-                  <span className="choice-title">{kilitli ? "Kilitli Karar" : s.metin}</span>
-                  {s.gelir_aciklama && !kilitli && <small>{s.gelir_aciklama} maaş</small>}
-                  {kilitli && s.kilit && <small>{kilitMetni(s.kilit)}</small>}
-                  <span className="effect-list">
-                    {s.nakit !== 0 && <Effect value={`Nakit ${s.nakit > 0 ? "+" : "-"}`} positive={s.nakit > 0} />}
-                    {s.sabir !== 0 && <Effect value={`Sabır ${s.sabir > 0 ? "+" : "-"}`} positive={s.sabir > 0} />}
-                    {s.mutluluk !== 0 && <Effect value={`Mutluluk ${s.mutluluk > 0 ? "+" : "-"}`} positive={s.mutluluk > 0} />}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+                return (
+                  <button
+                    className={`choice choice-${i + 1} ${secili ? "selected" : ""}`}
+                    key={i}
+                    onClick={() => !kilitli && setSecim(i)}
+                    disabled={kilitli}
+                  >
+                    <span className="choice-symbol">{kilitli ? "⌁" : ["₺", "▣", "◆"][i] || "◇"}</span>
+                    <span className="choice-title">{kilitli ? "Kilitli Karar" : s.metin}</span>
+                    {s.gelir_aciklama && !kilitli && <small>{s.gelir_aciklama} maaş</small>}
+                    {kilitli && s.kilit && <small>{kilitMetni(s.kilit)}</small>}
+                    <span className="effect-list">
+                      {s.nakit !== 0 && <Effect value={`Nakit ${s.nakit > 0 ? "+" : "-"}`} positive={s.nakit > 0} />}
+                      {s.sabir !== 0 && <Effect value={`Sabır ${s.sabir > 0 ? "+" : "-"}`} positive={s.sabir > 0} />}
+                      {s.mutluluk !== 0 && <Effect value={`Mutluluk ${s.mutluluk > 0 ? "+" : "-"}`} positive={s.mutluluk > 0} />}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+
+          <aside className="choice-result">
+            <div className="result-frame">
+              <span>Seçimin Sonucu</span>
+              <strong>{seciliSecenek ? seciliSecenek.metin : "Henüz seçim yok"}</strong>
+              <p>{seciliSecenek ? "Karar onaylanınca karakter istatistiklerine işlenecek." : "Seçimin sonrası burada görünecek."}</p>
+            </div>
+            <button className="primary-action confirm-action" onClick={devamEt} disabled={secim === null}>
+              {soruIndex + 1 >= SORULAR.length ? "Oyunu Başlat" : "Kararı Onayla"}
+            </button>
+          </aside>
         </section>
-
-        <aside className="choice-result">
-          <div className="result-frame">
-            <span>Seçimin Sonucu</span>
-            <strong>{seciliSecenek ? seciliSecenek.metin : "Henüz seçim yok"}</strong>
-            <p>{seciliSecenek ? "Karar onaylanınca karakter istatistiklerine işlenecek." : "Seçimin sonrası burada görünecek."}</p>
-          </div>
-          <button className="primary-action confirm-action" onClick={devamEt} disabled={secim === null}>
-            {soruIndex + 1 >= SORULAR.length ? "Oyunu Başlat" : "Kararı Onayla"}
-          </button>
-        </aside>
-      </section>
-    </main>
-  </>
-)
+      </main>
+    </>
+  )
 }
 
 function Stat({ icon, label, value }) {

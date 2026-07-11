@@ -498,7 +498,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
      {aktifSayfa === "ana" && (
       <>
       <section className="command-top">
-        <CharacterCard yas={yas} seviye={seviye} riskProfili={riskProfili} profilAdi={profilAdi} />
+        <CharacterCard yas={yas} seviye={seviye} profilAdi={profilAdi} />
         <section className="hero-panel">
           <div>
             <div className="eyebrow">{yas} yaşında</div>
@@ -772,7 +772,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
   )
 }
 
-function CharacterCard({ yas, seviye, riskProfili, profilAdi }) {
+function CharacterCard({ yas, seviye, profilAdi }) {
   return (
     <section className="character-card">
       <div className="panel-kicker">Karakterin</div>
@@ -785,17 +785,11 @@ function CharacterCard({ yas, seviye, riskProfili, profilAdi }) {
           <strong>{yas}</strong>
           <small>Sınıf</small>
           <b>{profilAdi}</b>
-          <small>Risk Profili</small>
-          <em>{riskProfili}</em>
         </div>
         <div className="level-badge">
           <span>Seviye</span>
           <strong>{seviye}</strong>
         </div>
-      </div>
-      <div className="xp-line">
-        <span />
-        <small>120 / 250 XP</small>
       </div>
     </section>
   )
