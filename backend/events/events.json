@@ -21,7 +21,10 @@
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 40 }
+        "kilit": {
+          "tur": "sabir",
+          "min": 40
+        }
       },
       {
         "id": "ev_001_b",
@@ -30,7 +33,11 @@
         "mutluluk_etki": -10,
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
-        "aksiyon": { "tip": "sat", "varlik": "bist", "oran": 0.5 },
+        "aksiyon": {
+          "tip": "sat",
+          "varlik": "bist",
+          "oran": 0.5
+        },
         "kilit": null
       },
       {
@@ -41,7 +48,10 @@
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 60 }
+        "kilit": {
+          "tur": "sabir",
+          "min": 60
+        }
       }
     ]
   },
@@ -67,7 +77,10 @@
         "nakit_etki_usd": -750,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 750 }
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 750
+        }
       },
       {
         "id": "ev_002_b",
@@ -87,7 +100,10 @@
         "nakit_etki_usd": -250,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 250 }
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 250
+        }
       }
     ]
   },
@@ -113,7 +129,10 @@
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 35 }
+        "kilit": {
+          "tur": "sabir",
+          "min": 35
+        }
       },
       {
         "id": "ev_003_b",
@@ -122,7 +141,11 @@
         "mutluluk_etki": -5,
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
-        "aksiyon": { "tip": "sat", "varlik": "altin", "oran": 0.5 },
+        "aksiyon": {
+          "tip": "sat",
+          "varlik": "altin",
+          "oran": 0.5
+        },
         "kilit": null
       },
       {
@@ -133,7 +156,10 @@
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 55 }
+        "kilit": {
+          "tur": "sabir",
+          "min": 55
+        }
       }
     ]
   },
@@ -169,7 +195,10 @@
         "nakit_etki_usd": -500,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 500 }
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 500
+        }
       },
       {
         "id": "ev_004_c",
@@ -179,7 +208,10 @@
         "nakit_etki_usd": -1250,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 1250 }
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 1250
+        }
       }
     ]
   },
@@ -204,7 +236,11 @@
         "mutluluk_etki": 5,
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
-        "aksiyon": { "tip": "sat", "varlik": "bist", "oran": 0.5 },
+        "aksiyon": {
+          "tip": "sat",
+          "varlik": "bist",
+          "oran": 0.5
+        },
         "kilit": null
       },
       {
@@ -215,7 +251,10 @@
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 45 }
+        "kilit": {
+          "tur": "sabir",
+          "min": 45
+        }
       },
       {
         "id": "ev_005_c",
@@ -225,7 +264,10 @@
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 65 }
+        "kilit": {
+          "tur": "sabir",
+          "min": 65
+        }
       }
     ]
   },
@@ -249,7 +291,11 @@
         "sabir_etki": -5,
         "mutluluk_etki": 10,
         "nakit_etki_usd": 0,
-        "gelir_degisim": { "tip": "randomize", "min": 0.15, "max": 0.40 },
+        "gelir_degisim": {
+          "tip": "randomize",
+          "min": 0.15,
+          "max": 0.40
+        },
         "aksiyon": null,
         "kilit": null
       },
@@ -287,7 +333,10 @@
         "nakit_etki_usd": -2000,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 2000 }
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 2000
+        }
       },
       {
         "id": "ev_007_b",
@@ -297,7 +346,10 @@
         "nakit_etki_usd": -500,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 500 }
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 500
+        }
       },
       {
         "id": "ev_007_c",
@@ -307,7 +359,10 @@
         "nakit_etki_usd": -750,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 750 }
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 750
+        }
       }
     ]
   },
@@ -343,7 +398,10 @@
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 40 }
+        "kilit": {
+          "tur": "sabir",
+          "min": 40
+        }
       },
       {
         "id": "ev_008_c",
@@ -353,7 +411,10 @@
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 50 }
+        "kilit": {
+          "tur": "sabir",
+          "min": 50
+        }
       }
     ]
   },
@@ -379,7 +440,10 @@
         "nakit_etki_usd": -1000,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 1000 }
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 1000
+        }
       },
       {
         "id": "ev_009_b",
@@ -399,7 +463,10 @@
         "nakit_etki_usd": -300,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 300 }
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 300
+        }
       }
     ]
   },
@@ -423,7 +490,10 @@
         "sabir_etki": -15,
         "mutluluk_etki": -10,
         "nakit_etki_usd": 0,
-        "gelir_degisim": { "tip": "sabit_oran", "oran": 1.25 },
+        "gelir_degisim": {
+          "tip": "sabit_oran",
+          "oran": 1.25
+        },
         "aksiyon": null,
         "kilit": null
       },
@@ -461,7 +531,10 @@
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 40 }
+        "kilit": {
+          "tur": "sabir",
+          "min": 40
+        }
       },
       {
         "id": "ev_011_b",
@@ -481,7 +554,10 @@
         "nakit_etki_usd": -1000,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 1000 }
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 1000
+        }
       }
     ]
   },
@@ -506,7 +582,11 @@
         "sabir_etki": -10,
         "mutluluk_etki": -5,
         "nakit_etki_usd": 0,
-        "gelir_degisim": { "tip": "randomize", "min": -0.10, "max": 0.20 },
+        "gelir_degisim": {
+          "tip": "randomize",
+          "min": -0.10,
+          "max": 0.20
+        },
         "aksiyon": null,
         "kilit": null
       },
@@ -545,7 +625,10 @@
         "nakit_etki_usd": -625,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 625 }
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 625
+        }
       },
       {
         "id": "ev_013_b",
@@ -555,43 +638,10 @@
         "nakit_etki_usd": -200,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "nakit_usd", "min": 200 }
-      }
-    ]
-  },
-  {
-    "id": "ev_014",
-    "kategori": "yasam",
-    "bias_etiketi": "loss_aversion",
-    "baslik": "Emeklilik kararı",
-    "metin": "Emeklilik hakkın doğdu. Çalışmaya devam edebilir ya da emekli olabilirsin. Her ikisinin de avantajları var.",
-    "agirlik": 1,
-    "cooldown_yil": 999,
-    "tek_seferlik": true,
-    "tetik": "yas_aralik",
-    "min_yas": 60,
-    "max_yas": 68,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_014_a",
-        "metin": "Emekli ol, dinlenme zamanı",
-        "sabir_etki": 20,
-        "mutluluk_etki": 20,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": { "tip": "sabit_oran", "oran": 0.35 },
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_014_b",
-        "metin": "Çalışmaya devam et, geliri koru",
-        "sabir_etki": -10,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
+        "kilit": {
+          "tur": "nakit_usd",
+          "min": 200
+        }
       }
     ]
   },
@@ -617,7 +667,10 @@
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 35 }
+        "kilit": {
+          "tur": "sabir",
+          "min": 35
+        }
       },
       {
         "id": "ev_015_b",
@@ -637,7 +690,59 @@
         "nakit_etki_usd": 0,
         "gelir_degisim": null,
         "aksiyon": null,
-        "kilit": { "tur": "sabir", "min": 45 }
+        "kilit": {
+          "tur": "sabir",
+          "min": 45
+        }
+      }
+    ]
+  },
+  {
+    "id": "ev_emeklilik",
+    "kategori": "finansal",
+    "bias_etiketi": "status_quo",
+    "baslik": "Zorunlu Emeklilik",
+    "metin": "Yaşın ve çalıştığın kurumun politikaları gereği emekliliğe ayrılman gerekiyor. Artık maaşın yerine sabit bir emekli maaşı alacaksın.",
+    "agirlik": 3,
+    "cooldown_yil": 0,
+    "tek_seferlik": true,
+    "tetik": "her_zaman",
+    "min_yas": 60,
+    "max_yas": 65,
+    "gerekli_varlik": null,
+    "secenekler": [
+      {
+        "id": "ev_emeklilik_a",
+        "metin": "Kabul et, yeni döneme uyum sağla",
+        "sabir_etki": 5,
+        "mutluluk_etki": -5,
+        "nakit_etki_usd": 0,
+        "yillik_gelir_usd": 500,
+        "gelir_degisim": null,
+        "aksiyon": null,
+        "kilit": null
+      },
+      {
+        "id": "ev_emeklilik_b",
+        "metin": "İtiraz et, ama karar değişmiyor",
+        "sabir_etki": -10,
+        "mutluluk_etki": -10,
+        "nakit_etki_usd": 0,
+        "yillik_gelir_usd": 500,
+        "gelir_degisim": null,
+        "aksiyon": null,
+        "kilit": null
+      },
+      {
+        "id": "ev_emeklilik_c",
+        "metin": "Şaşkına dön, zamanın nasıl geçtiğini fark et",
+        "sabir_etki": 0,
+        "mutluluk_etki": -8,
+        "nakit_etki_usd": 0,
+        "yillik_gelir_usd": 500,
+        "gelir_degisim": null,
+        "aksiyon": null,
+        "kilit": null
       }
     ]
   }

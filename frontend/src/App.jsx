@@ -1,10 +1,12 @@
-import { useRef, useState } from "react"
 import IntroEkrani from "./IntroEkrani"
 import VarlikSayfasi from "./VarlikSayfasi"
 import YasamStandartlari from "./YasamStandartlari"
 import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalitesiEtkisi } from "./data/standartlar"
 import PortfoySayfasi from "./PortfoySayfasi"
-import characterAvatar from "./assets/character-avatar.png"
+import AcilisSayfasi from "./AcilisSayfasi"
+import { useEffect, useRef, useState } from "react"
+import BitisSayfasi from "./BitisSayfasi"
+
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
 
@@ -43,12 +45,13 @@ export default function App() {
   const [bars, setBars] = useState({ sabir: 50, mutluluk: 50 })
   const [nakit, setNakit] = useState(25000)
   const [introTamamlandi, setIntroTamamlandi] = useState(false)
+  const [acilisGecildi, setAcilisGecildi] = useState(false)
   const [karakterProfili, setKarakterProfili] = useState(null)
   const [aktifSayfa, setAktifSayfa] = useState("ana")
   const [yillikGelir, setYillikGelir] = useState(0)
   const [yasamGideri, setYasamGideri] = useState(
-  toplamAylikUsd(VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI) * 40 * 12
-)
+    toplamAylikUsd(VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI) * 40 * 12
+  )
   const [portfoy, setPortfoy] = useState({
     altin_gram: 0,
     bist_adet: 0,
@@ -62,6 +65,7 @@ export default function App() {
     mev_faiz_oran: 0.12,
   })
   const [standartlar, setStandartlar] = useState(VARSAYILAN_STANDARTLAR)
+  const [finalRaporHata, setFinalRaporHata] = useState(false)
 
   const nakitRef = useRef(nakit)
 
@@ -78,22 +82,29 @@ export default function App() {
   const [finalRapor, setFinalRapor] = useState(null)
   const [finalRaporLoading, setFinalRaporLoading] = useState(false)
   const [fiyatGecmisi, setFiyatGecmisi] = useState({
-  altin: [],
-  bist: [],
-  dolar: [],
-  mevduat: []
-})
-const [portfoyGecmisi, setPortfoyGecmisi] = useState([])
-const [enflasyonEndeksi, setEnflasyonEndeksi] = useState(100)
-const [enflasyonGecmisi, setEnflasyonGecmisi] = useState([])
-const [varlikKatsayilari, setVarlikKatsayilari] = useState({
-  altin: null,   // null = hiç alınmadı
-  bist: null,
-  dolar: null,
-  mevduat: null,
-})
+    altin: [],
+    bist: [],
+    dolar: [],
+    mevduat: []
+  })
+  const [portfoyGecmisi, setPortfoyGecmisi] = useState([])
+  const [enflasyonEndeksi, setEnflasyonEndeksi] = useState(100)
+  const [enflasyonGecmisi, setEnflasyonGecmisi] = useState([])
+  const [varlikKatsayilari, setVarlikKatsayilari] = useState({
+    altin: null,   // null = hiç alınmadı
+    bist: null,
+    dolar: null,
+    mevduat: null,
+  })
+  const [oyunBitti, setOyunBitti] = useState(false)
+  const [bitisSebebi, setBitisSebebi] = useState(null) // "yas_siniri" | "erken_olum"
 
-  
+  useEffect(() => {
+    if (oyunBitti && !finalRapor && !finalRaporLoading) {
+      finalRaporuOlustur()
+    }
+  }, [oyunBitti])
+
   async function yilAtla() {
     setLoading(true)
     try {
@@ -132,7 +143,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
       const yeniGelir = Math.round(yillikGelir * (1 + data.yil_sonucu.enflasyon / 100))
       const yeniGider = Math.round(yasamGideri * (1 + data.yil_sonucu.enflasyon / 100))
       setYillikGelir(yeniGelir)
-      
+
       const yeniDolarKuru = data.yil_sonucu.fiyatlar.dolar_try
       setYasamGideri(Math.round(toplamAylikUsd(standartlar, YASAM_STANDARTLARI) * yeniDolarKuru * 12))
 
@@ -157,35 +168,38 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
         setEnflasyonEndeksi(prev => prev / 1000)
         setEnflasyonGecmisi(prev => prev.map(p => ({ ...p, deger: Math.round(p.deger / 1000) })))
         setPortfoyGecmisi(prev => prev.map(p => ({ ...p, deger: Math.round(p.deger / 1000) })))
-          setPortfoy(prev => ({
-            ...prev,
-            mevduat_tl: Math.round(prev.mevduat_tl / 1000),
-          }))
-          setFiyatlar(prev => ({
-            altin_try_gram: Math.round(prev.altin_try_gram / 1000),
-            bist_endeks: Math.round(prev.bist_endeks / 1000),
-            dolar_try: Math.round(prev.dolar_try / 1000),
-            mev_faiz_oran: prev.mev_faiz_oran,
-          }))
-          // Geçmiş fiyatları da böl
-          setFiyatGecmisi(prev => ({
+        setPortfoy(prev => ({
+          ...prev,
+          mevduat_tl: Math.round(prev.mevduat_tl / 1000),
+        }))
+        setFiyatlar(prev => ({
+          altin_try_gram: Math.round(prev.altin_try_gram / 1000),
+          bist_endeks: Math.round(prev.bist_endeks / 1000),
+          dolar_try: Math.round(prev.dolar_try / 1000),
+          mev_faiz_oran: prev.mev_faiz_oran,
+        }))
+        // Geçmiş fiyatları da böl
+        setFiyatGecmisi(prev => ({
           altin: prev.altin.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
           bist: prev.bist.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
           dolar: prev.dolar.map(p => ({ ...p, fiyat: p.fiyat / 1000 })),
           mevduat: prev.mevduat,
         }))
-          setVarlikKatsayilari(prev => ({
-          altin:   prev.altin   !== null ? prev.altin   / 1000 : null,
-          bist:    prev.bist,
-          dolar:   prev.dolar   !== null ? prev.dolar   / 1000 : null,
+        setVarlikKatsayilari(prev => ({
+          altin: prev.altin !== null ? prev.altin / 1000 : null,
+          bist: prev.bist,
+          dolar: prev.dolar !== null ? prev.dolar / 1000 : null,
           mevduat: prev.mevduat !== null ? prev.mevduat / 1000 : null,
         }))
-        }
+
+      }
 
       const yeniYil = yil + 1
       const yeniYas = yas + 1
       setYil(yeniYil)
       setYas(yeniYas)
+
+
 
       // Yaşam kalitesi debuff
       const kalite = yasamKalitesiEtkisi(standartlar, YASAM_STANDARTLARI)
@@ -203,7 +217,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
         sabir: Math.min(80, Math.max(20, prev.sabir + kalite.sabir + finansalDebuff.sabir)),
         mutluluk: Math.min(80, Math.max(20, prev.mutluluk + kalite.mutluluk + finansalDebuff.mutluluk)),
       }))
-      
+
       setSonuc(data.yil_sonucu)
       setFiyatGecmisi(prev => ({
         altin: [...prev.altin, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.altin_try_gram }],
@@ -220,24 +234,24 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
           mevduat: data.yil_sonucu.mev_faiz / 100,
         }
         return {
-          altin:   prev.altin   !== null ? prev.altin   * (1 + getiriler.altin)   : null,
-          bist:    prev.bist    !== null ? prev.bist    * (1 + getiriler.bist)    : null,
-          dolar:   prev.dolar   !== null ? prev.dolar   * (1 + getiriler.dolar)   : null,
+          altin: prev.altin !== null ? prev.altin * (1 + getiriler.altin) : null,
+          bist: prev.bist !== null ? prev.bist * (1 + getiriler.bist) : null,
+          dolar: prev.dolar !== null ? prev.dolar * (1 + getiriler.dolar) : null,
           mevduat: prev.mevduat !== null ? prev.mevduat * (1 + getiriler.mevduat) : null,
         }
       })
-      
+
 
       if (data.yil_sonucu.event) {
-       setCoachYorumu(null)
-       setMevcutEvent(data.yil_sonucu.event)
-       setEventGecmisi(prev => ({
+        setCoachYorumu(null)
+        setMevcutEvent(data.yil_sonucu.event)
+        setEventGecmisi(prev => ({
           ...prev,
-         [data.yil_sonucu.event.id]: yil + 1
-       }))
+          [data.yil_sonucu.event.id]: yil + 1
+        }))
         if (data.yil_sonucu.event.tek_seferlik) {
           setTetiklenenler(prev => [...prev, data.yil_sonucu.event.id])
-       }
+        }
       }
       setGecmis(prev => [...prev, { yil: yeniYil, yas: yeniYas, ...data.yil_sonucu }])
       // Enflasyon endeksi güncelle
@@ -253,6 +267,17 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
         portfoy.mevduat_tl
       )
       setPortfoyGecmisi(prev => [...prev, { yil: yil + 1, deger: yeniPortfoyDegeri }])
+
+      if (yeniYas >= 85) {
+        setOyunBitti(true)
+        setBitisSebebi("yas_siniri")
+      } else if (yeniYas >= 75) {
+        if (Math.random() < erkenOlumOlasiligi(yeniYas)) {
+          setOyunBitti(true)
+          setBitisSebebi("erken_olum")
+        }
+      }
+
     } catch (e) {
       console.error(e)
     }
@@ -291,11 +316,15 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
     setIntroTamamlandi(true)
   }
 
+  function tekrarOyna() {
+    window.location.reload()
+  }
+
   function standartDegis(kategori, secimId) {
-  const yeniSecimler = { ...standartlar, [kategori]: secimId }
-  setStandartlar(yeniSecimler)
-  setYasamGideri(Math.round(toplamAylikUsd(yeniSecimler, YASAM_STANDARTLARI) * fiyatlar.dolar_try * 12))
-}
+    const yeniSecimler = { ...standartlar, [kategori]: secimId }
+    setStandartlar(yeniSecimler)
+    setYasamGideri(Math.round(toplamAylikUsd(yeniSecimler, YASAM_STANDARTLARI) * fiyatlar.dolar_try * 12))
+  }
 
   async function eventSeceneginiSec(secenek) {
     if (!mevcutEvent) return
@@ -310,6 +339,10 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
     if (secenek.nakit_etki_usd && secenek.nakit_etki_usd !== 0) {
       const tlEtkisi = Math.round(secenek.nakit_etki_usd * fiyatlar.dolar_try)
       nakitiGuncelle(Math.max(20000, nakitRef.current + tlEtkisi))
+    }
+
+    if (secenek.yillik_gelir_usd) {
+      setYillikGelir(Math.round(secenek.yillik_gelir_usd * fiyatlar.dolar_try * 12))
     }
 
     if (secenek.gelir_degisim) {
@@ -360,7 +393,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
 
   async function finalRaporuOlustur() {
     setFinalRaporLoading(true)
-
+    setFinalRaporHata(false)
     try {
       const res = await fetch(`${API_BASE_URL}/ajanlar/final-rapor`, {
         method: "POST",
@@ -368,19 +401,14 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
         body: JSON.stringify({
           profile: karakterProfili,
           event_history: eventKayitlari,
-          final_state: {
-            year: yil,
-            age: yas,
-            cash: nakit,
-            net_worth: toplamDeger,
-          },
+          final_state: { year: yil, age: yas, cash: nakit, net_worth: toplamDeger },
         }),
       })
-
       if (!res.ok) throw new Error("Final raporu oluşturulamadı.")
       setFinalRapor(await res.json())
     } catch (error) {
       console.error(error)
+      setFinalRaporHata(true)
     } finally {
       setFinalRaporLoading(false)
     }
@@ -457,10 +485,28 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
   const seviye = Math.max(1, yas - 24)
 
 
+  if (!acilisGecildi) {
+    return <AcilisSayfasi onBaslat={() => setAcilisGecildi(true)} fiyatlar={fiyatlar} />
+  }
   if (!introTamamlandi) {
     return <IntroEkrani onBitis={introyuBitir} />
   }
-
+  if (oyunBitti) {
+    return (
+      <BitisSayfasi
+        bitisSebebi={bitisSebebi}
+        finalRapor={finalRapor}
+        finalRaporLoading={finalRaporLoading}
+        finalRaporHata={finalRaporHata}
+        yas={yas}
+        yil={yil}
+        toplamDeger={toplamDeger}
+        nakit={nakit}
+        onTekrarDene={finalRaporuOlustur}
+        onTekrarOyna={tekrarOyna}
+      />
+    )
+  }
   return (
     <div className="bg-surface text-on-surface min-h-screen flex flex-col md:flex-row relative font-body-md">
       {/* Mobile Top Nav */}
@@ -470,16 +516,16 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
         </div>
         <div className="flex gap-4">
           <button onClick={() => setAktifSayfa("ana")}>
-             <span className={`material-symbols-outlined ${aktifSayfa === "ana" ? "text-primary" : "text-on-surface-variant"}`}>terminal</span>
+            <span className={`material-symbols-outlined ${aktifSayfa === "ana" ? "text-primary" : "text-on-surface-variant"}`}>terminal</span>
           </button>
           <button onClick={() => setAktifSayfa("varliklar")}>
-             <span className={`material-symbols-outlined ${aktifSayfa === "varliklar" ? "text-primary" : "text-on-surface-variant"}`}>trending_up</span>
+            <span className={`material-symbols-outlined ${aktifSayfa === "varliklar" ? "text-primary" : "text-on-surface-variant"}`}>trending_up</span>
           </button>
           <button onClick={() => setAktifSayfa("portfoy")}>
-             <span className={`material-symbols-outlined ${aktifSayfa === "portfoy" ? "text-primary" : "text-on-surface-variant"}`}>account_balance</span>
+            <span className={`material-symbols-outlined ${aktifSayfa === "portfoy" ? "text-primary" : "text-on-surface-variant"}`}>account_balance</span>
           </button>
           <button onClick={() => setAktifSayfa("standartlar")}>
-             <span className={`material-symbols-outlined ${aktifSayfa === "standartlar" ? "text-primary" : "text-on-surface-variant"}`}>psychology</span>
+            <span className={`material-symbols-outlined ${aktifSayfa === "standartlar" ? "text-primary" : "text-on-surface-variant"}`}>psychology</span>
           </button>
         </div>
       </header>
@@ -505,14 +551,13 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
             { id: "portfoy", label: "Varlık Portföyü", icon: "account_balance" },
             { id: "standartlar", label: "Psikolojik Profil", icon: "psychology" },
           ].map((item) => (
-             <button
+            <button
               key={item.id}
               onClick={() => setAktifSayfa(item.id)}
-              className={`w-full flex items-center p-stack-md mb-stack-sm font-data-sm text-data-sm uppercase transition-colors ${
-                aktifSayfa === item.id 
-                  ? "bg-primary text-on-primary font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" 
-                  : "text-on-surface-variant hover:text-primary hover:bg-surface-container-high"
-              }`}
+              className={`w-full flex items-center p-stack-md mb-stack-sm font-data-sm text-data-sm uppercase transition-colors ${aktifSayfa === item.id
+                ? "bg-primary text-on-primary font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                : "text-on-surface-variant hover:text-primary hover:bg-surface-container-high"
+                }`}
             >
               <span className="material-symbols-outlined mr-3">{item.icon}</span>
               {item.label}
@@ -520,10 +565,10 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
           ))}
         </div>
         <div className="mt-auto">
-          <button 
+          <button
             className="w-full bg-primary-container text-background font-data-lg text-data-lg uppercase py-3 btn-shadow border border-outline transition-transform font-bold mb-6 disabled:opacity-50"
-            onClick={yilAtla} 
-            disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent}
+            onClick={yilAtla}
+            disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent || oyunBitti}
           >
             {loading ? "SİSTEM_MEŞGUL" : `YIL_${yil + 1} ÇALIŞTIR`}
           </button>
@@ -532,8 +577,30 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
 
       {/* Main Content Area */}
       <main className="flex-1 p-margin-mobile md:p-margin-desktop overflow-y-auto">
+        {oyunBitti && (
+          <div className="bg-primary-container border border-outline card-shadow p-stack-md text-background mb-stack-lg">
+            <div className="font-headline-md text-headline-md font-black uppercase">Oyun Sona Erdi</div>
+            <p className="font-data-sm text-data-sm uppercase mt-1 mb-4">
+              {bitisSebebi === "yas_siniri" ? "85 yaşına ulaştın." : "Beklenmedik bir şekilde hayatın sona erdi."}
+            </p>
+            <button
+              onClick={tekrarOyna}
+              className="bg-background text-primary px-4 py-2 font-bold uppercase border border-outline btn-shadow transition-transform hover:bg-surface-container"
+            >
+              YENİDEN BAŞLA
+            </button>
+          </div>
+        )}
         {aktifSayfa === "ana" && (
           <div className="flex flex-col gap-stack-lg">
+            {/* TEST BUTONU - GEÇİCİ */}
+            <button
+              onClick={() => { setYas(54); setYil(2056); }}
+              className="bg-error text-on-error p-2 text-xs font-bold w-fit border border-outline btn-shadow"
+            >
+              [DEV TEST] 54 YAŞINA ATLA
+            </button>
+
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-outline-variant pb-stack-md">
               <div>
@@ -558,11 +625,11 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
               <MetricCard label="Aylık Gelir" value={money(yillikGelir)} hint={`Net akış: ${money(netAkis)}`} />
               <MetricCard label="Sabır" value={`${bars.sabir}/100`} hint="Psikolojik" />
               <MetricCard label="Mutluluk" value={`${bars.mutluluk}/100`} hint="Psikolojik" />
-              <MetricCard 
-                label="Enflasyon" 
-                value={sonuc ? `%${sonuc.enflasyon}` : "—"} 
-                hint={sonuc ? sonuc.enf_durum : "SİSTEM_HAZIR"} 
-                alert={krizMi} 
+              <MetricCard
+                label="Enflasyon"
+                value={sonuc ? `%${sonuc.enflasyon}` : "—"}
+                hint={sonuc ? sonuc.enf_durum : "SİSTEM_HAZIR"}
+                alert={krizMi}
               />
             </div>
 
@@ -592,11 +659,10 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
                             key={i}
                             disabled={kilitli}
                             onClick={() => !kilitli && eventSeceneginiSec(s)}
-                            className={`p-3 text-left border ${
-                              kilitli 
-                                ? "bg-surface-container-highest border-outline-variant text-on-surface-variant opacity-50 cursor-not-allowed" 
-                                : "bg-surface-variant border-outline hover:border-primary hover:bg-surface-container-high transition-colors text-on-surface btn-shadow"
-                            }`}
+                            className={`p-3 text-left border ${kilitli
+                              ? "bg-surface-container-highest border-outline-variant text-on-surface-variant opacity-50 cursor-not-allowed"
+                              : "bg-surface-variant border-outline hover:border-primary hover:bg-surface-container-high transition-colors text-on-surface btn-shadow"
+                              }`}
                           >
                             <div className="font-data-sm text-data-sm uppercase mb-1">{kilitli ? "KİLİTLİ" : `SEÇ_0${i + 1}`}</div>
                             <div className="font-bold">{s.metin}</div>
@@ -620,7 +686,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
 
               {/* AI Coach Panel */}
               <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col">
-                 <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-4">
+                <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-4">
                   <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Yapay Zeka Analiz Kaydı</h2>
                   <span className="material-symbols-outlined text-on-surface-variant">smart_toy</span>
                 </div>
@@ -644,7 +710,7 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
                   </div>
                 )}
                 {!coachLoading && !coachYorumu && (
-                   <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center">
+                  <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center">
                     <span className="material-symbols-outlined text-4xl mb-2">history</span>
                     <p className="font-data-sm text-data-sm uppercase">KARAR KAYITLARI BEKLENİYOR</p>
                   </div>
@@ -655,13 +721,13 @@ const [varlikKatsayilari, setVarlikKatsayilari] = useState({
             {/* Year Summary */}
             {sonuc && (
               <div className={`border card-shadow p-stack-md flex flex-col ${krizMi ? "bg-error-container border-error" : "bg-surface-container border-outline"}`}>
-                 <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-2">
+                <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-2">
                   <h2 className={`font-headline-md text-headline-md uppercase ${krizMi ? "text-on-error-container" : "text-on-surface"}`}>Yıl Özeti</h2>
                   <span className="font-data-sm text-data-sm uppercase">{sonuc.enf_durum}</span>
                 </div>
                 <p className={krizMi ? "text-on-error-container" : "text-on-surface-variant"}>
-                  Enflasyon: <strong>%{sonuc.enflasyon}</strong>. 
-                  BIST reel getiri: <strong className={sonuc.reel_bist >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_bist)}</strong>, 
+                  Enflasyon: <strong>%{sonuc.enflasyon}</strong>.
+                  BIST reel getiri: <strong className={sonuc.reel_bist >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_bist)}</strong>,
                   Altın reel getiri: <strong className={sonuc.reel_altin >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_altin)}</strong>.
                 </p>
                 {sonuc.redenominasyon && (
@@ -738,6 +804,17 @@ function formatPct(val) {
 
 function pctClass(val) {
   return val >= 0 ? "positive" : "negative"
+}
+
+function erkenOlumOlasiligi(yas) {
+  const minYas = 75
+  const maxYas = 84
+  const minOlasilik = 0.03
+  const maxOlasilik = 0.65
+  if (yas <= minYas) return minOlasilik
+  if (yas >= maxYas) return maxOlasilik
+  const oran = (yas - minYas) / (maxYas - minYas)
+  return minOlasilik + oran * (maxOlasilik - minOlasilik)
 }
 
 function riskEtiketi(riskLevel) {

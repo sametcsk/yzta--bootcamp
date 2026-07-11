@@ -16,6 +16,12 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
     if portfoy is None:
         portfoy = {}
 
+    # Zorunlu emeklilik — 60'a kadar hiç tetiklenmediyse kesin tetikle
+    if mevcut_yas >= 65 and "ev_emeklilik" not in tetiklenenler:
+        emeklilik_event = next((e for e in EVENT_HAVUZU if e["id"] == "ev_emeklilik"), None)
+        if emeklilik_event:
+            return emeklilik_event
+
     uygun = []
     for e in EVENT_HAVUZU:
         # Tek seferlik kontrolü
@@ -54,7 +60,8 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
     if not uygun:
         uygun = [e for e in EVENT_HAVUZU 
                  if e.get("tetik", "her_zaman") == "her_zaman"
-                 and e.get("gerekli_varlik") is None]
+                 and e.get("gerekli_varlik") is None
+                 and not (e.get("tek_seferlik", False) and e["id"] in tetiklenenler)]
     if not uygun:
         return None
 
