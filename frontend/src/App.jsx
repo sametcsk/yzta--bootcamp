@@ -505,8 +505,7 @@ export default function App() {
   if (supabaseAktif && !oturum) {
     return <GirisSayfasi onGirisBasarili={(session) => setOturum(session)} />
   }
-}
-if (!introTamamlandi) {
+  if (!introTamamlandi) {
   return <IntroEkrani onBitis={introyuBitir} />
 }
 if (oyunBitti) {
