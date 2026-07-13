@@ -11,21 +11,56 @@ const BOOT_SATIRLARI = [
 export default function AcilisSayfasi({ onBaslat, fiyatlar }) {
   const [gorunenSatir, setGorunenSatir] = useState(0)
   const [ctaGoster, setCtaGoster] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(true)
 
   useEffect(() => {
+    if (showTutorial) return
     if (gorunenSatir < BOOT_SATIRLARI.length) {
       const t = setTimeout(() => setGorunenSatir((n) => n + 1), 380)
       return () => clearTimeout(t)
     }
     const t = setTimeout(() => setCtaGoster(true), 300)
     return () => clearTimeout(t)
-  }, [gorunenSatir])
+  }, [gorunenSatir, showTutorial])
 
   const dolar = fiyatlar?.dolar_try ? fiyatlar.dolar_try.toFixed(2) : "40.00"
   const bist = fiyatlar?.bist_endeks ? fiyatlar.bist_endeks.toFixed(0) : "100"
 
   return (
     <div className="bg-surface text-on-surface min-h-screen flex flex-col font-body-md relative overflow-hidden">
+      {/* Eğitim Kutusu (Tutorial Modal) */}
+      {showTutorial && (
+        <div className="absolute inset-0 bg-background/95 z-[100] flex items-center justify-center p-margin-mobile md:p-margin-desktop backdrop-blur-sm">
+          <div className="bg-surface-container border border-outline card-shadow max-w-2xl w-full p-stack-lg flex flex-col gap-4 animate-in fade-in zoom-in duration-300">
+            <h2 className="font-headline-lg text-headline-lg text-primary uppercase border-b border-outline-variant pb-2">
+              FinSim'e Hoş Geldin!
+            </h2>
+            
+            <div className="text-on-surface text-body-lg flex flex-col gap-3">
+              <p>
+                Bu simülasyonda 25 yaşından başlayarak 60 yıllık bir finansal yolculuğa çıkacaksın. Karşına çıkan fırsatlara, krizlere ve rastgele olaylara vereceğin cevaplar; finansal gücünü, meslek hayatını ve psikolojik durumunu (sabır ve mutluluk) şekillendirecek.
+              </p>
+              <p>
+                Amacın hayatta kalmak ve servetini büyütmek. Ancak en büyük düşmanın <strong className="text-error uppercase">Enflasyon</strong>!
+              </p>
+              <p>
+                Eğer paranı sadece nakit olarak tutarsan, alım gücün hızla eriyecektir. Paranı enflasyona karşı korumak için <strong className="text-primary">"Piyasa Verileri"</strong> sekmesini kullanmalı ve elindeki nakitle doğru zamanda Altın, BIST (Borsa), Döviz veya Mevduat yatırımı yapmalısın.
+              </p>
+              <p className="font-bold text-primary italic mt-2 text-center text-xl">
+                Unutma: Her kararının bir bedeli vardır.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowTutorial(false)}
+              className="mt-4 bg-primary-container text-background font-data-lg text-data-lg uppercase py-4 px-8 btn-shadow border border-outline font-bold transition-transform hover:-translate-y-0.5 w-full md:w-auto md:self-end"
+            >
+              Anladım, Başla!
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Ticker bar — üst bilgi şeridi */}
       <div className="w-full bg-surface-container-low border-b border-outline-variant overflow-hidden">
         <div className="flex gap-8 py-2 px-margin-mobile md:px-margin-desktop font-data-sm text-data-sm uppercase text-on-surface-variant whitespace-nowrap">
