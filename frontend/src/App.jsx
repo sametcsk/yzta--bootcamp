@@ -766,6 +766,9 @@ return (
           sonuc={sonuc}
           varlikAl={varlikAl}
           varlikSat={varlikSat}
+          nakit={nakit}
+          toplamDeger={toplamDeger}
+          krizMi={krizMi}
         />
       )}
 

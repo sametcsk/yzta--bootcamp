@@ -171,13 +171,25 @@ function AlSatPanel({ varlik, onAl, onSat }) {
   )
 }
 
-export default function VarlikSayfasi({ fiyatGecmisi, fiyatlar, portfoy, sonuc, varlikAl, varlikSat }) {
+export default function VarlikSayfasi({ fiyatGecmisi, fiyatlar, portfoy, sonuc, varlikAl, varlikSat, nakit, toplamDeger, krizMi }) {
   return (
     <div className="flex flex-col gap-stack-lg">
       <div className="border-b border-outline-variant pb-stack-md">
         <h1 className="font-headline-lg text-headline-lg text-primary uppercase">Piyasa Verileri</h1>
         <p className="font-data-sm text-data-sm text-on-surface-variant uppercase mt-1">Canlı Varlık Takip Sistemi</p>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+        <BilgiKarti label="Portföy Değeri" value={money(toplamDeger)} hint="Net Servet" />
+        <BilgiKarti label="Nakit Rezervi" value={money(nakit)} hint="Kullanılabilir Nakit" />
+        <BilgiKarti
+          label="Enflasyon"
+          value={sonuc ? `%${sonuc.enflasyon}` : "—"}
+          hint={sonuc ? sonuc.enf_durum : "SİSTEM_HAZIR"}
+          alert={krizMi}
+        />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
         {["altin", "bist", "dolar", "mevduat"].map(varlik => (
           <VarlikKart
@@ -194,4 +206,25 @@ export default function VarlikSayfasi({ fiyatGecmisi, fiyatlar, portfoy, sonuc, 
       </div>
     </div>
   )
+}
+
+function BilgiKarti({ label, value, hint, alert }) {
+  return (
+    <div className={`border card-shadow p-stack-md flex flex-col ${alert ? "bg-error-container border-error" : "bg-surface-container border-outline"}`}>
+      <div className={`font-data-sm text-data-sm uppercase mb-1 ${alert ? "text-on-error-container" : "text-on-surface-variant"}`}>
+        {label}
+      </div>
+      <div className={`font-data-lg text-data-lg mb-2 ${alert ? "text-error" : "text-primary"}`}>
+        {value}
+      </div>
+      <div className={`font-data-sm text-data-sm uppercase mt-auto ${alert ? "text-on-error-container opacity-80" : "text-on-surface-variant opacity-50"}`}>
+        {hint}
+      </div>
+    </div>
+  )
+}
+
+function money(value) {
+  if (value === undefined || value === null) return "₺0";
+  return `₺${Number(value).toLocaleString("tr-TR")}`
 }
