@@ -35,7 +35,7 @@ export default function AcilisSayfasi({ onBaslat, fiyatlar }) {
             <h2 className="font-headline-lg text-headline-lg text-primary uppercase border-b border-outline-variant pb-2">
               FinSim'e Hoş Geldin!
             </h2>
-            
+
             <div className="text-on-surface text-body-lg flex flex-col gap-3">
               <p>
                 Bu simülasyonda 25 yaşından başlayarak 60 yıllık bir finansal yolculuğa çıkacaksın. Karşına çıkan fırsatlara, krizlere ve rastgele olaylara vereceğin cevaplar; finansal gücünü, meslek hayatını ve psikolojik durumunu (sabır ve mutluluk) şekillendirecek.
