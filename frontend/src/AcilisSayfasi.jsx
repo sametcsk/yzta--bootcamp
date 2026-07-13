@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import LiderlikModal from "./LiderlikModal"
 
 const BOOT_SATIRLARI = [
   "FINSIM_OS v1.0 başlatılıyor...",
@@ -12,6 +13,7 @@ export default function AcilisSayfasi({ onBaslat, fiyatlar }) {
   const [gorunenSatir, setGorunenSatir] = useState(0)
   const [ctaGoster, setCtaGoster] = useState(false)
   const [showTutorial, setShowTutorial] = useState(true)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
 
   useEffect(() => {
     if (showTutorial) return
@@ -120,6 +122,19 @@ export default function AcilisSayfasi({ onBaslat, fiyatlar }) {
           )}
         </div>
       </div>
+
+      {/* Dev Leaderboard Button */}
+      <button
+        onClick={() => setShowLeaderboard(true)}
+        className="fixed bottom-4 right-4 bg-surface-container-high text-on-surface-variant p-2 font-data-sm text-data-sm uppercase border border-outline-variant hover:text-primary transition-colors z-[60]"
+      >
+        [DEV] Leaderboard
+      </button>
+
+      {/* Dev Leaderboard Modal */}
+      {showLeaderboard && (
+        <LiderlikModal onClose={() => setShowLeaderboard(false)} />
+      )}
 
       <footer className="w-full border-t border-outline-variant px-margin-mobile md:px-margin-desktop py-stack-sm">
         <p className="font-data-sm text-data-sm uppercase text-on-surface-variant opacity-50">
