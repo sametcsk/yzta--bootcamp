@@ -27,6 +27,8 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     bist             = state.get("bist", 100.0)
     mevduat_birikim  = state.get("mevduat_birikim", 100.0)
     mevcut_yas       = state.get("yas", 25)
+    is_yeri          = state.get("is_yeri")
+    is_level         = state.get("is_level", 1)
 
     # 1. Enflasyon
     enf, enf_rejim, enf_sakin_yil, enf_kriz_mevcut, enf_kriz_dusus, enf_durum = \
@@ -66,7 +68,9 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
         event_gecmisi=event_gecmisi,
         enf_rejim=enf_rejim,
         tetiklenenler=tetiklenenler,
-        portfoy=state.get("portfoy", {})
+        portfoy=state.get("portfoy", {}),
+        is_yeri=is_yeri,
+        is_level=is_level
     )
 
     return {

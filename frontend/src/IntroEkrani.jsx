@@ -6,6 +6,7 @@ function kilitliMi(kilit, nakit, sabir, mutluluk) {
   if (kilit.tur === "nakit") return nakit < kilit.min
   if (kilit.tur === "sabir") return sabir < kilit.min
   if (kilit.tur === "mutluluk") return mutluluk < kilit.min
+  if (kilit.tur === "gelistirilmemis") return true
   return false
 }
 
@@ -16,8 +17,10 @@ export default function IntroEkrani({ onBitis }) {
   const [sabir, setSabir] = useState(BASLANGIC.sabir)
   const [mutluluk, setMutluluk] = useState(BASLANGIC.mutluluk)
   const [gelir, setGelir] = useState(0)
+  const [universiteGitti, setUniversiteGitti] = useState(true)
   const cevaplarRef = useRef([])
   const ilerlemeKilitliRef = useRef(false)
+  const meslekRef = useRef(null)
 
   const soru = SORULAR[soruIndex]
   const seciliSecenek = secim !== null ? soru.secenekler[secim] : null
@@ -30,6 +33,13 @@ export default function IntroEkrani({ onBitis }) {
     if (secim === null || ilerlemeKilitliRef.current) return
     ilerlemeKilitliRef.current = true
     const s = soru.secenekler[secim]
+
+    if (soru.id === 4 && secim === 2) {
+      setUniversiteGitti(false)
+    }
+    if (soru.id === 6 && s.meslek) {
+      meslekRef.current = s.meslek
+    }
 
     const yeniNakit = Math.max(20000, nakit + s.nakit)
     const yeniSabir = Math.min(80, Math.max(20, sabir + s.sabir))
@@ -61,6 +71,7 @@ export default function IntroEkrani({ onBitis }) {
         mutluluk: yeniMutluluk,
         yillikGelir: s.gelir || gelir || 216000,
         answers: yeniCevaplar,
+        meslek: meslekRef.current,
       })
     } else {
       setSoruIndex((oncekiIndex) => oncekiIndex + 1)
@@ -77,6 +88,7 @@ export default function IntroEkrani({ onBitis }) {
           mutluluk: 60,
           yillikGelir: 300000,
           answers: [],
+          meslek: "beyaz_yaka",
         })}
         className="absolute top-4 right-4 text-data-sm font-data-sm opacity-30 hover:opacity-100 hover:text-primary uppercase"
       >
@@ -92,15 +104,14 @@ export default function IntroEkrani({ onBitis }) {
           <div className="font-data-sm text-data-sm uppercase text-on-surface-variant mb-6 border-b border-outline-variant pb-2">
             AŞAMA {soruIndex + 1} / {SORULAR.length}
           </div>
-          
+
           <div className="flex flex-col gap-3 flex-grow">
             {SORULAR.map((gorev, i) => (
-              <div 
-                key={gorev.kategori} 
-                className={`flex items-center gap-3 font-data-sm text-data-sm uppercase ${
-                  i === soruIndex ? "text-primary font-bold" : 
+              <div
+                key={gorev.kategori}
+                className={`flex items-center gap-3 font-data-sm text-data-sm uppercase ${i === soruIndex ? "text-primary font-bold" :
                   i < soruIndex ? "text-on-surface opacity-60" : "text-on-surface-variant opacity-30"
-                }`}
+                  }`}
               >
                 <span className="material-symbols-outlined text-sm">
                   {i < soruIndex ? "check_circle" : i === soruIndex ? "radio_button_checked" : "radio_button_unchecked"}
@@ -131,7 +142,7 @@ export default function IntroEkrani({ onBitis }) {
 
           <div className="flex flex-col gap-3 flex-grow mb-stack-lg">
             {soru.secenekler.map((s, i) => {
-              const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk)
+              const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk) || (soru.id === 6 && i === 0 && !universiteGitti)
               const secili = secim === i
 
               return (
@@ -139,13 +150,12 @@ export default function IntroEkrani({ onBitis }) {
                   key={i}
                   onClick={() => !kilitli && setSecim(i)}
                   disabled={kilitli}
-                  className={`flex flex-col p-4 text-left border transition-colors ${
-                    kilitli 
-                      ? "bg-surface-container-highest border-outline-variant opacity-50 cursor-not-allowed" 
-                      : secili 
-                        ? "bg-primary-container border-primary text-background card-shadow font-bold" 
-                        : "bg-surface-variant border-outline hover:border-primary hover:bg-surface-container-high text-on-surface"
-                  }`}
+                  className={`flex flex-col p-4 text-left border transition-colors ${kilitli
+                    ? "bg-surface-container-highest border-outline-variant opacity-50 cursor-not-allowed"
+                    : secili
+                      ? "bg-primary-container border-primary text-background card-shadow font-bold"
+                      : "bg-surface-variant border-outline hover:border-primary hover:bg-surface-container-high text-on-surface"
+                    }`}
                 >
                   <div className="flex justify-between items-start w-full">
                     <span className="font-data-sm text-data-sm uppercase mb-1">
@@ -163,7 +173,12 @@ export default function IntroEkrani({ onBitis }) {
                   {s.gelir_aciklama && !kilitli && (
                     <div className="text-sm opacity-80 mt-1 font-data-sm uppercase">GELİR: {s.gelir_aciklama}</div>
                   )}
-                  {kilitli && s.kilit && (
+                  {kilitli && soru.id === 6 && i === 0 && !universiteGitti && (
+                    <div className="text-error font-data-sm text-data-sm mt-2 uppercase">
+                      GEREKSİNİM: ÜNİVERSİTE EĞİTİMİ
+                    </div>
+                  )}
+                  {kilitli && s.kilit && !(soru.id === 6 && i === 0 && !universiteGitti) && (
                     <div className="text-error font-data-sm text-data-sm mt-2 uppercase">
                       GEREKSİNİM: {kilitMetni(s.kilit)}
                     </div>
@@ -177,11 +192,10 @@ export default function IntroEkrani({ onBitis }) {
             <div className="text-on-surface-variant text-sm flex-1 mr-4">
               {seciliSecenek ? "Onay bekleniyor..." : "Devam etmek için bir seçenek belirleyin."}
             </div>
-            <button 
-              className={`bg-primary text-background font-data-lg text-data-lg uppercase py-3 px-8 font-bold border border-outline transition-transform ${
-                secim === null ? "opacity-50 cursor-not-allowed" : "btn-shadow hover:bg-primary-fixed"
-              }`}
-              onClick={devamEt} 
+            <button
+              className={`bg-primary text-background font-data-lg text-data-lg uppercase py-3 px-8 font-bold border border-outline transition-transform ${secim === null ? "opacity-50 cursor-not-allowed" : "btn-shadow hover:bg-primary-fixed"
+                }`}
+              onClick={devamEt}
               disabled={secim === null}
             >
               {soruIndex + 1 >= SORULAR.length ? "SİSTEMİ BAŞLAT" : "ONAYLA"}
@@ -214,6 +228,7 @@ function kilitMetni(kilit) {
   if (kilit.tur === "nakit") return `₺${(kilit.min / 1000).toFixed(0)}k NAKİT`
   if (kilit.tur === "sabir") return `${kilit.min} SABIR`
   if (kilit.tur === "mutluluk") return `${kilit.min} MUTLULUK`
+  if (kilit.tur === "gelistirilmemis") return kilit.mesaj?.toUpperCase() || "YAKINDA"
   return "KİLİTLİ"
 }
 

@@ -10,7 +10,8 @@ with open(_EVENT_DOSYASI, "r", encoding="utf-8") as f:
 
 
 def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, 
-              enf_rejim: int = 0, tetiklenenler: list = None, portfoy=None) -> dict:
+              enf_rejim: int = 0, tetiklenenler: list = None, portfoy=None,
+              is_yeri: str = None, is_level: int = 1) -> dict:
     if tetiklenenler is None:
         tetiklenenler = []
     if portfoy is None:
@@ -38,6 +39,17 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
             continue
         if max_yas and mevcut_yas > max_yas:
             continue
+        # Meslek kontrolü — meslek alanı yoksa herkese açık, varsa sadece o mesleğe
+        gerekli_meslek = e.get("meslek")
+        if gerekli_meslek and gerekli_meslek != is_yeri:
+            continue
+        # Level aralığı kontrolü — meslek bazlı event'ler için
+        min_level = e.get("min_level")
+        max_level = e.get("max_level")
+        if min_level and is_level < min_level:
+            continue
+        if max_level and is_level > max_level:
+            continue
         # Tetik tipi kontrolü
         tetik = e.get("tetik", "her_zaman")
         if tetik == "kriz" and enf_rejim != 1:
@@ -61,7 +73,8 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
         uygun = [e for e in EVENT_HAVUZU 
                  if e.get("tetik", "her_zaman") == "her_zaman"
                  and e.get("gerekli_varlik") is None
-                 and not (e.get("tek_seferlik", False) and e["id"] in tetiklenenler)]
+                 and not (e.get("tek_seferlik", False) and e["id"] in tetiklenenler)
+                 and (not e.get("meslek") or e.get("meslek") == is_yeri)]
     if not uygun:
         return None
 

@@ -56,6 +56,7 @@ export const SORULAR = [
     secenekler: [
       {
         metin: "Alanımda iyi bir iş buldum",
+        meslek: "beyaz_yaka",
         nakit: 30000, sabir: 10, mutluluk: 10, risk: 0,
         gelir: 300000,
         gelir_aciklama: "Aylık ~25.000 ₺",
@@ -63,6 +64,7 @@ export const SORULAR = [
       },
       {
         metin: "İstediğim değil ama çalıştım",
+        meslek: "memur",
         nakit: 20000, sabir: 5, mutluluk: -5, risk: 1,
         gelir: 216000,
         gelir_aciklama: "Aylık ~18.000 ₺",
@@ -70,10 +72,27 @@ export const SORULAR = [
       },
       {
         metin: "Uzun süre aradım, zor oldu",
+        meslek: "mavi_yaka",
         nakit: -15000, sabir: 15, mutluluk: -10, risk: 1,
         gelir: 144000,
         gelir_aciklama: "Aylık ~12.000 ₺",
         kilit: null
+      },
+      {
+        metin: "Emlakçılığa başladım",
+        meslek: "emlakci",
+        nakit: 0, sabir: 0, mutluluk: 0, risk: 1,
+        gelir: 180000,
+        gelir_aciklama: null,
+        kilit: { tur: "gelistirilmemis", mesaj: "Gayrimenkul sistemi eklendiğinde açılacak" }
+      },
+      {
+        metin: "Kendi işimi kurdum",
+        meslek: "girisimci",
+        nakit: 0, sabir: 0, mutluluk: 0, risk: 2,
+        gelir: 180000,
+        gelir_aciklama: null,
+        kilit: { tur: "gelistirilmemis", mesaj: "Girişimcilik sistemi eklendiğinde açılacak" }
       },
     ]
   },
