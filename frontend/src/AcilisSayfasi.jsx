@@ -4,7 +4,7 @@ import LiderlikModal from "./LiderlikModal"
 const BOOT_SATIRLARI = [
   "FINSIM_OS v1.0 başlatılıyor...",
   "60 yıllık ekonomik veri seti yükleniyor... TAMAM",
-  "Enflasyon / kur / BIST / altın modülleri bağlandı... TAMAM",
+  "Enflasyon / kur / Borsa / altın modülleri bağlandı... TAMAM",
   "Davranışsal analiz katmanı (AI Agents) hazır",
   "KARAKTER OLUŞTURMA MODÜLÜ BEKLEMEDE",
 ]
@@ -46,7 +46,7 @@ export default function AcilisSayfasi({ onBaslat, fiyatlar }) {
                 Amacın hayatta kalmak ve servetini büyütmek. Ancak en büyük düşmanın <strong className="text-error uppercase">Enflasyon</strong>!
               </p>
               <p>
-                Eğer paranı sadece nakit olarak tutarsan, alım gücün hızla eriyecektir. Paranı enflasyona karşı korumak için <strong className="text-primary">"Piyasa Verileri"</strong> sekmesini kullanmalı ve elindeki nakitle doğru zamanda Altın, BIST (Borsa), Döviz veya Mevduat yatırımı yapmalısın.
+                Eğer paranı sadece nakit olarak tutarsan, alım gücün hızla eriyecektir. Paranı enflasyona karşı korumak için <strong className="text-primary">"Piyasa Verileri"</strong> sekmesini kullanmalı ve elindeki nakitle doğru zamanda Altın, Borsa, Döviz veya Mevduat yatırımı yapmalısın.
               </p>
               <p className="font-bold text-primary italic mt-2 text-center text-xl">
                 Unutma: Her kararının bir bedeli vardır.
@@ -68,7 +68,7 @@ export default function AcilisSayfasi({ onBaslat, fiyatlar }) {
         <div className="flex gap-8 py-2 px-margin-mobile md:px-margin-desktop font-data-sm text-data-sm uppercase text-on-surface-variant whitespace-nowrap">
           <span>USD/TRY <span className="text-primary">{dolar}</span></span>
           <span className="opacity-40">|</span>
-          <span>BIST100 <span className="text-primary">{bist}</span></span>
+          <span>Borsa <span className="text-primary">{bist}</span></span>
           <span className="opacity-40">|</span>
           <span>SİSTEM <span className="text-primary">ÇEVRİMİÇİ</span></span>
         </div>

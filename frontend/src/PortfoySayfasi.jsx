@@ -23,12 +23,12 @@ const VARLIK_RENK = {
 
 const VARLIK_AD = {
   altin: "Altın",
-  bist: "BIST",
+  bist: "Borsa",
   dolar: "Dolar",
   mevduat: "Mevduat",
 }
 
-function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portfoy, fiyatlar, varlikKatsayilari, nakit }) {
+function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portfoy, fiyatlar, varlikKatsayilari, nakit, onAcTutorial }) {
   const [aralik, setAralik] = useState("tum")
 
   const portfoyGrafigi = (() => {
@@ -63,7 +63,7 @@ function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portfoy, fiyatlar, v
   const pieData = [
     { name: "Nakit", value: nakit, renk: "#e8eaf0" },
     { name: "Altın", value: altinDeger, renk: "#f5c842" },
-    { name: "BIST", value: bistDeger, renk: "#34d399" },
+    { name: "Borsa", value: bistDeger, renk: "#34d399" },
     { name: "Dolar", value: dolarDeger, renk: "#60a8f0" },
     { name: "Mevduat", value: mevduatDeger, renk: "#a78bfa" },
   ].filter(d => d.value > 0)
@@ -77,7 +77,12 @@ function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portfoy, fiyatlar, v
     <div className="flex flex-col gap-stack-lg">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-stack-lg gap-4 border-b border-outline-variant pb-stack-md">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-primary uppercase">PORTFÖY ANALİZİ</h1>
+          <h1 className="font-headline-lg text-headline-lg text-primary uppercase flex items-center gap-2">
+            PORTFÖY ANALİZİ
+            <button onClick={onAcTutorial} className="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl">help</span>
+            </button>
+          </h1>
           <p className="font-data-sm text-data-sm text-on-surface-variant uppercase mt-1">Son Güncelleme: YIL {dilim2[dilim2.length - 1]?.yil || "—"} | SİSTEM_HAZIR</p>
         </div>
         <div className="flex items-center gap-4 bg-surface-container-high p-3 border border-outline card-shadow">

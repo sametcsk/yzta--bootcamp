@@ -12,12 +12,12 @@ const SEGMENT_BILGI = {
 }
 const VARLIK_CONFIG = {
   altin: { ad: "Altın", icon: "Au", renk: "#f5c842", birim: "₺/gr", sinif: "Nadir Varlık", tone: "gold" },
-  bist:  { ad: "BIST",  icon: "BI", renk: "#34d399", birim: "endeks", sinif: "Riskli Varlık", tone: "green" },
+  bist:  { ad: "Borsa",  icon: "BI", renk: "#34d399", birim: "endeks", sinif: "Riskli Varlık", tone: "green" },
   dolar: { ad: "Dolar", icon: "$",  renk: "#60a8f0", birim: "₺/$", sinif: "Döviz", tone: "blue" },
   mevduat: { ad: "Mevduat", icon: "%", renk: "#a78bfa", birim: "% faiz", sinif: "Güvenli Alan", tone: "violet" },
 }
 
-function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSat }) {
+function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSat, nakit }) {
   const cfg = VARLIK_CONFIG[varlik]
   const gecmis = fiyatGecmisi[varlik] || []
   const sonFiyat = gecmis.length > 0 ? gecmis[gecmis.length - 1].fiyat : null
@@ -49,6 +49,8 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
     dolar: sonuc.reel_doviz,
     mevduat: sonuc.reel_mevduat,
   }[varlik] : null
+
+  const maxAlinabilir = Math.floor((nakit || 0) / (varlik === "altin" ? fiyatlar.altin_try_gram : varlik === "bist" ? fiyatlar.bist_endeks : varlik === "dolar" ? fiyatlar.dolar_try : 1))
 
   return (
     <article className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col">
@@ -120,6 +122,14 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
           </>
         )}
         {portfoyMiktar === 0 && <Satir label="PORTFÖY" value="0.00" />}
+        <div className="opacity-50 mt-1">
+          <Satir label="ALINABİLİR" value={
+            varlik === "altin" ? `${maxAlinabilir.toLocaleString("tr-TR")} gr` :
+            varlik === "bist" ? `${maxAlinabilir.toLocaleString("tr-TR")} adet` :
+            varlik === "dolar" ? `$${maxAlinabilir.toLocaleString("tr-TR")}` :
+            `₺${maxAlinabilir.toLocaleString("tr-TR")}`
+          } color="inherit" />
+        </div>
       </div>
 
       <AlSatPanel varlik={varlik} onAl={onAl} onSat={onSat} />
@@ -295,7 +305,7 @@ function EvIslemKutusu({ ev, guncelDeger, oturuluyorMu, onKapat, onKiraDegistir,
 export default function VarlikSayfasi({
   fiyatGecmisi, fiyatlar, portfoy, sonuc, varlikAl, varlikSat, nakit, toplamDeger,
   emlakPiyasasi, sahipOlunanEvler, evSatinAl, evKiraDurumunuDegistir, evSat, evGuncelDegerHesapla,
-  oturulanEvId, evdeYasamayaBasla, evdenCik, emlakEndeksiGecmisi,
+  oturulanEvId, evdeYasamayaBasla, evdenCik, emlakEndeksiGecmisi, onAcTutorial
 }) {
   const [seciliEv, setSeciliEv] = useState(null)
   const [emlakGrafikAcik, setEmlakGrafikAcik] = useState(false)
@@ -303,7 +313,12 @@ export default function VarlikSayfasi({
   return (
     <div className="flex flex-col gap-stack-lg">
       <div className="border-b border-outline-variant pb-stack-md">
-        <h1 className="font-headline-lg text-headline-lg text-primary uppercase">Piyasa Verileri</h1>
+        <h1 className="font-headline-lg text-headline-lg text-primary uppercase flex items-center gap-2">
+          Piyasa Verileri
+          <button onClick={onAcTutorial} className="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center">
+            <span className="material-symbols-outlined text-xl">help</span>
+          </button>
+        </h1>
         <p className="font-data-sm text-data-sm text-on-surface-variant uppercase mt-1">Canlı Varlık Takip Sistemi</p>
       </div>
 
@@ -324,6 +339,7 @@ export default function VarlikSayfasi({
             sonuc={sonuc}
             onAl={varlikAl}
             onSat={varlikSat}
+            nakit={nakit}
           />
         ))}
       </div>

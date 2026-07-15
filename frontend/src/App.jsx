@@ -4,6 +4,9 @@ import YasamStandartlari from "./YasamStandartlari"
 import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalitesiEtkisi } from "./data/standartlar"
 import PortfoySayfasi from "./PortfoySayfasi"
 import AcilisSayfasi from "./AcilisSayfasi"
+import TutorialModal from "./TutorialModal"
+import erkekImg from "./assets/erkek.png"
+import kadinImg from "./assets/kadin.png"
 import { useEffect, useRef, useState } from "react"
 import BitisSayfasi from "./BitisSayfasi"
 import GirisSayfasi from "./GirisSayfasi"
@@ -34,7 +37,7 @@ const INITIAL_STATE = {
 
 const VARLIK_META = {
   altin: { icon: "Au", ad: "Altın", type: "Nadir Varlık", risk: "Orta", tone: "gold", score: 2 },
-  bist: { icon: "BI", ad: "BIST", type: "Riskli Varlık", risk: "Yüksek", tone: "green", score: 3 },
+  bist: { icon: "BI", ad: "Borsa", type: "Riskli Varlık", risk: "Yüksek", tone: "green", score: 3 },
   dolar: { icon: "$", ad: "Dolar", type: "Döviz", risk: "Orta", tone: "blue", score: 2 },
   mevduat: { icon: "%", ad: "Mevduat", type: "Güvenli Alan", risk: "Düşük", tone: "violet", score: 1 },
 }
@@ -72,6 +75,7 @@ export default function App() {
   const [finalRaporHata, setFinalRaporHata] = useState(false)
   const [isYeri, setIsYeri] = useState(null)
   const [isLevel, setIsLevel] = useState(1)
+  const [cinsiyet, setCinsiyet] = useState(null)
   const [temelMaas, setTemelMaas] = useState(0)
   const [emlakPiyasasi, setEmlakPiyasasi] = useState([])
   const [sahipOlunanEvler, setSahipOlunanEvler] = useState([])
@@ -115,6 +119,7 @@ export default function App() {
   const [sonEventEtkisi, setSonEventEtkisi] = useState({ sabir: 0, mutluluk: 0 })
   const [sonucKarti, setSonucKarti] = useState(null) // { baslik, metin } | null
   const [redenominasyonKarti, setRedenominasyonKarti] = useState(null)
+  const [tutorialAcik, setTutorialAcik] = useState(false)
   const bekleyenEventKaydiRef = useRef(null)
 
 
@@ -353,6 +358,7 @@ export default function App() {
     setYillikGelir(sonuc.yillikGelir)
     setTemelMaas(sonuc.yillikGelir)
     setIsYeri(sonuc.meslek || null)
+    if (sonuc.cinsiyet) setCinsiyet(sonuc.cinsiyet)
 
     try {
       const res = await fetch(`${API_BASE_URL}/ajanlar/profil`, {
@@ -722,8 +728,14 @@ export default function App() {
         <div className="mb-stack-lg">
           <div className="font-headline-md text-headline-md text-primary font-black uppercase tracking-tighter mb-2">FINSIM_OS</div>
           <div className="flex items-center gap-3 mt-4">
-            <div className="w-10 h-10 bg-surface-variant rounded flex items-center justify-center border border-outline">
-              <span className="material-symbols-outlined text-on-surface-variant">person</span>
+            <div className="w-10 h-10 bg-surface-variant rounded flex items-center justify-center border border-outline overflow-hidden">
+              {cinsiyet === "kadin" ? (
+                <img src={kadinImg} alt="Avatar" className="w-full h-full object-cover" />
+              ) : cinsiyet === "erkek" ? (
+                <img src={erkekImg} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="material-symbols-outlined text-on-surface-variant">person</span>
+              )}
             </div>
             <div>
               <div className="font-data-sm text-data-sm uppercase text-on-surface">{profilAdi}</div>
@@ -792,7 +804,12 @@ export default function App() {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-outline-variant pb-stack-md">
               <div>
-                <h1 className="font-headline-lg text-headline-lg text-primary uppercase">Ana Defter</h1>
+                <h1 className="font-headline-lg text-headline-lg text-primary uppercase flex items-center gap-2">
+                  Ana Defter
+                  <button onClick={() => setTutorialAcik(true)} className="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center">
+                    <span className="material-symbols-outlined text-xl">help</span>
+                  </button>
+                </h1>
                 <p className="font-data-sm text-data-sm text-on-surface-variant uppercase mt-1">Yıl: {yil} | {riskProfili}</p>
               </div>
               <div className="flex items-center gap-4 bg-surface-container-high p-3 border border-outline card-shadow">
@@ -980,7 +997,7 @@ export default function App() {
                 </div>
                 <p className={krizMi ? "text-on-error-container" : "text-on-surface-variant"}>
                   Enflasyon: <strong>%{sonuc.enflasyon}</strong>.
-                  BIST reel getiri: <strong className={sonuc.reel_bist >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_bist)}</strong>,
+                  Borsa reel getiri: <strong className={sonuc.reel_bist >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_bist)}</strong>,
                   Altın reel getiri: <strong className={sonuc.reel_altin >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_altin)}</strong>.
                 </p>
                 {sonuc.redenominasyon && (
@@ -1014,6 +1031,7 @@ export default function App() {
             evdeYasamayaBasla={evdeYasamayaBasla}
             evdenCik={evdenCik}
             emlakEndeksiGecmisi={emlakEndeksiGecmisi}
+            onAcTutorial={() => setTutorialAcik(true)}
           />
         )}
 
@@ -1038,8 +1056,11 @@ export default function App() {
             fiyatlar={fiyatlar}
             nakit={nakit}
             varlikKatsayilari={varlikKatsayilari}
+            onAcTutorial={() => setTutorialAcik(true)}
           />
         )}
+
+        <TutorialModal isOpen={tutorialAcik} onClose={() => setTutorialAcik(false)} page={aktifSayfa} />
       </main>
     </div>
   )

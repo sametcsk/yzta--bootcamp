@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import { BASLANGIC, SORULAR } from "./data/sorular"
 import { MESLEKLER } from "./data/meslekler"
+import erkekImg from "./assets/erkek.png"
+import kadinImg from "./assets/kadin.png"
 
 
 function kilitliMi(kilit, nakit, sabir, mutluluk) {
@@ -20,6 +22,7 @@ export default function IntroEkrani({ onBitis }) {
   const [mutluluk, setMutluluk] = useState(BASLANGIC.mutluluk)
   const [gelir, setGelir] = useState(0)
   const [universiteGitti, setUniversiteGitti] = useState(true)
+  const [cinsiyet, setCinsiyet] = useState(null)
   const cevaplarRef = useRef([])
   const ilerlemeKilitliRef = useRef(false)
   const meslekRef = useRef(null)
@@ -74,11 +77,46 @@ export default function IntroEkrani({ onBitis }) {
         yillikGelir: s.gelir || gelir || 216000,
         answers: yeniCevaplar,
         meslek: meslekRef.current,
+        cinsiyet: cinsiyet
       })
     } else {
-      setSoruIndex((oncekiIndex) => oncekiIndex + 1)
+      setSoruIndex((oncekiIndex) => {
+        let sonraki = oncekiIndex + 1
+        if (sonraki < SORULAR.length && SORULAR[sonraki].id === 5 && cinsiyet === "kadin") {
+          sonraki++
+        }
+        return sonraki
+      })
       setSecim(null)
     }
+  }
+
+  if (!cinsiyet) {
+    return (
+      <div className="bg-surface text-on-surface min-h-screen flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop font-body-md">
+        <h1 className="font-headline-lg text-headline-lg text-primary uppercase mb-8">Karakterini Seç</h1>
+        <div className="flex gap-8">
+          <button 
+            onClick={() => {
+              setCinsiyet("erkek")
+            }}
+            className="flex flex-col items-center gap-4 hover:scale-105 transition-transform p-4 border border-outline bg-surface-container card-shadow"
+          >
+            <img src={erkekImg} alt="Erkek" className="w-48 h-48 object-cover border border-outline-variant bg-surface" />
+            <span className="font-data-md uppercase text-primary">ERKEK</span>
+          </button>
+          <button 
+            onClick={() => {
+              setCinsiyet("kadin")
+            }}
+            className="flex flex-col items-center gap-4 hover:scale-105 transition-transform p-4 border border-outline bg-surface-container card-shadow"
+          >
+            <img src={kadinImg} alt="Kadın" className="w-48 h-48 object-cover border border-outline-variant bg-surface" />
+            <span className="font-data-md uppercase text-primary">KADIN</span>
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -91,6 +129,7 @@ export default function IntroEkrani({ onBitis }) {
           yillikGelir: 300000,
           answers: [],
           meslek: "beyaz_yaka",
+          cinsiyet: "erkek"
         })}
         className="absolute top-4 right-4 text-data-sm font-data-sm opacity-30 hover:opacity-100 hover:text-primary uppercase"
       >
