@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { BASLANGIC, SORULAR } from "./data/sorular"
+import { MESLEKLER } from "./data/meslekler"
+
 
 function kilitliMi(kilit, nakit, sabir, mutluluk) {
   if (!kilit) return false
@@ -168,7 +170,11 @@ export default function IntroEkrani({ onBitis }) {
                     </span>
                   </div>
                   <div className="text-lg">
-                    {kilitli ? "Gizli" : s.metin}
+                    {kilitli
+                      ? "Gizli"
+                      : s.meslek && MESLEKLER[s.meslek]
+                        ? MESLEKLER[s.meslek].ad.toUpperCase()
+                        : s.metin}
                   </div>
                   {s.gelir_aciklama && !kilitli && (
                     <div className="text-sm opacity-80 mt-1 font-data-sm uppercase">GELİR: {s.gelir_aciklama}</div>

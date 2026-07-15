@@ -1,5 +1,15 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 import { useState } from "react"
+import ucuzevImg from "./assets/evler/ucuzev.png"
+import ortaevImg from "./assets/evler/ortaev.png"
+import pahalievImg from "./assets/evler/pahaliev.png"
+
+const GORSEL_MAP = { ucuzev: ucuzevImg, ortaev: ortaevImg, pahaliev: pahalievImg }
+const SEGMENT_BILGI = {
+  ucuz:   { ad: "Müstakil Ev" },
+  orta:   { ad: "Apartman Dairesi" },
+  pahali: { ad: "Villa" },
+}
 const VARLIK_CONFIG = {
   altin: { ad: "Altın", icon: "Au", renk: "#f5c842", birim: "₺/gr", sinif: "Nadir Varlık", tone: "gold" },
   bist:  { ad: "BIST",  icon: "BI", renk: "#34d399", birim: "endeks", sinif: "Riskli Varlık", tone: "green" },
@@ -171,7 +181,125 @@ function AlSatPanel({ varlik, onAl, onSat }) {
   )
 }
 
-export default function VarlikSayfasi({ fiyatGecmisi, fiyatlar, portfoy, sonuc, varlikAl, varlikSat, nakit, toplamDeger, krizMi }) {
+function OzetKart({ icon, label, value }) {
+  return (
+    <div className="bg-surface-container border border-outline card-shadow p-stack-sm flex items-center gap-3">
+      <span className="material-symbols-outlined text-primary">{icon}</span>
+      <div>
+        <div className="font-data-sm text-data-sm uppercase text-on-surface-variant">{label}</div>
+        <div className="font-data-lg text-data-lg text-primary">{value}</div>
+      </div>
+    </div>
+  )
+}
+
+function EmlakPiyasasiKart({ ev, nakit, onSatinAl }) {
+  const alinabilir = nakit >= ev.fiyat_tl
+  const bilgi = SEGMENT_BILGI[ev.segment]
+  return (
+    <article className="bg-surface-container border border-outline card-shadow flex flex-col overflow-hidden">
+      <img src={GORSEL_MAP[ev.gorsel]} alt={bilgi.ad} className="w-full h-40 object-cover border-b border-outline-variant" />
+      <div className="p-stack-sm flex flex-col gap-2 flex-1">
+        <div className="font-data-sm text-data-sm uppercase text-on-surface-variant">{bilgi.ad}</div>
+        <div className="font-data-lg text-data-lg text-primary">₺{Math.round(ev.fiyat_tl).toLocaleString("tr-TR")}</div>
+        <div className="font-data-sm text-data-sm uppercase text-on-surface-variant">
+          Tahmini Kira Getirisi: %{(ev.kira_orani * 100).toFixed(1)}
+        </div>
+        <button
+          onClick={() => onSatinAl(ev)}
+          disabled={!alinabilir}
+          className="mt-auto bg-primary-container text-background font-data-sm text-data-sm uppercase py-2 border border-outline btn-shadow font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {alinabilir ? "Satın Al" : "Yetersiz Nakit"}
+        </button>
+      </div>
+    </article>
+  )
+}
+
+function SahipOlunanEvKart({ ev, guncelDeger, oturuluyorMu, onTikla }) {
+  const bilgi = SEGMENT_BILGI[ev.segment]
+  return (
+    <button
+      onClick={() => onTikla(ev)}
+      className="bg-surface-container border border-outline card-shadow flex flex-col overflow-hidden text-left hover:border-primary transition-colors"
+    >
+      <img src={GORSEL_MAP[ev.gorsel]} alt={bilgi.ad} className="w-full h-32 object-cover border-b border-outline-variant" />
+      <div className="p-stack-sm flex flex-col gap-1">
+        <div className="font-data-sm text-data-sm uppercase text-on-surface-variant">{bilgi.ad}</div>
+        <div className="font-data-lg text-data-lg text-primary">₺{Math.round(guncelDeger).toLocaleString("tr-TR")}</div>
+        <div className={`font-data-sm text-data-sm uppercase ${oturuluyorMu ? "text-[#60a8f0]" : ev.kirada ? "text-[#34d399]" : "text-on-surface-variant"}`}>
+          {oturuluyorMu ? "OTURULUYOR" : ev.kirada ? "KİRADA" : "BOŞ"}
+        </div>
+      </div>
+    </button>
+  )
+}
+
+function EvIslemKutusu({ ev, guncelDeger, oturuluyorMu, onKapat, onKiraDegistir, onSat, onYasamayaBasla, onCik }) {
+  const bilgi = SEGMENT_BILGI[ev.segment]
+  const yillikKiraTutari = Math.round(ev.kira_orani * guncelDeger)
+
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onKapat}>
+      <div
+        className="bg-surface-container border border-outline card-shadow max-w-md w-full p-stack-md flex flex-col gap-stack-sm"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center border-b border-outline-variant pb-2">
+          <h2 className="font-headline-md text-headline-md text-on-surface uppercase">{bilgi.ad}</h2>
+          <button onClick={onKapat} className="material-symbols-outlined text-on-surface-variant">close</button>
+        </div>
+
+        <img src={GORSEL_MAP[ev.gorsel]} alt={bilgi.ad} className="w-full h-40 object-cover border border-outline-variant" />
+
+        <div className="flex flex-col gap-2">
+          <Satir label="GÜNCEL DEĞER" value={`₺${Math.round(guncelDeger).toLocaleString("tr-TR")}`} color="#f5c842" />
+          <Satir label="ALIŞ FİYATI" value={`₺${Math.round(ev.alis_fiyati).toLocaleString("tr-TR")}`} />
+          <Satir label="ALIŞ YILI" value={ev.alis_yili} />
+          <Satir label="KİRA ORANI" value={`%${(ev.kira_orani * 100).toFixed(1)}`} />
+          <Satir
+            label="DURUM"
+            value={oturuluyorMu ? "OTURULUYOR" : ev.kirada ? "KİRADA" : "BOŞ"}
+            color={oturuluyorMu ? "#60a8f0" : ev.kirada ? "#34d399" : undefined}
+          />
+          {ev.kirada && <Satir label="YILLIK KİRA GELİRİ" value={`₺${yillikKiraTutari.toLocaleString("tr-TR")}`} color="#34d399" />}
+        </div>
+
+        <div className="flex flex-col gap-2 mt-2">
+          <button
+            onClick={() => oturuluyorMu ? onCik() : onYasamayaBasla(ev.id)}
+            className="bg-surface-variant text-on-surface font-data-sm text-data-sm uppercase py-2 border border-outline hover:border-primary transition-colors"
+          >
+            {oturuluyorMu ? "Çıkış Yap" : "Burada Yaşa"}
+          </button>
+          <button
+            onClick={() => onKiraDegistir(ev.id)}
+            disabled={oturuluyorMu}
+            className="bg-surface-variant text-on-surface font-data-sm text-data-sm uppercase py-2 border border-outline hover:border-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {ev.kirada ? "Kiracıyı Çıkart" : "Kiraya Ver"}
+          </button>
+          <button
+            onClick={() => onSat(ev.id)}
+            className="bg-error text-background font-data-sm text-data-sm uppercase py-2 border border-outline font-bold"
+          >
+            Evi Sat
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function VarlikSayfasi({
+  fiyatGecmisi, fiyatlar, portfoy, sonuc, varlikAl, varlikSat, nakit, toplamDeger,
+  emlakPiyasasi, sahipOlunanEvler, evSatinAl, evKiraDurumunuDegistir, evSat, evGuncelDegerHesapla,
+  oturulanEvId, evdeYasamayaBasla, evdenCik, emlakEndeksiGecmisi,
+}) {
+  const [seciliEv, setSeciliEv] = useState(null)
+  const [emlakGrafikAcik, setEmlakGrafikAcik] = useState(false)
+
   return (
     <div className="flex flex-col gap-stack-lg">
       <div className="border-b border-outline-variant pb-stack-md">
@@ -180,14 +308,9 @@ export default function VarlikSayfasi({ fiyatGecmisi, fiyatlar, portfoy, sonuc, 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-        <BilgiKarti label="Portföy Değeri" value={money(toplamDeger)} hint="Net Servet" />
-        <BilgiKarti label="Nakit Rezervi" value={money(nakit)} hint="Kullanılabilir Nakit" />
-        <BilgiKarti
-          label="Enflasyon"
-          value={sonuc ? `%${sonuc.enflasyon}` : "—"}
-          hint={sonuc ? sonuc.enf_durum : "SİSTEM_HAZIR"}
-          alert={krizMi}
-        />
+        <OzetKart icon="percent" label="Enflasyon Oranı" value={sonuc ? `%${sonuc.enflasyon.toFixed(1)}` : "—"} />
+        <OzetKart icon="payments" label="Nakit" value={`₺${Math.round(nakit || 0).toLocaleString("tr-TR")}`} />
+        <OzetKart icon="account_balance_wallet" label="Portföy Değeri" value={`₺${Math.round(toplamDeger || 0).toLocaleString("tr-TR")}`} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
@@ -204,27 +327,117 @@ export default function VarlikSayfasi({ fiyatGecmisi, fiyatlar, portfoy, sonuc, 
           />
         ))}
       </div>
+
+      {emlakPiyasasi && emlakPiyasasi.length > 0 && (
+        <div className="flex flex-col gap-stack-md">
+          <div className="border-b border-outline-variant pb-2 flex items-center gap-2">
+            <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Emlak Piyasası</h2>
+            <button
+              onClick={() => setEmlakGrafikAcik(prev => !prev)}
+              className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors text-lg"
+              title="Piyasa hareketini göster"
+            >
+              info
+            </button>
+          </div>
+
+          {emlakGrafikAcik && (
+            <div className="bg-surface-container border border-outline card-shadow p-stack-md relative">
+              <button
+                onClick={() => setEmlakGrafikAcik(false)}
+                className="absolute top-2 right-2 material-symbols-outlined text-on-surface-variant hover:text-error"
+              >
+                close
+              </button>
+              <div className="font-data-sm text-data-sm uppercase text-on-surface-variant mb-2">
+                Gayrimenkul Piyasa Endeksi (Dolar Bazında)
+              </div>
+              <p className="text-on-surface-variant text-sm mb-3">
+                Bu endeks, gayrimenkul piyasasının dolar bazındaki gücünü gösterir — kur hareketinden
+                bağımsızdır, kendi arz/talep dinamiğiyle yükselip alçalır.
+              </p>
+              <div className="h-40">
+                {emlakEndeksiGecmisi && emlakEndeksiGecmisi.length > 1 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={emlakEndeksiGecmisi}>
+                      <XAxis dataKey="yil" hide />
+                      <YAxis hide domain={['auto', 'auto']} />
+                      <Tooltip
+                        contentStyle={{ background: "#110e06", border: "1px solid #4e4634", borderRadius: 0, fontFamily: "JetBrains Mono", fontSize: 12 }}
+                        itemStyle={{ color: "#f5c842" }}
+                        formatter={(v) => v.toFixed(1)}
+                        labelStyle={{ display: 'none' }}
+                      />
+                      <Line
+                        type="step"
+                        dataKey="deger"
+                        stroke="#f5c842"
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{ r: 4, fill: "#f5c842" }}
+                        isAnimationActive={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="font-data-sm text-data-sm uppercase text-on-surface-variant opacity-50 flex items-center justify-center h-full">
+                    YETERSİZ VERİ
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-gutter">
+            {emlakPiyasasi.map(ev => (
+              <EmlakPiyasasiKart key={ev.id} ev={ev} nakit={nakit} onSatinAl={evSatinAl} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {sahipOlunanEvler && sahipOlunanEvler.length > 0 && (
+        <div className="flex flex-col gap-stack-md">
+          <div className="border-b border-outline-variant pb-2">
+            <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Evlerim</h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-gutter">
+            {sahipOlunanEvler.map(ev => (
+              <SahipOlunanEvKart
+                key={ev.id}
+                ev={ev}
+                guncelDeger={evGuncelDegerHesapla(ev)}
+                oturuluyorMu={ev.id === oturulanEvId}
+                onTikla={setSeciliEv}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {seciliEv && (
+        <EvIslemKutusu
+          ev={seciliEv}
+          guncelDeger={evGuncelDegerHesapla(seciliEv)}
+          oturuluyorMu={seciliEv.id === oturulanEvId}
+          onKapat={() => setSeciliEv(null)}
+          onKiraDegistir={(id) => {
+            evKiraDurumunuDegistir(id)
+            setSeciliEv(prev => prev ? { ...prev, kirada: !prev.kirada } : prev)
+          }}
+          onSat={(id) => {
+            evSat(id)
+            setSeciliEv(null)
+          }}
+          onYasamayaBasla={(id) => {
+            evdeYasamayaBasla(id)
+            setSeciliEv(prev => prev ? { ...prev, kirada: false } : prev)
+          }}
+          onCik={() => {
+            evdenCik()
+          }}
+        />
+      )}
     </div>
   )
-}
-
-function BilgiKarti({ label, value, hint, alert }) {
-  return (
-    <div className={`border card-shadow p-stack-md flex flex-col ${alert ? "bg-error-container border-error" : "bg-surface-container border-outline"}`}>
-      <div className={`font-data-sm text-data-sm uppercase mb-1 ${alert ? "text-on-error-container" : "text-on-surface-variant"}`}>
-        {label}
-      </div>
-      <div className={`font-data-lg text-data-lg mb-2 ${alert ? "text-error" : "text-primary"}`}>
-        {value}
-      </div>
-      <div className={`font-data-sm text-data-sm uppercase mt-auto ${alert ? "text-on-error-container opacity-80" : "text-on-surface-variant opacity-50"}`}>
-        {hint}
-      </div>
-    </div>
-  )
-}
-
-function money(value) {
-  if (value === undefined || value === null) return "₺0";
-  return `₺${Number(value).toLocaleString("tr-TR")}`
 }

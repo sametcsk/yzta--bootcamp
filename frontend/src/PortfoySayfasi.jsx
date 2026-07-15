@@ -103,7 +103,7 @@ function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portfoy, fiyatlar, v
                   <div className="flex justify-between font-data-sm text-data-sm uppercase">
                     <span className="text-on-surface">{v.ad}</span>
                     <strong className={v.yuzde >= 0 ? "text-[#34d399]" : "text-error"}>
-                      {v.yuzde >= 0 ? "+" : ""}{v.yuzde}%
+                      {v.yuzde >= 0 ? "+" : ""}{v.yuzde}% <span className="opacity-70 font-normal text-[10px] ml-1">(REEL)</span>
                     </strong>
                   </div>
                   <div className="w-full h-2 bg-surface-dim border border-outline-variant">

@@ -3,6 +3,7 @@ from .doviz import doviz_sim
 from .altin import altin_sim
 from .bist import faiz_uret, bist_getiri_uret
 from .mevduat import mevduat_faizi_uret
+from .gayrimenkul import emlak_endeksi_usd_guncelle, piyasa_uret
 from events.event_engine import event_sec
 
 def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None, tetiklenenler: list = None) -> dict:
@@ -26,6 +27,7 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     faiz             = state.get("faiz", 12.0)
     bist             = state.get("bist", 100.0)
     mevduat_birikim  = state.get("mevduat_birikim", 100.0)
+    emlak_endeksi_usd = state.get("emlak_endeksi_usd", 100.0)
     mevcut_yas       = state.get("yas", 25)
     is_yeri          = state.get("is_yeri")
     is_level         = state.get("is_level", 1)
@@ -61,7 +63,11 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     mev_faiz, mev_carpan, mev_reel = mevduat_faizi_uret(enf, enf_rejim)
     mevduat_birikim = round(mevduat_birikim * (1 + mev_faiz / 100), 2)
 
-    # 6. Event
+    # 6. Gayrimenkul
+    emlak_endeksi_usd = emlak_endeksi_usd_guncelle(emlak_endeksi_usd)
+    emlak_piyasasi = piyasa_uret(mevcut_yil, kur, emlak_endeksi_usd)
+
+    # 7. Event
     secilen_event = event_sec(
         mevcut_yil=mevcut_yil,
         mevcut_yas=mevcut_yas,
@@ -89,6 +95,7 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
         "faiz": faiz,
         "bist": bist,
         "mevduat_birikim": mevduat_birikim,
+        "emlak_endeksi_usd": emlak_endeksi_usd,
         "yil_sonucu": {
             "enflasyon": round(enf, 1),
             "enf_durum": enf_durum,
@@ -104,6 +111,7 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
             "reel_altin": round(altin_try_getiri - enf, 1),
             "reel_mevduat": round(mev_faiz - enf, 1),
             "reel_doviz": round(doviz_degisim - enf, 1),
+            "emlak_piyasasi": emlak_piyasasi,
             "fiyatlar": {
                 "altin_try_gram": round((altin_usd / 31.1) * kur, 2),
                 "bist_endeks": round(bist, 2),

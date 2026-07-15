@@ -9,7 +9,6 @@ import BitisSayfasi from "./BitisSayfasi"
 import GirisSayfasi from "./GirisSayfasi"
 import { supabase, supabaseAktif } from "./supabaseClient"
 import { pozisyonAdiGetir, levelCarpaniGetir } from "./data/meslekler"
-import ProfilHikayesi from "./ProfilHikayesi"
 
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
@@ -30,6 +29,14 @@ const INITIAL_STATE = {
   faiz: 12.0,
   bist: 100.0,
   mevduat_birikim: 100.0,
+  emlak_endeksi_usd: 100.0,
+}
+
+const VARLIK_META = {
+  altin: { icon: "Au", ad: "Altın", type: "Nadir Varlık", risk: "Orta", tone: "gold", score: 2 },
+  bist: { icon: "BI", ad: "BIST", type: "Riskli Varlık", risk: "Yüksek", tone: "green", score: 3 },
+  dolar: { icon: "$", ad: "Dolar", type: "Döviz", risk: "Orta", tone: "blue", score: 2 },
+  mevduat: { icon: "%", ad: "Mevduat", type: "Güvenli Alan", risk: "Düşük", tone: "violet", score: 1 },
 }
 
 export default function App() {
@@ -38,11 +45,10 @@ export default function App() {
   const [yas, setYas] = useState(25)
   const [sonuc, setSonuc] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [, setGecmis] = useState([])
+  const [gecmis, setGecmis] = useState([])
   const [bars, setBars] = useState({ sabir: 50, mutluluk: 50 })
   const [nakit, setNakit] = useState(25000)
   const [introTamamlandi, setIntroTamamlandi] = useState(false)
-  const [profilHikayesiGoster, setProfilHikayesiGoster] = useState(false)
   const [acilisGecildi, setAcilisGecildi] = useState(false)
   const [karakterProfili, setKarakterProfili] = useState(null)
   const [aktifSayfa, setAktifSayfa] = useState("ana")
@@ -67,6 +73,10 @@ export default function App() {
   const [isYeri, setIsYeri] = useState(null)
   const [isLevel, setIsLevel] = useState(1)
   const [temelMaas, setTemelMaas] = useState(0)
+  const [emlakPiyasasi, setEmlakPiyasasi] = useState([])
+  const [sahipOlunanEvler, setSahipOlunanEvler] = useState([])
+  const [oturulanEvId, setOturulanEvId] = useState(null)
+  const [kiraGeliriYillik, setKiraGeliriYillik] = useState(0)
 
   const nakitRef = useRef(nakit)
 
@@ -89,8 +99,10 @@ export default function App() {
     mevduat: []
   })
   const [portfoyGecmisi, setPortfoyGecmisi] = useState([])
+  const [portfoyEndeksi, setPortfoyEndeksi] = useState(100)
   const [enflasyonEndeksi, setEnflasyonEndeksi] = useState(100)
   const [enflasyonGecmisi, setEnflasyonGecmisi] = useState([])
+  const [emlakEndeksiGecmisi, setEmlakEndeksiGecmisi] = useState([])
   const [varlikKatsayilari, setVarlikKatsayilari] = useState({
     altin: null,   // null = hiç alınmadı
     bist: null,
@@ -100,8 +112,18 @@ export default function App() {
   const [oyunBitti, setOyunBitti] = useState(false)
   const [bitisSebebi, setBitisSebebi] = useState(null) // "yas_siniri" | "erken_olum"
   const [oturum, setOturum] = useState(null)
+  const [sonEventEtkisi, setSonEventEtkisi] = useState({ sabir: 0, mutluluk: 0 })
   const [sonucKarti, setSonucKarti] = useState(null) // { baslik, metin } | null
+  const [redenominasyonKarti, setRedenominasyonKarti] = useState(null)
   const bekleyenEventKaydiRef = useRef(null)
+
+
+  useEffect(() => {
+    if (oyunBitti && !finalRapor && !finalRaporLoading) {
+      finalRaporuOlustur()
+    }
+  }, [oyunBitti])
+
   useEffect(() => {
     if (!supabaseAktif) return
     supabase.auth.getSession().then(({ data }) => setOturum(data.session))
@@ -110,31 +132,6 @@ export default function App() {
     })
     return () => listener.subscription.unsubscribe()
   }, [])
-
-  async function finalRaporuOlustur(payloadOverride = null) {
-    const payload = payloadOverride || {
-      profile: karakterProfili,
-      event_history: eventKayitlari,
-      final_state: { year: yil, age: yas, cash: nakit, net_worth: toplamDeger },
-    }
-
-    setFinalRaporLoading(true)
-    setFinalRaporHata(false)
-    try {
-      const res = await fetch(`${API_BASE_URL}/ajanlar/final-rapor`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error("Final raporu oluşturulamadı.")
-      setFinalRapor(await res.json())
-    } catch (error) {
-      console.error(error)
-      setFinalRaporHata(true)
-    } finally {
-      setFinalRaporLoading(false)
-    }
-  }
 
 
   async function yilAtla() {
@@ -172,6 +169,7 @@ export default function App() {
         faiz: data.faiz,
         bist: data.bist,
         mevduat_birikim: data.mevduat_birikim,
+        emlak_endeksi_usd: data.emlak_endeksi_usd,
       })
 
       const yeniTemelMaas = Math.round(temelMaas * (1 + data.yil_sonucu.enflasyon / 100))
@@ -183,7 +181,43 @@ export default function App() {
       const yeniDolarKuru = data.yil_sonucu.fiyatlar.dolar_try
       setYasamGideri(Math.round(toplamAylikUsd(standartlar, YASAM_STANDARTLARI) * yeniDolarKuru * 12))
 
-      let yeniNakit = nakitRef.current + yeniGelir - yeniGider
+      // Portföy Getirisi Hesaplama (Sıfır Atma Durumunu Göze Alarak)
+      let w_start_gercek = nakitRef.current + Math.round(
+        portfoy.altin_gram * fiyatlar.altin_try_gram +
+        portfoy.bist_adet * fiyatlar.bist_endeks +
+        portfoy.dolar * fiyatlar.dolar_try +
+        portfoy.mevduat_tl
+      )
+
+      if (data.yil_sonucu.redenominasyon) {
+        w_start_gercek = w_start_gercek / 1000
+      }
+
+      const nakitReel = data.yil_sonucu.redenominasyon ? nakitRef.current / 1000 : nakitRef.current
+      const mevduatReel = data.yil_sonucu.redenominasyon ? portfoy.mevduat_tl / 1000 : portfoy.mevduat_tl
+
+      const w_appreciated = nakitReel + Math.round(
+        portfoy.altin_gram * data.yil_sonucu.fiyatlar.altin_try_gram +
+        portfoy.bist_adet * data.yil_sonucu.fiyatlar.bist_endeks +
+        portfoy.dolar * data.yil_sonucu.fiyatlar.dolar_try +
+        mevduatReel * (1 + data.yil_sonucu.mev_faiz / 100)
+      )
+
+      const getiriOrani = w_start_gercek > 0 ? (w_appreciated - w_start_gercek) / w_start_gercek : 0
+      const yeniPortfoyEndeksi = portfoyEndeksi * (1 + getiriOrani)
+      setPortfoyEndeksi(yeniPortfoyEndeksi)
+
+      const yeniEmlakEndeksiUsd = data.emlak_endeksi_usd
+      setEmlakPiyasasi(data.yil_sonucu.emlak_piyasasi || [])
+      const kiraGeliriToplam = sahipOlunanEvler
+        .filter(ev => ev.kirada)
+        .reduce((toplam, ev) => {
+          const guncelDeger = Math.round(ev.fiyat_usd_taban * (yeniEmlakEndeksiUsd / 100) * yeniDolarKuru)
+          return toplam + Math.round(ev.kira_orani * guncelDeger)
+        }, 0)
+      setKiraGeliriYillik(kiraGeliriToplam)
+
+      let yeniNakit = nakitRef.current + yeniGelir - yeniGider + kiraGeliriToplam
       if (data.yil_sonucu.redenominasyon) {
         yeniNakit = Math.round(yeniNakit / 1000)
         setYillikGelir(Math.round(yeniGelir / 1000))
@@ -202,9 +236,7 @@ export default function App() {
       }))
 
       if (data.yil_sonucu.redenominasyon) {
-        setEnflasyonEndeksi(prev => prev / 1000)
-        setEnflasyonGecmisi(prev => prev.map(p => ({ ...p, deger: Math.round(p.deger / 1000) })))
-        setPortfoyGecmisi(prev => prev.map(p => ({ ...p, deger: Math.round(p.deger / 1000) })))
+        // ENFLASYON VE PORTFÖY ENDEKSLERİ 1000'E BÖLÜNMEZ (Onlar kümülatif performanstır)
         setPortfoy(prev => ({
           ...prev,
           mevduat_tl: Math.round(prev.mevduat_tl / 1000),
@@ -215,20 +247,19 @@ export default function App() {
           dolar_try: Math.round(prev.dolar_try / 1000),
           mev_faiz_oran: prev.mev_faiz_oran,
         }))
-        // Geçmiş fiyatları da böl
+        // Geçmiş fiyatları böl ki grafiklerde kopma olmasın
         setFiyatGecmisi(prev => ({
           altin: prev.altin.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
           bist: prev.bist.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
           dolar: prev.dolar.map(p => ({ ...p, fiyat: p.fiyat / 1000 })),
           mevduat: prev.mevduat,
         }))
-        setVarlikKatsayilari(prev => ({
-          altin: prev.altin !== null ? prev.altin / 1000 : null,
-          bist: prev.bist,
-          dolar: prev.dolar !== null ? prev.dolar / 1000 : null,
-          mevduat: prev.mevduat !== null ? prev.mevduat / 1000 : null,
-        }))
+        // Varlık katsayıları kümülatif performans olduğu için 1000'e BÖLÜNMEZ.
 
+        setRedenominasyonKarti({
+          baslik: "SİSTEM MÜDAHALESİ: PARA BİRİMİ REFORMU",
+          metin: "Aşırı enflasyonist baskı ve sürdürülemez fiyatlama davranışları neticesinde Merkez Bankası 'Redenominasyon' (Para biriminden sıfır atılması) kararı almıştır. Tüm varlık fiyatlamaları, maaşlar ve piyasa endekslerinden 3 sıfır atıldı. Makroekonomik parametreler sıfırlanmasa da defter değerleriniz yeni sisteme göre revize edildi."
+        })
       }
 
       const yeniYil = yil + 1
@@ -265,10 +296,10 @@ export default function App() {
       // Varlık katsayılarını güncelle
       setVarlikKatsayilari(prev => {
         const getiriler = {
-          altin: data.yil_sonucu.altin_try_getiri / 100,
-          bist: data.yil_sonucu.bist_pct / 100,
-          dolar: data.yil_sonucu.doviz_degisim / 100,
-          mevduat: data.yil_sonucu.mev_faiz / 100,
+          altin: data.yil_sonucu.reel_altin / 100,
+          bist: data.yil_sonucu.reel_bist / 100,
+          dolar: data.yil_sonucu.reel_doviz / 100,
+          mevduat: data.yil_sonucu.reel_mevduat / 100,
         }
         return {
           altin: prev.altin !== null ? prev.altin * (1 + getiriler.altin) : null,
@@ -279,17 +310,7 @@ export default function App() {
       })
 
 
-      let buYilOyunBitti = false
-      let yeniBitisSebebi = null
-      if (yeniYas >= 85) {
-        buYilOyunBitti = true
-        yeniBitisSebebi = "yas_siniri"
-      } else if (yeniYas >= 75 && erkenOlumGerceklesti(yeniYas)) {
-        buYilOyunBitti = true
-        yeniBitisSebebi = "erken_olum"
-      }
-
-      if (!buYilOyunBitti && data.yil_sonucu.event) {
+      if (data.yil_sonucu.event) {
         setCoachYorumu(null)
         setMevcutEvent(data.yil_sonucu.event)
         setEventGecmisi(prev => ({
@@ -305,29 +326,19 @@ export default function App() {
       const yeniEnflasyonEndeksi = enflasyonEndeksi * (1 + data.yil_sonucu.enflasyon / 100)
       setEnflasyonEndeksi(yeniEnflasyonEndeksi)
       setEnflasyonGecmisi(prev => [...prev, { yil: yil + 1, deger: Math.round(yeniEnflasyonEndeksi) }])
+      setEmlakEndeksiGecmisi(prev => [...prev, { yil: yil + 1, deger: yeniEmlakEndeksiUsd }])
 
-      // Portföy toplam değeri geçmişi
-      const yeniPortfoyDegeri = nakitRef.current + Math.round(
-        portfoy.altin_gram * data.yil_sonucu.fiyatlar.altin_try_gram +
-        portfoy.bist_adet * data.yil_sonucu.fiyatlar.bist_endeks +
-        portfoy.dolar * data.yil_sonucu.fiyatlar.dolar_try +
-        portfoy.mevduat_tl
-      )
-      setPortfoyGecmisi(prev => [...prev, { yil: yil + 1, deger: yeniPortfoyDegeri }])
+      // Portföy endeksi geçmişi (Maaş etkisi arındırılmış yatırım performansı)
+      setPortfoyGecmisi(prev => [...prev, { yil: yil + 1, deger: yeniPortfoyEndeksi }])
 
-      if (buYilOyunBitti) {
+      if (yeniYas >= 85) {
         setOyunBitti(true)
-        setBitisSebebi(yeniBitisSebebi)
-        finalRaporuOlustur({
-          profile: karakterProfili,
-          event_history: eventKayitlari,
-          final_state: {
-            year: yeniYil,
-            age: yeniYas,
-            cash: nakitRef.current,
-            net_worth: yeniPortfoyDegeri,
-          },
-        })
+        setBitisSebebi("yas_siniri")
+      } else if (yeniYas >= 75) {
+        if (Math.random() < erkenOlumOlasiligi(yeniYas)) {
+          setOyunBitti(true)
+          setBitisSebebi("erken_olum")
+        }
       }
 
     } catch (e) {
@@ -343,7 +354,6 @@ export default function App() {
     setTemelMaas(sonuc.yillikGelir)
     setIsYeri(sonuc.meslek || null)
 
-    let profil = null
     try {
       const res = await fetch(`${API_BASE_URL}/ajanlar/profil`, {
         method: "POST",
@@ -359,8 +369,7 @@ export default function App() {
       })
 
       if (res.ok) {
-        profil = await res.json()
-        setKarakterProfili(profil)
+        setKarakterProfili(await res.json())
       } else {
         setKarakterProfili(null)
       }
@@ -370,7 +379,6 @@ export default function App() {
     }
 
     setIntroTamamlandi(true)
-    setProfilHikayesiGoster(Boolean(profil?.intro_story))
   }
 
   function tekrarOyna() {
@@ -381,6 +389,16 @@ export default function App() {
     const yeniSecimler = { ...standartlar, [kategori]: secimId }
     setStandartlar(yeniSecimler)
     setYasamGideri(Math.round(toplamAylikUsd(yeniSecimler, YASAM_STANDARTLARI) * fiyatlar.dolar_try * 12))
+  }
+
+  function agirlikliSecim(dallar) {
+    const rastgele = Math.random()
+    let toplam = 0
+    for (const dal of dallar) {
+      toplam += dal.ihtimal
+      if (rastgele <= toplam) return dal
+    }
+    return dallar[dallar.length - 1]
   }
 
   function levelDegistir(delta) {
@@ -419,6 +437,11 @@ export default function App() {
 
     const secilenEvent = mevcutEvent
 
+    setSonEventEtkisi({
+      sabir: secenek.sabir_etki || 0,
+      mutluluk: secenek.mutluluk_etki || 0
+    })
+
     setBars(prev => ({
       sabir: Math.min(80, Math.max(20, prev.sabir + (secenek.sabir_etki || 0))),
       mutluluk: Math.min(80, Math.max(20, prev.mutluluk + (secenek.mutluluk_etki || 0))),
@@ -455,31 +478,42 @@ export default function App() {
       bias: secilenEvent.bias_etiketi,
       secim_id: secenek.id,
       secim_metin: secenek.metin,
-      high_impact: Boolean(
-        secenek.aksiyon ||
-        secenek.gelir_degisim ||
-        secenek.yillik_gelir_usd ||
-        Math.abs(secenek.nakit_etki_usd || 0) >= 5000
-      ),
     }
 
-    const yeniEventKayitlari = [...eventKayitlari, eventKaydi]
-    const coachPayload = {
-      ...eventKaydi,
-      event_history: yeniEventKayitlari,
-    }
-
-    setEventKayitlari(yeniEventKayitlari)
+    setEventKayitlari(prev => [...prev, eventKaydi])
     setFinalRapor(null)
     setMevcutEvent(null)
 
     if (secenek.olasilik_sonuclari && secenek.olasilik_sonuclari.length > 0) {
       const cikanDal = agirlikliSecim(secenek.olasilik_sonuclari)
       levelDegistir(cikanDal.level_etki)
-      bekleyenEventKaydiRef.current = coachPayload
+      bekleyenEventKaydiRef.current = eventKaydi
       setSonucKarti({ baslik: secilenEvent.baslik, metin: cikanDal.sonuc_metin })
     } else {
-      kocYorumunuGetir(coachPayload)
+      kocYorumunuGetir(eventKaydi)
+    }
+  }
+
+  async function finalRaporuOlustur() {
+    setFinalRaporLoading(true)
+    setFinalRaporHata(false)
+    try {
+      const res = await fetch(`${API_BASE_URL}/ajanlar/final-rapor`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          profile: karakterProfili,
+          event_history: eventKayitlari,
+          final_state: { year: yil, age: yas, cash: nakit, net_worth: toplamDeger },
+        }),
+      })
+      if (!res.ok) throw new Error("Final raporu oluşturulamadı.")
+      setFinalRapor(await res.json())
+    } catch (error) {
+      console.error(error)
+      setFinalRaporHata(true)
+    } finally {
+      setFinalRaporLoading(false)
     }
   }
 
@@ -538,20 +572,100 @@ export default function App() {
     }))
   }
 
+  function evGuncelDegerHesapla(ev) {
+    return Math.round(ev.fiyat_usd_taban * (gameState.emlak_endeksi_usd / 100) * fiyatlar.dolar_try)
+  }
+
+  function evdeYasamayaBasla(evId) {
+    setSahipOlunanEvler(prev => prev.map(e => e.id === evId ? { ...e, kirada: false } : e))
+    setOturulanEvId(evId)
+    standartDegis("konut", "kendi_ev")
+  }
+
+  function evdenCik() {
+    setOturulanEvId(null)
+    standartDegis("konut", "orta")
+  }
+
+  function evSatinAl(ev) {
+    if (nakitRef.current < ev.fiyat_tl) {
+      alert("Yeterli nakit yok!")
+      return
+    }
+    nakitiGuncelle(Math.round(nakitRef.current - ev.fiyat_tl))
+    setSahipOlunanEvler(prev => [...prev, {
+      id: ev.id,
+      segment: ev.segment,
+      gorsel: ev.gorsel,
+      fiyat_usd_taban: ev.fiyat_usd_taban,
+      kira_orani: ev.kira_orani,
+      kirada: false,
+      alis_fiyati: ev.fiyat_tl,
+      alis_yili: yil,
+    }])
+    setEmlakPiyasasi(prev => prev.filter(e => e.id !== ev.id))
+  }
+
+  function evKiraDurumunuDegistir(evId) {
+    if (evId === oturulanEvId) return // oturulan evi kiraya veremezsin
+    setSahipOlunanEvler(prev => prev.map(e => e.id === evId ? { ...e, kirada: !e.kirada } : e))
+  }
+
+  function evSat(evId) {
+    const ev = sahipOlunanEvler.find(e => e.id === evId)
+    if (!ev) return
+    if (evId === oturulanEvId) evdenCik()
+    const guncelDeger = evGuncelDegerHesapla(ev)
+    nakitiGuncelle(Math.round(nakitRef.current + guncelDeger))
+    setSahipOlunanEvler(prev => prev.filter(e => e.id !== evId))
+  }
+
   const portfoyDegeri = Math.round(
     portfoy.altin_gram * fiyatlar.altin_try_gram +
     portfoy.bist_adet * fiyatlar.bist_endeks +
     portfoy.dolar * fiyatlar.dolar_try +
     portfoy.mevduat_tl
   )
-  const toplamDeger = nakit + portfoyDegeri
-  const netAkis = yillikGelir - yasamGideri
+  const emlakToplamDeger = sahipOlunanEvler.reduce((toplam, ev) => toplam + evGuncelDegerHesapla(ev), 0)
+  const toplamDeger = nakit + portfoyDegeri + emlakToplamDeger
+  const netAkis = yillikGelir + kiraGeliriYillik - yasamGideri
   const krizMi = gameState.enf_rejim === 1
   const riskProfili = karakterProfili?.risk_level
     ? riskEtiketi(karakterProfili.risk_level)
     : "Belirleniyor"
   const profilAdi = karakterProfili?.profile_name || "Profil Hazırlanıyor"
   const seviye = Math.max(1, yas - 24)
+
+  const guncelKalite = yasamKalitesiEtkisi(standartlar, YASAM_STANDARTLARI)
+  let guncelFinansalDebuff = { mutluluk: 0, sabir: 0 }
+  if (yillikGelir < yasamGideri) {
+    guncelFinansalDebuff = { mutluluk: -8, sabir: -5 }
+  } else if (yillikGelir < yasamGideri * 1.2) {
+    guncelFinansalDebuff = { mutluluk: -3, sabir: -2 }
+  }
+
+  const sabirTooltip = (
+    <div className="text-xs flex flex-col gap-1 text-on-surface-variant font-bold">
+      <div>Yaşam Giderleri: <span className={guncelKalite.sabir >= 0 ? "text-[#34d399]" : "text-error"}>{guncelKalite.sabir > 0 ? '+' : ''}{guncelKalite.sabir}</span> / yıl</div>
+      {guncelFinansalDebuff.sabir !== 0 && <div>Finansal Durum: <span className="text-error">{guncelFinansalDebuff.sabir}</span> / yıl</div>}
+      {sonEventEtkisi.sabir !== 0 && <div>Son Random Event: <span className={sonEventEtkisi.sabir > 0 ? "text-[#34d399]" : "text-error"}>{sonEventEtkisi.sabir > 0 ? '+' : ''}{sonEventEtkisi.sabir}</span></div>}
+    </div>
+  )
+
+  const mutlulukTooltip = (
+    <div className="text-xs flex flex-col gap-1 text-on-surface-variant font-bold">
+      <div>Yaşam Giderleri: <span className={guncelKalite.mutluluk >= 0 ? "text-[#34d399]" : "text-error"}>{guncelKalite.mutluluk > 0 ? '+' : ''}{guncelKalite.mutluluk}</span> / yıl</div>
+      {guncelFinansalDebuff.mutluluk !== 0 && <div>Finansal Durum: <span className="text-error">{guncelFinansalDebuff.mutluluk}</span> / yıl</div>}
+      {sonEventEtkisi.mutluluk !== 0 && <div>Son Random Event: <span className={sonEventEtkisi.mutluluk > 0 ? "text-[#34d399]" : "text-error"}>{sonEventEtkisi.mutluluk > 0 ? '+' : ''}{sonEventEtkisi.mutluluk}</span></div>}
+    </div>
+  )
+
+  const gelirTooltip = (
+    <div className="text-xs flex flex-col gap-1 text-on-surface-variant font-bold">
+      <div>Maaş Geliri: <span className="text-[#34d399]">{money(yillikGelir)}</span> / yıl</div>
+      {kiraGeliriYillik > 0 && <div>Kira Geliri: <span className="text-[#34d399]">{money(kiraGeliriYillik)}</span> / yıl</div>}
+    </div>
+  )
 
 
   if (!acilisGecildi) {
@@ -562,14 +676,6 @@ export default function App() {
   }
   if (!introTamamlandi) {
     return <IntroEkrani onBitis={introyuBitir} />
-  }
-  if (profilHikayesiGoster && karakterProfili?.intro_story) {
-    return (
-      <ProfilHikayesi
-        profil={karakterProfili}
-        onDevam={() => setProfilHikayesiGoster(false)}
-      />
-    )
   }
   if (oyunBitti) {
     return (
@@ -582,7 +688,7 @@ export default function App() {
         yil={yil}
         toplamDeger={toplamDeger}
         nakit={nakit}
-        onTekrarDene={() => finalRaporuOlustur()}
+        onTekrarDene={finalRaporuOlustur}
         onTekrarOyna={tekrarOyna}
         oturum={oturum}
       />
@@ -650,7 +756,7 @@ export default function App() {
           <button
             className="w-full bg-primary-container text-background font-data-lg text-data-lg uppercase py-3 btn-shadow border border-outline transition-transform font-bold mb-6 disabled:opacity-50"
             onClick={yilAtla}
-            disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent || !!sonucKarti || oyunBitti}
+            disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent || !!sonucKarti || !!redenominasyonKarti || oyunBitti}
           >
             {loading ? "SİSTEM_MEŞGUL" : `YIL_${yil + 1} ÇALIŞTIR`}
           </button>
@@ -704,9 +810,14 @@ export default function App() {
 
             {/* Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
-              <MetricCard label="Aylık Gelir" value={money(yillikGelir)} hint={`Net akış: ${money(netAkis)}`} />
-              <MetricCard label="Sabır" value={`${bars.sabir}/100`} hint="Psikolojik" />
-              <MetricCard label="Mutluluk" value={`${bars.mutluluk}/100`} hint="Psikolojik" />
+              <MetricCard
+                label="Yıllık Gelir"
+                value={money(yillikGelir + kiraGeliriYillik)}
+                hint={`Net akış: ${money(netAkis)}`}
+                tooltipNodes={gelirTooltip}
+              />
+              <MetricCard label="Sabır" value={`${bars.sabir}/100`} hint="Psikolojik" tooltipNodes={sabirTooltip} />
+              <MetricCard label="Mutluluk" value={`${bars.mutluluk}/100`} hint="Psikolojik" tooltipNodes={mutlulukTooltip} />
               <MetricCard
                 label="Enflasyon"
                 value={sonuc ? `%${sonuc.enflasyon}` : "—"}
@@ -733,6 +844,21 @@ export default function App() {
                       className="self-start bg-primary-container text-background font-data-lg text-data-lg uppercase py-2 px-6 btn-shadow border border-outline font-bold mt-2"
                     >
                       Devam Et
+                    </button>
+                  </div>
+                ) : redenominasyonKarti ? (
+                  <div className="flex flex-col gap-4">
+                    <div className="font-data-sm text-data-sm text-error uppercase font-bold flex items-center gap-2">
+                      <span className="material-symbols-outlined">warning</span>
+                      ZORUNLU GÜNCELLEME_{yil}
+                    </div>
+                    <h3 className="font-headline-md text-headline-md text-error">{redenominasyonKarti.baslik}</h3>
+                    <p className="text-on-surface-variant text-body-md leading-relaxed">{redenominasyonKarti.metin}</p>
+                    <button
+                      onClick={() => setRedenominasyonKarti(null)}
+                      className="self-start bg-primary-container text-background font-data-lg text-data-lg uppercase py-2 px-6 btn-shadow border border-outline font-bold mt-2 hover:bg-primary transition-colors"
+                    >
+                      Anlaşıldı, Devam Et
                     </button>
                   </div>
                 ) : mevcutEvent ? (
@@ -763,14 +889,31 @@ export default function App() {
                               <div className="font-data-sm text-data-sm uppercase mb-1">{kilitli ? "KİLİTLİ" : `SEÇ_0${i + 1}`}</div>
                               {s.risk_seviyesi && s.risk_seviyesi !== "risksiz" && (
                                 <span className={`text-[10px] px-1 font-bold uppercase ${s.risk_seviyesi === "yüksek" ? "bg-error text-background" :
-                                  s.risk_seviyesi === "orta" ? "bg-[#f5c842] text-black" :
-                                    "bg-[#34d399] text-black"
+                                    s.risk_seviyesi === "orta" ? "bg-[#f5c842] text-black" :
+                                      "bg-[#34d399] text-black"
                                   }`}>
                                   {s.risk_seviyesi} risk
                                 </span>
                               )}
                             </div>
                             <div className="font-bold">{s.metin}</div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {s.mutluluk_etki !== undefined && s.mutluluk_etki !== 0 && (
+                                <span className={`text-[10px] px-1 font-bold uppercase ${s.mutluluk_etki > 0 ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
+                                  Mutluluk {s.mutluluk_etki > 0 ? '+' : ''}{s.mutluluk_etki}
+                                </span>
+                              )}
+                              {s.sabir_etki !== undefined && s.sabir_etki !== 0 && (
+                                <span className={`text-[10px] px-1 font-bold uppercase ${s.sabir_etki > 0 ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
+                                  Sabır {s.sabir_etki > 0 ? '+' : ''}{s.sabir_etki}
+                                </span>
+                              )}
+                              {s.nakit_etki_usd !== undefined && s.nakit_etki_usd !== 0 && (
+                                <span className={`text-[10px] px-1 font-bold uppercase ${s.nakit_etki_usd > 0 ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
+                                  Nakit {s.nakit_etki_usd > 0 ? '+' : ''}{s.nakit_etki_usd}$
+                                </span>
+                              )}
+                            </div>
                             {olumluDal && !kilitli && (
                               <div className="text-primary font-data-sm text-data-sm mt-1">
                                 İHTİMAL: %{Math.round(olumluDal.ihtimal * 100)} olumlu sonuç
@@ -806,15 +949,10 @@ export default function App() {
                     DAVRANIŞSAL VERİLER İŞLENİYOR...
                   </div>
                 )}
-                {coachYorumu?.should_show !== false && coachYorumu && (
+                {coachYorumu && (
                   <div className="flex flex-col gap-3">
                     <div className="font-data-sm text-data-sm text-primary uppercase">KAYIT_{yil}</div>
                     <h3 className="font-bold text-lg text-on-surface">{coachYorumu.coach_title}</h3>
-                    {coachYorumu.trigger_reason && (
-                      <div className="font-data-sm text-data-sm uppercase text-on-surface-variant">
-                        {coachYorumu.trigger_reason}
-                      </div>
-                    )}
                     <div className="bg-surface-container-high p-2 border-l-2 border-primary font-data-sm text-primary">
                       TESPİT EDİLEN EĞİLİM: {coachYorumu.bias_name_tr}
                     </div>
@@ -822,13 +960,6 @@ export default function App() {
                     <blockquote className="italic border-l border-outline-variant pl-4 text-on-surface opacity-80 mt-2">
                       {coachYorumu.reflection_question}
                     </blockquote>
-                  </div>
-                )}
-                {!coachLoading && coachYorumu?.should_show === false && (
-                  <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant p-8 text-center">
-                    <span className="material-symbols-outlined text-4xl mb-2">task_alt</span>
-                    <p className="font-data-sm text-data-sm uppercase">KARAR GEÇMİŞE KAYDEDİLDİ</p>
-                    <p className="text-sm opacity-60 mt-2">Koç yalnızca yeni veya tekrarlanan bir eğilim gördüğünde devreye girer.</p>
                   </div>
                 )}
                 {!coachLoading && !coachYorumu && (
@@ -873,6 +1004,16 @@ export default function App() {
             nakit={nakit}
             toplamDeger={toplamDeger}
             krizMi={krizMi}
+            emlakPiyasasi={emlakPiyasasi}
+            sahipOlunanEvler={sahipOlunanEvler}
+            evSatinAl={evSatinAl}
+            evKiraDurumunuDegistir={evKiraDurumunuDegistir}
+            evSat={evSat}
+            evGuncelDegerHesapla={evGuncelDegerHesapla}
+            oturulanEvId={oturulanEvId}
+            evdeYasamayaBasla={evdeYasamayaBasla}
+            evdenCik={evdenCik}
+            emlakEndeksiGecmisi={emlakEndeksiGecmisi}
           />
         )}
 
@@ -884,6 +1025,7 @@ export default function App() {
             portfoy={portfoy}
             dolarKuru={fiyatlar.dolar_try}
             yasamGideri={yasamGideri}
+            oturulanEvVarMi={!!oturulanEvId}
           />
         )}
 
@@ -903,18 +1045,23 @@ export default function App() {
   )
 }
 
-function MetricCard({ label, value, hint, alert }) {
+function MetricCard({ label, value, hint, alert, tooltipNodes }) {
   return (
-    <div className={`border card-shadow p-stack-md flex flex-col ${alert ? "bg-error-container border-error" : "bg-surface-container border-outline"}`}>
+    <div className={`relative group border card-shadow p-stack-md flex flex-col ${alert ? "bg-error-container border-error" : "bg-surface-container border-outline"}`}>
       <div className={`font-data-sm text-data-sm uppercase mb-1 ${alert ? "text-on-error-container" : "text-on-surface-variant"}`}>
         {label}
       </div>
-      <div className={`font-data-lg text-data-lg mb-2 ${alert ? "text-error" : "text-primary"}`}>
+      <div className={`font-headline-md text-headline-md mb-2 ${alert ? "text-on-error-container" : "text-on-surface"}`}>
         {value}
       </div>
       <div className={`font-data-sm text-data-sm uppercase mt-auto ${alert ? "text-on-error-container opacity-80" : "text-on-surface-variant opacity-50"}`}>
         {hint}
       </div>
+      {tooltipNodes && (
+        <div className="absolute hidden group-hover:flex flex-col bottom-full left-0 mb-2 w-max bg-surface-container-highest border border-outline p-3 shadow-lg z-50">
+          {tooltipNodes}
+        </div>
+      )}
     </div>
   )
 }
@@ -927,6 +1074,10 @@ function formatPct(val) {
   return val >= 0 ? `+%${Math.abs(val).toFixed(1)}` : `-%${Math.abs(val).toFixed(1)}`
 }
 
+function pctClass(val) {
+  return val >= 0 ? "positive" : "negative"
+}
+
 function erkenOlumOlasiligi(yas) {
   const minYas = 75
   const maxYas = 84
@@ -936,20 +1087,6 @@ function erkenOlumOlasiligi(yas) {
   if (yas >= maxYas) return maxOlasilik
   const oran = (yas - minYas) / (maxYas - minYas)
   return minOlasilik + oran * (maxOlasilik - minOlasilik)
-}
-
-function erkenOlumGerceklesti(yas) {
-  return Math.random() < erkenOlumOlasiligi(yas)
-}
-
-function agirlikliSecim(dallar) {
-  const rastgele = Math.random()
-  let toplam = 0
-  for (const dal of dallar) {
-    toplam += dal.ihtimal
-    if (rastgele <= toplam) return dal
-  }
-  return dallar[dallar.length - 1]
 }
 
 function riskEtiketi(riskLevel) {
