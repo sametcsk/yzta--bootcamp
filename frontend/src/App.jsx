@@ -9,6 +9,7 @@ import BitisSayfasi from "./BitisSayfasi"
 import GirisSayfasi from "./GirisSayfasi"
 import { supabase, supabaseAktif } from "./supabaseClient"
 import { pozisyonAdiGetir, levelCarpaniGetir } from "./data/meslekler"
+import ProfilHikayesi from "./ProfilHikayesi"
 
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
@@ -31,23 +32,17 @@ const INITIAL_STATE = {
   mevduat_birikim: 100.0,
 }
 
-const VARLIK_META = {
-  altin: { icon: "Au", ad: "Altın", type: "Nadir Varlık", risk: "Orta", tone: "gold", score: 2 },
-  bist: { icon: "BI", ad: "BIST", type: "Riskli Varlık", risk: "Yüksek", tone: "green", score: 3 },
-  dolar: { icon: "$", ad: "Dolar", type: "Döviz", risk: "Orta", tone: "blue", score: 2 },
-  mevduat: { icon: "%", ad: "Mevduat", type: "Güvenli Alan", risk: "Düşük", tone: "violet", score: 1 },
-}
-
 export default function App() {
   const [gameState, setGameState] = useState(INITIAL_STATE)
   const [yil, setYil] = useState(2025)
   const [yas, setYas] = useState(25)
   const [sonuc, setSonuc] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [gecmis, setGecmis] = useState([])
+  const [, setGecmis] = useState([])
   const [bars, setBars] = useState({ sabir: 50, mutluluk: 50 })
   const [nakit, setNakit] = useState(25000)
   const [introTamamlandi, setIntroTamamlandi] = useState(false)
+  const [profilHikayesiGoster, setProfilHikayesiGoster] = useState(false)
   const [acilisGecildi, setAcilisGecildi] = useState(false)
   const [karakterProfili, setKarakterProfili] = useState(null)
   const [aktifSayfa, setAktifSayfa] = useState("ana")
@@ -107,14 +102,6 @@ export default function App() {
   const [oturum, setOturum] = useState(null)
   const [sonucKarti, setSonucKarti] = useState(null) // { baslik, metin } | null
   const bekleyenEventKaydiRef = useRef(null)
-
-
-  useEffect(() => {
-    if (oyunBitti && !finalRapor && !finalRaporLoading) {
-      finalRaporuOlustur()
-    }
-  }, [oyunBitti])
-
   useEffect(() => {
     if (!supabaseAktif) return
     supabase.auth.getSession().then(({ data }) => setOturum(data.session))
@@ -123,6 +110,31 @@ export default function App() {
     })
     return () => listener.subscription.unsubscribe()
   }, [])
+
+  async function finalRaporuOlustur(payloadOverride = null) {
+    const payload = payloadOverride || {
+      profile: karakterProfili,
+      event_history: eventKayitlari,
+      final_state: { year: yil, age: yas, cash: nakit, net_worth: toplamDeger },
+    }
+
+    setFinalRaporLoading(true)
+    setFinalRaporHata(false)
+    try {
+      const res = await fetch(`${API_BASE_URL}/ajanlar/final-rapor`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error("Final raporu oluşturulamadı.")
+      setFinalRapor(await res.json())
+    } catch (error) {
+      console.error(error)
+      setFinalRaporHata(true)
+    } finally {
+      setFinalRaporLoading(false)
+    }
+  }
 
 
   async function yilAtla() {
@@ -267,7 +279,17 @@ export default function App() {
       })
 
 
-      if (data.yil_sonucu.event) {
+      let buYilOyunBitti = false
+      let yeniBitisSebebi = null
+      if (yeniYas >= 85) {
+        buYilOyunBitti = true
+        yeniBitisSebebi = "yas_siniri"
+      } else if (yeniYas >= 75 && erkenOlumGerceklesti(yeniYas)) {
+        buYilOyunBitti = true
+        yeniBitisSebebi = "erken_olum"
+      }
+
+      if (!buYilOyunBitti && data.yil_sonucu.event) {
         setCoachYorumu(null)
         setMevcutEvent(data.yil_sonucu.event)
         setEventGecmisi(prev => ({
@@ -293,14 +315,19 @@ export default function App() {
       )
       setPortfoyGecmisi(prev => [...prev, { yil: yil + 1, deger: yeniPortfoyDegeri }])
 
-      if (yeniYas >= 85) {
+      if (buYilOyunBitti) {
         setOyunBitti(true)
-        setBitisSebebi("yas_siniri")
-      } else if (yeniYas >= 75) {
-        if (Math.random() < erkenOlumOlasiligi(yeniYas)) {
-          setOyunBitti(true)
-          setBitisSebebi("erken_olum")
-        }
+        setBitisSebebi(yeniBitisSebebi)
+        finalRaporuOlustur({
+          profile: karakterProfili,
+          event_history: eventKayitlari,
+          final_state: {
+            year: yeniYil,
+            age: yeniYas,
+            cash: nakitRef.current,
+            net_worth: yeniPortfoyDegeri,
+          },
+        })
       }
 
     } catch (e) {
@@ -316,6 +343,7 @@ export default function App() {
     setTemelMaas(sonuc.yillikGelir)
     setIsYeri(sonuc.meslek || null)
 
+    let profil = null
     try {
       const res = await fetch(`${API_BASE_URL}/ajanlar/profil`, {
         method: "POST",
@@ -331,7 +359,8 @@ export default function App() {
       })
 
       if (res.ok) {
-        setKarakterProfili(await res.json())
+        profil = await res.json()
+        setKarakterProfili(profil)
       } else {
         setKarakterProfili(null)
       }
@@ -341,6 +370,7 @@ export default function App() {
     }
 
     setIntroTamamlandi(true)
+    setProfilHikayesiGoster(Boolean(profil?.intro_story))
   }
 
   function tekrarOyna() {
@@ -351,16 +381,6 @@ export default function App() {
     const yeniSecimler = { ...standartlar, [kategori]: secimId }
     setStandartlar(yeniSecimler)
     setYasamGideri(Math.round(toplamAylikUsd(yeniSecimler, YASAM_STANDARTLARI) * fiyatlar.dolar_try * 12))
-  }
-
-  function agirlikliSecim(dallar) {
-    const rastgele = Math.random()
-    let toplam = 0
-    for (const dal of dallar) {
-      toplam += dal.ihtimal
-      if (rastgele <= toplam) return dal
-    }
-    return dallar[dallar.length - 1]
   }
 
   function levelDegistir(delta) {
@@ -435,42 +455,31 @@ export default function App() {
       bias: secilenEvent.bias_etiketi,
       secim_id: secenek.id,
       secim_metin: secenek.metin,
+      high_impact: Boolean(
+        secenek.aksiyon ||
+        secenek.gelir_degisim ||
+        secenek.yillik_gelir_usd ||
+        Math.abs(secenek.nakit_etki_usd || 0) >= 5000
+      ),
     }
 
-    setEventKayitlari(prev => [...prev, eventKaydi])
+    const yeniEventKayitlari = [...eventKayitlari, eventKaydi]
+    const coachPayload = {
+      ...eventKaydi,
+      event_history: yeniEventKayitlari,
+    }
+
+    setEventKayitlari(yeniEventKayitlari)
     setFinalRapor(null)
     setMevcutEvent(null)
 
     if (secenek.olasilik_sonuclari && secenek.olasilik_sonuclari.length > 0) {
       const cikanDal = agirlikliSecim(secenek.olasilik_sonuclari)
       levelDegistir(cikanDal.level_etki)
-      bekleyenEventKaydiRef.current = eventKaydi
+      bekleyenEventKaydiRef.current = coachPayload
       setSonucKarti({ baslik: secilenEvent.baslik, metin: cikanDal.sonuc_metin })
     } else {
-      kocYorumunuGetir(eventKaydi)
-    }
-  }
-
-  async function finalRaporuOlustur() {
-    setFinalRaporLoading(true)
-    setFinalRaporHata(false)
-    try {
-      const res = await fetch(`${API_BASE_URL}/ajanlar/final-rapor`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          profile: karakterProfili,
-          event_history: eventKayitlari,
-          final_state: { year: yil, age: yas, cash: nakit, net_worth: toplamDeger },
-        }),
-      })
-      if (!res.ok) throw new Error("Final raporu oluşturulamadı.")
-      setFinalRapor(await res.json())
-    } catch (error) {
-      console.error(error)
-      setFinalRaporHata(true)
-    } finally {
-      setFinalRaporLoading(false)
+      kocYorumunuGetir(coachPayload)
     }
   }
 
@@ -554,6 +563,14 @@ export default function App() {
   if (!introTamamlandi) {
     return <IntroEkrani onBitis={introyuBitir} />
   }
+  if (profilHikayesiGoster && karakterProfili?.intro_story) {
+    return (
+      <ProfilHikayesi
+        profil={karakterProfili}
+        onDevam={() => setProfilHikayesiGoster(false)}
+      />
+    )
+  }
   if (oyunBitti) {
     return (
       <BitisSayfasi
@@ -565,7 +582,7 @@ export default function App() {
         yil={yil}
         toplamDeger={toplamDeger}
         nakit={nakit}
-        onTekrarDene={finalRaporuOlustur}
+        onTekrarDene={() => finalRaporuOlustur()}
         onTekrarOyna={tekrarOyna}
         oturum={oturum}
       />
@@ -789,10 +806,15 @@ export default function App() {
                     DAVRANIŞSAL VERİLER İŞLENİYOR...
                   </div>
                 )}
-                {coachYorumu && (
+                {coachYorumu?.should_show !== false && coachYorumu && (
                   <div className="flex flex-col gap-3">
                     <div className="font-data-sm text-data-sm text-primary uppercase">KAYIT_{yil}</div>
                     <h3 className="font-bold text-lg text-on-surface">{coachYorumu.coach_title}</h3>
+                    {coachYorumu.trigger_reason && (
+                      <div className="font-data-sm text-data-sm uppercase text-on-surface-variant">
+                        {coachYorumu.trigger_reason}
+                      </div>
+                    )}
                     <div className="bg-surface-container-high p-2 border-l-2 border-primary font-data-sm text-primary">
                       TESPİT EDİLEN EĞİLİM: {coachYorumu.bias_name_tr}
                     </div>
@@ -800,6 +822,13 @@ export default function App() {
                     <blockquote className="italic border-l border-outline-variant pl-4 text-on-surface opacity-80 mt-2">
                       {coachYorumu.reflection_question}
                     </blockquote>
+                  </div>
+                )}
+                {!coachLoading && coachYorumu?.should_show === false && (
+                  <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant p-8 text-center">
+                    <span className="material-symbols-outlined text-4xl mb-2">task_alt</span>
+                    <p className="font-data-sm text-data-sm uppercase">KARAR GEÇMİŞE KAYDEDİLDİ</p>
+                    <p className="text-sm opacity-60 mt-2">Koç yalnızca yeni veya tekrarlanan bir eğilim gördüğünde devreye girer.</p>
                   </div>
                 )}
                 {!coachLoading && !coachYorumu && (
@@ -898,10 +927,6 @@ function formatPct(val) {
   return val >= 0 ? `+%${Math.abs(val).toFixed(1)}` : `-%${Math.abs(val).toFixed(1)}`
 }
 
-function pctClass(val) {
-  return val >= 0 ? "positive" : "negative"
-}
-
 function erkenOlumOlasiligi(yas) {
   const minYas = 75
   const maxYas = 84
@@ -911,6 +936,20 @@ function erkenOlumOlasiligi(yas) {
   if (yas >= maxYas) return maxOlasilik
   const oran = (yas - minYas) / (maxYas - minYas)
   return minOlasilik + oran * (maxOlasilik - minOlasilik)
+}
+
+function erkenOlumGerceklesti(yas) {
+  return Math.random() < erkenOlumOlasiligi(yas)
+}
+
+function agirlikliSecim(dallar) {
+  const rastgele = Math.random()
+  let toplam = 0
+  for (const dal of dallar) {
+    toplam += dal.ihtimal
+    if (rastgele <= toplam) return dal
+  }
+  return dallar[dallar.length - 1]
 }
 
 function riskEtiketi(riskLevel) {

@@ -1,47 +1,154 @@
 PROFILE_TEXTS = {
     "Guvenli Planlayici": {
-        "display_name": "Guvenli Planlayici",
-        "main_strength": "Planli hareket etme ve krizlerde panige kapilmama",
-        "growth_area": "Fazla temkinli davranarak firsatlari gec yakalama",
-        "summary": "Kararlarin guvenlik, duzen ve finansal istikrar arayisina isaret ediyor.",
-        "first_advice": "Bu profile sahip kullanicilar genellikle acil durum payini korurken cesitlendirme fikrini de degerlendirmeye yatkindir.",
+        "display_name": "Güvenli Planlayıcı",
+        "main_strength": "Planlı hareket etme ve krizlerde paniğe kapılmama",
+        "growth_area": "Fazla temkinli davranarak fırsatları geç yakalama",
+        "summary": "Kararların güvenlik, düzen ve finansal istikrar arayışına işaret ediyor.",
+        "first_advice": "Bu profile sahip kullanıcılar genellikle acil durum payını korurken çeşitlendirme fikrini de değerlendirmeye yatkındır.",
     },
     "Dengeli Stratejist": {
         "display_name": "Dengeli Stratejist",
-        "main_strength": "Risk ve guvenlik arasinda olculu denge kurabilme",
-        "growth_area": "Bazi donemlerde karar almakta gecikme",
-        "summary": "Kararlarin hem buyumeyi hem de korunmayi dikkate alan dengeli bir yaklasim gosteriyor.",
-        "first_advice": "Bu profil, farkli senaryolarda risk ve guvenlik arasindaki dengeyi gozlemlemeye odaklanir.",
+        "main_strength": "Risk ve güvenlik arasında ölçülü denge kurabilme",
+        "growth_area": "Bazı dönemlerde karar almakta gecikme",
+        "summary": "Kararların hem büyümeyi hem de korunmayı dikkate alan dengeli bir yaklaşım gösteriyor.",
+        "first_advice": "Bu profil, farklı senaryolarda risk ve güvenlik arasındaki dengeyi gözlemlemeye odaklanır.",
     },
     "Cesur Firsatci": {
-        "display_name": "Cesur Firsatci",
-        "main_strength": "Firsatlari hizli fark etme ve aksiyon alabilme",
-        "growth_area": "Kisa vadeli heyecanla gereksiz risk alma",
-        "summary": "Kararlarin yuksek getiri ihtimali gordugunde hizli hareket etmeye yatkin oldugunu gosteriyor.",
-        "first_advice": "Bu profil, tek bir karara tum sermayeyi baglamadan riskleri fark etmeye odaklanir.",
+        "display_name": "Cesur Fırsatçı",
+        "main_strength": "Fırsatları hızlı fark etme ve aksiyon alabilme",
+        "growth_area": "Kısa vadeli heyecanla gereksiz risk alma",
+        "summary": "Kararların yüksek getiri ihtimali gördüğünde hızlı hareket etmeye yatkın olduğunu gösteriyor.",
+        "first_advice": "Bu profil, tek bir karara tüm sermayeyi bağlamadan riskleri fark etmeye odaklanır.",
     },
     "Sabirli Biriktirici": {
-        "display_name": "Sabirli Biriktirici",
-        "main_strength": "Uzun vadeli dusunme ve birikim disiplini",
-        "growth_area": "Baslangic sermayesi sinirliyken buyume firsatlarini yavas yakalama",
-        "summary": "Kararlarin sabir, duzenli birikim ve uzun vadeli dayaniklilik egilimi tasiyor.",
-        "first_advice": "Bu profile sahip kullanicilar genellikle kucuk ve duzenli adimlarla ilerleme davranisi gosterir.",
+        "display_name": "Sabırlı Biriktirici",
+        "main_strength": "Uzun vadeli düşünme ve birikim disiplini",
+        "growth_area": "Başlangıç sermayesi sınırlıyken büyüme fırsatlarını yavaş yakalama",
+        "summary": "Kararların sabır, düzenli birikim ve uzun vadeli dayanıklılık eğilimi taşıyor.",
+        "first_advice": "Bu profile sahip kullanıcılar genellikle küçük ve düzenli adımlarla ilerleme davranışı gösterir.",
     },
     "Konfor Odakli": {
-        "display_name": "Konfor Odakli",
-        "main_strength": "Yasam kalitesini ve mutlulugu finansal kararlara dahil etme",
-        "growth_area": "Gelir arttikca giderleri de hizla artirma riski",
-        "summary": "Kararlarin bugunku konforu ve deneyimi onemsedigini gosteriyor.",
-        "first_advice": "Bu profil, konfor hedefleri ile gider artisinin uzun vadeli etkisi arasindaki iliskiyi gozlemlemeye odaklanir.",
+        "display_name": "Konfor Odaklı",
+        "main_strength": "Yaşam kalitesini ve mutluluğu finansal kararlara dahil etme",
+        "growth_area": "Gelir arttıkça giderleri de hızla artırma riski",
+        "summary": "Kararların bugünkü konforu ve deneyimi önemsediğini gösteriyor.",
+        "first_advice": "Bu profil, konfor hedefleri ile gider artışının uzun vadeli etkisi arasındaki ilişkiyi gözlemlemeye odaklanır.",
     },
     "Koruyucu Yatirimci": {
-        "display_name": "Koruyucu Yatirimci",
-        "main_strength": "Sermayeyi koruma ve buyuk kayiplardan uzak durma",
-        "growth_area": "Yuksek enflasyonda fazla nakitte kalarak alim gucu kaybetme",
-        "summary": "Kararlarin mevcut varligi korumaya ve belirsizlikten uzak durmaya yatkin.",
-        "first_advice": "Bu profile sahip kullanicilar nominal para miktariyla birlikte reel alim gucunu da degerlendirmeye yatkindir.",
+        "display_name": "Koruyucu Yatırımcı",
+        "main_strength": "Sermayeyi koruma ve büyük kayıplardan uzak durma",
+        "growth_area": "Yüksek enflasyonda fazla nakitte kalarak alım gücü kaybetme",
+        "summary": "Kararların mevcut varlığı korumaya ve belirsizlikten uzak durmaya yatkın.",
+        "first_advice": "Bu profile sahip kullanıcılar nominal para miktarıyla birlikte reel alım gücünü de değerlendirmeye yatkındır.",
     },
 }
+
+
+STORY_FRAGMENTS = {
+    1: {
+        "rahattik, ihtiyacimiz yoktu": (
+            "Çocukluğun, para konuşmalarının evin içinde yüksek sesle yankılanmadığı yıllarla başladı. "
+            "İhtiyaçların karşılanıyor, gelecek uzak ve güvenli görünüyordu."
+        ),
+        "orta halli, idare ettik": (
+            "Çocukluğun, her şeyin ölçülüp biçildiği ama hayatın yine de yolunu bulduğu orta halli bir evde geçti. "
+            "Bazen bekledin, bazen idare ettin; paranın sınırsız olmadığını erken öğrendin."
+        ),
+        "zorlandik, kisitliydik": (
+            "Çocukluğunda bazı istekler ertelendi, bazı hesaplar geceleri yeniden yapıldı. "
+            "Kısıtlı imkânlar sana sabretmeyi ve elindekinin değerini erken öğretti."
+        ),
+    },
+    2: {
+        "cok calistim, basariliydim": (
+            "Lise yıllarında masanın başında uzun saatler geçirdin; emeğinin karşılığını aldıkça geleceğini kendi ellerinle kurabileceğine inandın."
+        ),
+        "dengeli bir ogrenciydim": (
+            "Lise yıllarında derslerle hayatın geri kalanı arasında bir denge kurdun; ne yalnızca başarıya kapıldın ne de günlerini boş bıraktın."
+        ),
+        "okula pek onem vermedim": (
+            "Lise yıllarında sınıfın içinden çok dışarıdaki hayat ilgini çekti; yolunu notlardan ziyade yaşayarak bulmaya çalıştın."
+        ),
+    },
+    3: {
+        "biriktirdim": (
+            "İlk kazandığın para avucuna geldiğinde onu hemen harcamadın. Küçük bir miktarın bile bekledikçe güven duygusuna dönüşebildiğini gördün."
+        ),
+        "bir seyler aldim, harcadim": (
+            "İlk kazandığın para avucuna geldiğinde uzun süre beklemedi; onu istediğin şeylere harcarken emeğinin karşılığını hemen hissetmek istedin."
+        ),
+        "aileye verdim": (
+            "İlk kazandığın para avucuna geldiğinde aklına önce evdekiler geldi. Kendi isteğini erteleyip kazancını ailenle paylaştın."
+        ),
+    },
+    4: {
+        "gittim, burslu": (
+            "Üniversite kapısı bursla açıldı. Yeni bir çevreye girerken omuzlarında borçtan çok, yakaladığın fırsatı boşa çıkarmama sorumluluğu vardı."
+        ),
+        "gittim, borcla": (
+            "Üniversiteye gitmek için gelecekteki gelirinden borç aldın. Diplomanı kazanırken bir yandan da yarının hesabını bugünden taşımaya başladın."
+        ),
+        "gitmedim, erken calistim": (
+            "Üniversite yerine çalışma hayatını seçtin. Yaşıtların sıralarda otururken sen günün erken saatlerinde para kazanmanın ve sorumluluk almanın ne demek olduğunu öğrendin."
+        ),
+    },
+    5: {
+        "bedelli yaptim": "Askerlik dönemini birikiminden vazgeçerek kısalttın; zaman ile para arasında doğrudan bir seçim yaptın.",
+        "normal yaptim": "Askerlik için hayatın akışına ara verdin; döndüğünde zaman ilerlemiş, sabrın biraz daha sınanmıştı.",
+        "tecil ettirdim / muaf oldum": "Askerlik hayatının önüne uzun bir ara koymadı; kurmaya başladığın düzen kesintiye uğramadan devam etti.",
+    },
+    6: {
+        "alanimda iyi bir is buldum": (
+            "İlk iş kapısı eğitimini verdiğin alanda açıldı. Yıllardır yaptığın hazırlığın sonunda bir unvana ve düzenli gelire dönüştüğünü gördün."
+        ),
+        "istedigim degil ama calistim": (
+            "İlk işin hayalini kurduğun yer değildi. Yine de beklemek yerine çalışmayı seçtin; bazen yolun, istenen yerden değil mümkün olan yerden başladığını kabul ettin."
+        ),
+        "uzun sure aradim, zor oldu": (
+            "İlk iş kapısı hemen açılmadı. Bekledin, başvurdun ve yeniden denedin; sonunda işe girerken yanında yalnızca maaşı değil, o uzun arayışın yorgunluğunu da taşıdın."
+        ),
+        "emlakciliga basladim": "İlk işinde insanları, sokakları ve fırsatları okumayı seçerek emlakçılığa adım attın.",
+        "kendi isimi kurdum": "Hazır bir kapıdan geçmek yerine kendi kapını açmayı seçtin ve çalışma hayatına girişimci olarak başladın.",
+    },
+    7: {
+        "kira + birikim plani yaptim": (
+            "İlk maaş yattığında rakamları bölüştürdün: bugünün giderleri bir yana, geleceğin payı bir yana. Düzen kurma isteğin ilk aydan kendini gösterdi."
+        ),
+        "kendime bir sey aldim": (
+            "İlk maaş yattığında yıllardır beklettiğin küçük bir isteği gerçekleştirdin. Kazandığın paranın hayatına dokunduğunu somut olarak görmek istedin."
+        ),
+        "hepsini harcadim": (
+            "İlk maaş yattığında ay sonu uzakta görünüyordu. Paranın tamamını harcarken o anın özgürlüğünü seçtin; ertesi ayın hesabını sonraya bıraktın."
+        ),
+    },
+    8: {
+        "hem maddi hem manevi destek aldim": "Hayata başlarken arkanda hem maddi hem manevi bir destek vardı; düştüğünde tutunabileceğin bir el olduğunu biliyordun.",
+        "sadece manevi destek vardi": "Hayata başlarken cebini dolduran bir destek yoktu ama arkanda sana inanan insanların sesi vardı.",
+        "kendi basimaydim": "Hayata başlarken sırtını dayayabileceğin hazır bir güvence yoktu; attığın her adımın ağırlığını büyük ölçüde kendin taşıdın.",
+    },
+    9: {
+        "evet, aldim ve ise yaradi": "Bir noktada büyük bir risk aldın ve sonuç senden yana oldu. Bu başarı, cesaretin karşılık bulabileceğini hafızana güçlü biçimde yazdı.",
+        "evet, aldim ama olmadi": "Bir noktada büyük bir risk aldın ve beklediğin sonuç gelmedi. Kaybın geride kaldı ama karar verirken duyduğun tereddüt hafızanda yer etti.",
+        "hayir, temkinli davrandim": "Büyük bir risk kapına geldiğinde geri çekilip güvenli yolu seçtin. Fırsatı kaçırmış olma ihtimaliyle kayıptan korunma rahatlığı bir süre yan yana yürüdü.",
+    },
+    10: {
+        "her ay birikim yaparim": "Zamanla para yaklaşımın bir ritme dönüştü: her ay önce gelecekteki kendine pay ayırdın.",
+        "gelirim yetiyorsa biriktiririm": "Zamanla birikimi katı bir kuraldan çok, ayın sonunda koşullar izin verirse yaptığın bir tercih olarak gördün.",
+        "ani yasarim, birikim ikinci planda": "Zamanla bugünü ertelememeyi seçtin; gelecek için biriktirmekten önce yaşadığın anın karşılığını almak istedin.",
+    },
+}
+
+
+PROFILE_PROTOTYPES = {
+    "Guvenli Planlayici": (0.60, 0.88, 0.68, 0.43),
+    "Dengeli Stratejist": (1.00, 0.75, 0.72, 0.50),
+    "Cesur Firsatci": (1.40, 0.68, 0.78, 0.40),
+    "Sabirli Biriktirici": (0.85, 0.90, 0.65, 0.18),
+    "Konfor Odakli": (1.18, 0.65, 0.95, 0.42),
+    "Koruyucu Yatirimci": (0.50, 0.90, 0.70, 0.82),
+}
+
+PROFILE_FEATURE_WEIGHTS = (3.0, 0.7, 0.8, 1.2)
 
 
 def _answer_effect(answer: dict, key: str, default=0):
@@ -55,7 +162,6 @@ def _answer_effect(answer: dict, key: str, default=0):
 
 def _normalize_turkish(text: str) -> str:
     mapping = {
-        'ı': 'i', 'ş': 's', 'ğ': 'g', 'ç': 'c', 'ü': 'u', 'ö': 'o',
         'ı': 'i', 'ş': 's', 'ğ': 'g', 'ç': 'c', 'ü': 'u', 'ö': 'o',
         'İ': 'i', 'Ş': 's', 'Ğ': 'g', 'Ç': 'c', 'Ü': 'u', 'Ö': 'o'
     }
@@ -103,18 +209,109 @@ def _time_horizon(sabir: int) -> str:
     return "orta_vade"
 
 
-def _profile_type(nakit: int, sabir: int, mutluluk: int, risk_level: str) -> str:
-    if risk_level == "yuksek" and sabir <= 60:
-        return "Cesur Firsatci"
-    if risk_level == "dusuk" and sabir >= 65 and nakit >= 180000:
-        return "Koruyucu Yatirimci"
-    if risk_level == "dusuk" and sabir >= 60:
-        return "Guvenli Planlayici"
-    if nakit <= 90000 and sabir >= 60:
-        return "Sabirli Biriktirici"
-    if mutluluk >= 68 and sabir <= 50:
-        return "Konfor Odakli"
-    return "Dengeli Stratejist"
+def _profile_type(
+    nakit: int,
+    sabir: int,
+    mutluluk: int,
+    risk_score: int,
+    answer_count: int,
+) -> str:
+    if answer_count <= 0:
+        return "Dengeli Stratejist"
+
+    features = (
+        risk_score / answer_count,
+        min(1.0, max(0.0, (sabir - 20) / 60)),
+        min(1.0, max(0.0, (mutluluk - 20) / 60)),
+        min(1.0, max(0.0, (nakit - 20000) / 360000)),
+    )
+
+    def distance(target: tuple) -> float:
+        return sum(
+            weight * (feature - target_value) ** 2
+            for feature, target_value, weight in zip(
+                features,
+                target,
+                PROFILE_FEATURE_WEIGHTS,
+            )
+        )
+
+    return min(PROFILE_PROTOTYPES, key=lambda profile: distance(PROFILE_PROTOTYPES[profile]))
+
+
+def _answer_text(answer: dict) -> str:
+    return (
+        answer.get("selected_text")
+        or answer.get("secim_metin")
+        or answer.get("metin")
+        or ""
+    ).strip()
+
+
+def _choice_for_question(answers: list, question_id: int, fallback_index: int) -> str:
+    for answer in answers:
+        answer_id = answer.get("question_id", answer.get("soru_id"))
+        if answer_id == question_id:
+            return _answer_text(answer)
+    if fallback_index < len(answers):
+        return _answer_text(answers[fallback_index])
+    return ""
+
+
+def _story_fragment(question_id: int, selected_text: str) -> str:
+    normalized_text = _normalize_turkish(selected_text)
+    return STORY_FRAGMENTS.get(question_id, {}).get(normalized_text, "")
+
+
+def _build_intro_story(
+    answers: list,
+    profile_name: str,
+    nakit: int,
+    yillik_gelir: int,
+) -> str:
+    if not answers:
+        return (
+            "İlk 25 yılına ait yeterli karar kaydı bulunmadığı için yolculuğun dengeli bir "
+            f"başlangıçla açılıyor. {profile_name} profiliyle oyuna giriyor; bundan sonraki "
+            "seçimlerinle davranışsal eğilimlerini daha görünür hâle getiriyorsun."
+        )
+
+    secimler = {
+        question_id: _choice_for_question(answers, question_id, question_id - 1)
+        for question_id in range(1, 11)
+    }
+    ilk_yillar = [
+        _story_fragment(question_id, secimler[question_id])
+        for question_id in (1, 6)
+    ]
+    karar_aliskanliklari = [
+        _story_fragment(question_id, secimler[question_id])
+        for question_id in (9, 10)
+    ]
+
+    paragraflar = [
+        " ".join(fragment for fragment in grup if fragment)
+        for grup in (ilk_yillar, karar_aliskanliklari)
+    ]
+    paragraflar = [paragraf for paragraf in paragraflar if paragraf]
+    if not paragraflar:
+        paragraflar.append(
+            "İlk 25 yılın boyunca aldığın kararlar bazen seni güvenli olana, bazen de bilinmeyene doğru çekti. "
+            "Her seçim bugünkü başlangıç noktanın küçük bir parçasına dönüştü."
+        )
+
+    nakit_metni = f"{nakit:,}".replace(",", ".")
+    gelir_metni = f"{yillik_gelir:,}".replace(",", ".")
+    baslangic_metni = (
+        f"Bu seçimlerin sonunda 25 yaşına {profile_name} profiliyle geldin. "
+        f"Oyuna {nakit_metni} TL nakit ve yıllık {gelir_metni} TL gelirle başlıyorsun; "
+        "bundan sonraki kararların bu eğilimlerinin nasıl değişeceğini gösterecek."
+    )
+    if paragraflar:
+        paragraflar[-1] = f"{paragraflar[-1]} {baslangic_metni}"
+    else:
+        paragraflar.append(baslangic_metni)
+    return "\n\n".join(paragraflar)
 
 
 def generate_profile(data: dict) -> dict:
@@ -131,12 +328,25 @@ def generate_profile(data: dict) -> dict:
 
     risk = _risk_level(risk_score, len(answers))
     horizon = _time_horizon(sabir)
-    profile_type = _profile_type(nakit, sabir, mutluluk, risk)
+    profile_type = _profile_type(
+        nakit,
+        sabir,
+        mutluluk,
+        risk_score,
+        len(answers),
+    )
     profile_text = PROFILE_TEXTS[profile_type]
+    intro_story = _build_intro_story(
+        answers,
+        profile_text["display_name"],
+        nakit,
+        yillik_gelir,
+    )
 
     return {
         "agent": "profile_agent",
         "profile_type": profile_type,
+        "classification_model": "weighted_prototypes_v1",
         "profile_name": profile_text["display_name"],
         "risk_level": risk,
         "time_horizon": horizon,
@@ -149,7 +359,9 @@ def generate_profile(data: dict) -> dict:
         "growth_area": profile_text["growth_area"],
         "summary": profile_text["summary"],
         "first_advice": profile_text["first_advice"],
-        "disclaimer": "Bu profil yatirim tavsiyesi degildir; simulasyon icindeki davranis egilimlerini aciklar.",
+        "intro_story": intro_story,
+        "story_source": "rule_based_fallback",
+        "disclaimer": "Bu profil yatırım tavsiyesi değildir; simülasyon içindeki davranış eğilimlerini açıklar.",
     }
 
 

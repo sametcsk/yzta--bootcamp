@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { supabase } from "./supabaseClient"
 
 function money(value) {
@@ -18,11 +18,11 @@ export default function BitisSayfasi({
   onTekrarDene,
   onTekrarOyna,
 }) {
-  const [kaydediliyor, setKaydediliyor] = useState(false)
   const [kaydedildi, setKaydedildi] = useState(false)
   const [kayitHatasi, setKayitHatasi] = useState(null)
   const [liderlik, setLiderlik] = useState([])
   const [liderlikYukleniyor, setLiderlikYukleniyor] = useState(false)
+  const kayitBaslatildiRef = useRef(false)
 
   const sebepMetni =
     bitisSebebi === "yas_siniri"
@@ -31,10 +31,10 @@ export default function BitisSayfasi({
 
   // Final rapor hazır olunca run'ı bir kez kaydet
   useEffect(() => {
-    if (!finalRapor || finalRaporLoading || kaydedildi || kaydediliyor || !oturum) return
+    if (!finalRapor || finalRaporLoading || kayitBaslatildiRef.current || !oturum) return
+    kayitBaslatildiRef.current = true
 
     async function kaydet() {
-      setKaydediliyor(true)
       setKayitHatasi(null)
       try {
         const displayName = oturum.user.user_metadata?.display_name || "İsimsiz Oyuncu"
@@ -52,12 +52,10 @@ export default function BitisSayfasi({
       } catch (err) {
         console.error(err)
         setKayitHatasi(err.message || "Run kaydedilemedi.")
-      } finally {
-        setKaydediliyor(false)
       }
     }
     kaydet()
-  }, [finalRapor, finalRaporLoading, oturum])
+  }, [finalRapor, finalRaporLoading, oturum, toplamDeger, yas, yil])
 
   // Kayıt başarılı olunca leaderboard'u çek
   useEffect(() => {

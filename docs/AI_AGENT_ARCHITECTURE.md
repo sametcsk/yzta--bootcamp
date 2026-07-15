@@ -14,8 +14,10 @@ Intro cevapları
       v
 Profile Agent
       |
+      +----> Oyuncu profili
+      |
       v
-Oyuncu profili
+İlk 25 yıl hikâyesi
       |
 Event seçimi ---> Bias Coach Agent ---> Koç yorumu
       |
@@ -32,13 +34,29 @@ Final Report Agent ---> Davranış raporu
 
 ### Profile Agent
 
-İlk 10 soruda seçilen cevap metinlerinden bir risk puanı çıkarır; bu puanı başlangıç nakdi, sabır ve mutluluk değerleriyle birlikte değerlendirir. Sonuç olarak profil adı, risk seviyesi, güçlü yön ve gelişim alanı döndürür. Sınıflandırma kural tabanlıdır; aynı veri her zaman aynı sonucu üretir.
+İlk 10 soruda seçilen cevap metinlerinden bir risk puanı çıkarır; bu puanı başlangıç nakdi, sabır ve mutluluk değerleriyle birlikte değerlendirir. Sonuç olarak profil adı, risk seviyesi, güçlü yön ve gelişim alanı döndürür. Ayrıca cevaplarda gerçekten bulunan seçimlerden `intro_story` alanını üretir. Cevaplar tırnak içinde sıralanmaz; çocukluk, ilk para, eğitim, iş hayatı ve 25 yaşa geliş anları üç paragraflık yaşam sahnelerine dönüştürülür. Bu hikâye intro ile ana oyun arasında gösterilerek karakter oluşturma bölümünün anket yerine oyunun geçmişi gibi algılanmasını sağlar.
+
+Sınıflandırma ve mevcut hikâye üretimi kural tabanlıdır; aynı veri her zaman aynı sonucu üretir. Profil sınıflandırması tek sıra hâlindeki `if/else` eşikleri yerine `weighted_prototypes_v1` modelini kullanır. Risk ortalaması, sabır, mutluluk ve başlangıç nakdi normalize edilir; her oyuncu altı davranış prototipine olan ağırlıklı uzaklığına göre sınıflandırılır. Risk en güçlü sinyaldir, ancak diğer üç özellik yakın profilleri birbirinden ayırır.
+
+Tüm soru kilitleri hesaba katılarak 46.116 geçerli cevap yolu taranmıştır. Altı profil de ulaşılabilirdir; merkez profil olan Dengeli Stratejist yolların yaklaşık %30'unda görülür ve hiçbir profil yalnızca istisnai birkaç cevaba bağlı kalmaz. Her profil için ayrı regresyon testi vardır.
+
+`story_source` alanı şu anda `rule_based_fallback` değerindedir. LLM ile daha akıcı hikâye üretimi Sprint 3'e bırakılmıştır; servis kullanılamadığında bu çalışan fallback korunacaktır.
 
 ### Bias Coach Agent
 
-Bir event seçildikten sonra event'in `bias_etiketi` alanını kullanır. Eğilimin Türkçe adını, kısa açıklamasını ve oyuncunun kararını yeniden düşünmesini sağlayacak bir soru döndürür.
+Bir event seçildikten sonra event'in `bias_etiketi` alanını kullanır. Eğilimin Türkçe adını, seçilen event ve seçeneğe bağlanan kısa açıklamayı ve oyuncunun kararını yeniden düşünmesini sağlayacak bir soru döndürür.
 
-Sprint 2'de koç yorumunun temelini event etiketi belirler. Seçenek bazında ayrı bias sınıflandırması Sprint 3 için değerlendirilecektir.
+Her karar `eventKayitlari` içinde saklanır; fakat koç paneli her kararda açılmaz. `should_show` ve `trigger_reason` alanları aşağıdaki kurallara göre üretilir:
+
+- İlk karar
+- Yeni bir davranış eğiliminin ilk görülmesi
+- Aynı eğilimin her üçüncü tekrarı
+- Finansal etkisi yüksek karar
+- Her beş kararlık ara değerlendirme
+
+Event verisinde kullanılan `asiri_ozguven` ve `status_quo` etiketleri agent içinde sırasıyla `overconfidence` ve `status_quo_bias` kanonik adlarına çevrilir. Final rapor da aynı normalizasyonu kullanır.
+
+Sprint 2'de koç yorumunun temelini event etiketi ve karar geçmişindeki tekrar sayısı belirler. Seçenek bazında ayrı LLM sınıflandırması Sprint 3 için değerlendirilecektir.
 
 ### Final Report Agent
 

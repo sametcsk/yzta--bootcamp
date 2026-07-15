@@ -1,111 +1,183 @@
 BIAS_LIBRARY = {
     "loss_aversion": {
-        "name_tr": "Kayiptan Kacinma",
-        "title": "Kayiptan Kacinma Sinyali",
+        "name_tr": "Kayıptan Kaçınma",
+        "title": "Kayıptan Kaçınma Sinyali",
         "comment": (
-            "Bu karar, zarar ihtimalinden hizlica uzaklasma istegiyle iliskili olabilir. "
-            "Bu bazen koruyucu olabilir; ancak yalnizca panikle verilirse uzun vadeli plani zayiflatabilir."
+            "Bu karar, zarar ihtimalinden hızlıca uzaklaşma isteğiyle ilişkili olabilir. "
+            "Bu bazen koruyucu olabilir; ancak yalnızca panikle verilirse uzun vadeli planı zayıflatabilir."
         ),
-        "question": "Bu karari planina uygun oldugu icin mi, yoksa kayip korkusuyla mi verdin?",
+        "question": "Bu kararı planına uygun olduğu için mi, yoksa kayıp korkusuyla mı verdin?",
     },
     "anchoring": {
-        "name_tr": "Referans Noktasina Takilma",
+        "name_tr": "Referans Noktasına Takılma",
         "title": "Referans Fiyat Etkisi",
         "comment": (
-            "Bu karar, gecmisteki bir fiyat veya beklentiye fazla baglanma egilimi gosterebilir. "
-            "Referans noktasi yararli olabilir; fakat guncel kosullari gormeyi zorlastirabilir."
+            "Bu karar, geçmişteki bir fiyat veya beklentiye fazla bağlanma eğilimi gösterebilir. "
+            "Referans noktası yararlı olabilir; fakat güncel koşulları görmeyi zorlaştırabilir."
         ),
-        "question": "Bu kararda bugunku tabloya mi, yoksa onceki bir fiyata mi daha cok odaklandin?",
+        "question": "Bu kararda bugünkü tabloya mı, yoksa önceki bir fiyata mı daha çok odaklandın?",
     },
     "mental_accounting": {
         "name_tr": "Zihinsel Muhasebe",
-        "title": "Parayi Kategorilere Ayirma",
+        "title": "Parayı Kategorilere Ayırma",
         "comment": (
-            "Bu karar, parayi kaynagina veya kullanim amacina gore ayri zihinsel kutulara koyma egilimiyle iliskili olabilir. "
-            "Bu bazen duzen saglar; fakat toplam finansal resmi kacirmaya neden olabilir."
+            "Bu karar, parayı kaynağına veya kullanım amacına göre ayrı zihinsel kutulara koyma eğilimiyle ilişkili olabilir. "
+            "Bu bazen düzen sağlar; fakat toplam finansal resmi kaçırmaya neden olabilir."
         ),
-        "question": "Bu parayi diger birikimlerinden farkli mi degerlendirdin?",
+        "question": "Bu parayı diğer birikimlerinden farklı mı değerlendirdin?",
     },
     "overconfidence": {
-        "name_tr": "Asiri Ozguven",
-        "title": "Asiri Ozguven Sinyali",
+        "name_tr": "Aşırı Özgüven",
+        "title": "Aşırı Özgüven Sinyali",
         "comment": (
-            "Bu karar, sonucu tahmin etme becerine fazla guvenme egilimi tasiyor olabilir. "
-            "Ozguven karar almayi kolaylastirir; ancak belirsizligi kucumsemek riski artirabilir."
+            "Bu karar, sonucu tahmin etme becerine fazla güvenme eğilimi taşıyor olabilir. "
+            "Özgüven karar almayı kolaylaştırır; ancak belirsizliği küçümsemek riski artırabilir."
         ),
-        "question": "Bu kararda riskleri yeterince hesaba kattigini dusunuyor musun?",
+        "question": "Bu kararda riskleri yeterince hesaba kattığını düşünüyor musun?",
     },
     "herd_behavior": {
-        "name_tr": "Suru Davranisi",
-        "title": "Kalabaligi Takip Etme Sinyali",
+        "name_tr": "Sürü Davranışı",
+        "title": "Kalabalığı Takip Etme Sinyali",
         "comment": (
-            "Bu karar, cevrenin veya piyasa kalabaliginin davranisindan etkilenmis olabilir. "
-            "Baskalarinin hareketi bilgi verebilir; fakat tek basina karar nedeni olmamalidir."
+            "Bu karar, çevrenin veya piyasa kalabalığının davranışından etkilenmiş olabilir. "
+            "Başkalarının hareketi bilgi verebilir; fakat tek başına karar nedeni olmamalıdır."
         ),
-        "question": "Bu karari kendi planina gore mi, yoksa herkes oyle yapiyor diye mi verdin?",
+        "question": "Bu kararı kendi planına göre mi, yoksa herkes öyle yapıyor diye mi verdin?",
     },
     "disposition_effect": {
-        "name_tr": "Kazanani Erken Satma Egilimi",
-        "title": "Kar Realizasyonu Egilimi",
+        "name_tr": "Kazananı Erken Satma Eğilimi",
+        "title": "Kâr Realizasyonu Eğilimi",
         "comment": (
-            "Bu karar, kazanci hizlica kesinlestirme veya zarardaki pozisyonu gec kapatma egilimiyle iliskili olabilir. "
-            "Kisa vadeli rahatlama uzun vadeli sonucu her zaman iyilestirmeyebilir."
+            "Bu karar, kazancı hızlıca kesinleştirme veya zarardaki pozisyonu geç kapatma eğilimiyle ilişkili olabilir. "
+            "Kısa vadeli rahatlama uzun vadeli sonucu her zaman iyileştirmeyebilir."
         ),
-        "question": "Bu kararda sonucu kapatma istegi mi, yoksa stratejin mi belirleyici oldu?",
+        "question": "Bu kararda sonucu kapatma isteği mi, yoksa stratejin mi belirleyici oldu?",
     },
     "present_bias": {
-        "name_tr": "Bugune Asiri Odaklanma",
-        "title": "Kisa Vadeli Rahatlik Sinyali",
+        "name_tr": "Bugüne Aşırı Odaklanma",
+        "title": "Kısa Vadeli Rahatlık Sinyali",
         "comment": (
-            "Bu karar, bugunku rahatligi gelecekteki faydanin onune koyma egilimi gosterebilir. "
-            "Kisa vadeli mutluluk onemlidir; fakat uzun vadeli etkisi de hesaba katilmalidir."
+            "Bu karar, bugünkü rahatlığı gelecekteki faydanın önüne koyma eğilimi gösterebilir. "
+            "Kısa vadeli mutluluk önemlidir; fakat uzun vadeli etkisi de hesaba katılmalıdır."
         ),
-        "question": "Bu secimin gelecekteki butceni nasil etkileyebilecegini dusundun mu?",
+        "question": "Bu seçimin gelecekteki bütçeni nasıl etkileyebileceğini düşündün mü?",
     },
     "status_quo_bias": {
-        "name_tr": "Mevcut Durumu Koruma Egilimi",
-        "title": "Degisimden Kacinma Sinyali",
+        "name_tr": "Mevcut Durumu Koruma Eğilimi",
+        "title": "Değişimden Kaçınma Sinyali",
         "comment": (
-            "Bu karar, mevcut durumu koruma ve degisimden uzak durma egilimiyle iliskili olabilir. "
-            "Bu bazen istikrar saglar; fakat kosullar degistiginde firsat maliyeti yaratabilir."
+            "Bu karar, mevcut durumu koruma ve değişimden uzak durma eğilimiyle ilişkili olabilir. "
+            "Bu bazen istikrar sağlar; fakat koşullar değiştiğinde fırsat maliyeti yaratabilir."
         ),
-        "question": "Bu karari gercekten uygun oldugu icin mi, yoksa degisimden kacindigin icin mi sectin?",
+        "question": "Bu kararı gerçekten uygun olduğu için mi, yoksa değişimden kaçındığın için mi seçtin?",
     },
 }
 
 
+BIAS_LABEL_ALIASES = {
+    "asiri_ozguven": "overconfidence",
+    "status_quo": "status_quo_bias",
+}
+
+
+def normalize_bias_label(label: str) -> str:
+    return BIAS_LABEL_ALIASES.get(label, label)
+
+
+def _event_history(data: dict) -> list:
+    return (
+        data.get("event_history")
+        or data.get("event_gecmisi")
+        or data.get("event_kayitlari")
+        or []
+    )
+
+
+def _history_bias_label(item: dict) -> str:
+    label = (
+        item.get("bias")
+        or item.get("bias_label")
+        or item.get("bias_etiketi")
+        or "bilinmiyor"
+    )
+    return normalize_bias_label(label)
+
+
+def _coach_trigger(data: dict, bias_label: str) -> tuple[bool, str, int, int]:
+    history = _event_history(data)
+    labels = [_history_bias_label(item) for item in history]
+    decision_count = len(history) or 1
+    occurrence_count = labels.count(bias_label) if labels else 1
+    high_impact = bool(data.get("high_impact") or data.get("buyuk_etki"))
+
+    if decision_count == 1:
+        return True, "İlk karar değerlendirmesi", occurrence_count, decision_count
+    if high_impact:
+        return True, "Finansal etkisi yüksek karar", occurrence_count, decision_count
+    if occurrence_count == 1:
+        return True, "Yeni bir davranış eğilimi görüldü", occurrence_count, decision_count
+    if occurrence_count % 3 == 0:
+        return True, f"Aynı eğilim {occurrence_count}. kez tekrarlandı", occurrence_count, decision_count
+    if decision_count % 5 == 0:
+        return True, f"{decision_count} kararlık ara değerlendirme", occurrence_count, decision_count
+    return False, "Karar geçmişe kaydedildi", occurrence_count, decision_count
+
+
 def generate_coach_comment(data: dict) -> dict:
-    bias_label = (
+    source_bias_label = (
         data.get("bias_label")
         or data.get("bias_etiketi")
         or data.get("bias")
         or "bilinmiyor"
     )
+    bias_label = normalize_bias_label(source_bias_label)
     bias = BIAS_LIBRARY.get(
         bias_label,
         {
-            "name_tr": "Davranissal Sinyal",
-            "title": "Karar Farkindaligi",
+            "name_tr": "Davranışsal Sinyal",
+            "title": "Karar Farkındalığı",
             "comment": (
-                "Bu karar belirli bir davranissal egilime isaret ediyor olabilir. "
-                "Onemli olan karari korku, acele veya baski yerine planla uyumlu sekilde degerlendirmektir."
+                "Bu karar belirli bir davranışsal eğilime işaret ediyor olabilir. "
+                "Önemli olan kararı korku, acele veya baskı yerine planla uyumlu şekilde değerlendirmektir."
             ),
-            "question": "Bu karari hangi dusunceyle verdigini bir cumleyle aciklayabilir misin?",
+            "question": "Bu kararı hangi düşünceyle verdiğini bir cümleyle açıklayabilir misin?",
         },
     )
 
+    should_show, trigger_reason, occurrence_count, decision_count = _coach_trigger(
+        data,
+        bias_label,
+    )
+    event_title = data.get("event_title") or data.get("event_baslik")
+    selected_option = data.get("selected_option") or data.get("secim_metin")
+    context_parts = []
+    if event_title and selected_option:
+        context_parts.append(
+            f"\"{event_title}\" olayında \"{selected_option}\" seçimini yaptın."
+        )
+    if occurrence_count > 1:
+        context_parts.append(
+            f"{bias['name_tr']} eğilimi karar geçmişinde {occurrence_count}. kez görülüyor."
+        )
+    context_parts.append(bias["comment"])
+
     return {
         "agent": "bias_coach_agent",
-        "year": data.get("year") or data.get("yil"),
-        "event_title": data.get("event_title") or data.get("event_baslik"),
-        "selected_option": data.get("selected_option") or data.get("secim_metin"),
+        "year": data.get("year", data.get("yil")),
+        "event_title": event_title,
+        "selected_option": selected_option,
         "profile_type": data.get("profile_type"),
+        "source_bias_label": source_bias_label,
         "bias_label": bias_label,
         "bias_name_tr": bias["name_tr"],
         "coach_title": bias["title"],
-        "coach_comment": bias["comment"],
+        "coach_comment": " ".join(context_parts),
         "reflection_question": bias["question"],
-        "disclaimer": "Bu yorum yatirim tavsiyesi degildir; karar davranisini anlamaya yoneliktir.",
+        "should_show": should_show,
+        "trigger_reason": trigger_reason,
+        "occurrence_count": occurrence_count,
+        "decision_count": decision_count,
+        "disclaimer": "Bu yorum yatırım tavsiyesi değildir; karar davranışını anlamaya yöneliktir.",
     }
 
 

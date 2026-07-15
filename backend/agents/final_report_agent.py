@@ -1,10 +1,11 @@
 from collections import Counter
 
-from .bias_coach_agent import BIAS_LIBRARY
+from .bias_coach_agent import BIAS_LIBRARY, normalize_bias_label
 
 
 def _bias_name(label: str) -> str:
-    return BIAS_LIBRARY.get(label, {}).get("name_tr", "Davranissal Sinyal")
+    canonical_label = normalize_bias_label(label) if label else label
+    return BIAS_LIBRARY.get(canonical_label, {}).get("name_tr", "Davranışsal Sinyal")
 
 
 def _normalize_history(data: dict) -> list:
@@ -22,10 +23,12 @@ def generate_final_report(data: dict) -> dict:
     history = _normalize_history(data)
 
     bias_labels = [
-        item.get("bias")
-        or item.get("bias_label")
-        or item.get("bias_etiketi")
-        or "bilinmiyor"
+        normalize_bias_label(
+            item.get("bias")
+            or item.get("bias_label")
+            or item.get("bias_etiketi")
+            or "bilinmiyor"
+        )
         for item in history
     ]
     counts = Counter(bias_labels)
@@ -49,6 +52,10 @@ def generate_final_report(data: dict) -> dict:
         growth_areas.append("Parayi farkli kutulara ayirmak toplam finansal resmi gormeyi zorlastirabilir.")
     elif dominant_label == "overconfidence":
         growth_areas.append("Belirsizligi kucumsememek risk yonetimini guclendirir.")
+    elif dominant_label == "present_bias":
+        growth_areas.append("Bugünkü rahatlık ile uzun vadeli hedefler arasındaki dengeyi daha görünür kurabilirsin.")
+    elif dominant_label == "status_quo_bias":
+        growth_areas.append("Mevcut durumu korurken değişen koşulların fırsat maliyetini de değerlendirebilirsin.")
     elif dominant_label:
         growth_areas.append("Kararlarini plan, risk ve zaman ufku acisindan tekrar degerlendirmek faydali olabilir.")
 
