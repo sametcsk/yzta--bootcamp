@@ -12,6 +12,7 @@ import BitisSayfasi from "./BitisSayfasi"
 import GirisSayfasi from "./GirisSayfasi"
 import { supabase, supabaseAktif } from "./supabaseClient"
 import { pozisyonAdiGetir, levelCarpaniGetir } from "./data/meslekler"
+import BorsaSayfasi from "./BorsaSayfasi"
 
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
@@ -31,8 +32,15 @@ const INITIAL_STATE = {
   altin_boga_yil: 7,
   faiz: 12.0,
   bist: 100.0,
-  mevduat_birikim: 100.0,
+  bist_bankacilik: 100.0,
+  bist_teknoloji: 100.0,
+  bist_insaat: 100.0,
+  bist_saglik: 100.0,
+  bist_perakende: 100.0,
+  mevduat_birikim: 0.0,
   emlak_endeksi_usd: 100.0,
+  fisilti_sayaci: 0,
+  gelecek_makro: null,
 }
 
 const VARLIK_META = {
@@ -62,12 +70,22 @@ export default function App() {
   const [portfoy, setPortfoy] = useState({
     altin_gram: 0,
     bist_adet: 0,
+    bist_bankacilik_adet: 0,
+    bist_teknoloji_adet: 0,
+    bist_insaat_adet: 0,
+    bist_saglik_adet: 0,
+    bist_perakende_adet: 0,
     dolar: 0,
     mevduat_tl: 0,
   })
   const [fiyatlar, setFiyatlar] = useState({
     altin_try_gram: (2600 * 40) / 31.1,
     bist_endeks: 100,
+    bist_bankacilik: 100,
+    bist_teknoloji: 100,
+    bist_insaat: 100,
+    bist_saglik: 100,
+    bist_perakende: 100,
     dolar_try: 40,
     mev_faiz_oran: 0.12,
   })
@@ -99,6 +117,11 @@ export default function App() {
   const [fiyatGecmisi, setFiyatGecmisi] = useState({
     altin: [],
     bist: [],
+    bist_bankacilik: [],
+    bist_teknoloji: [],
+    bist_insaat: [],
+    bist_saglik: [],
+    bist_perakende: [],
     dolar: [],
     mevduat: []
   })
@@ -110,6 +133,11 @@ export default function App() {
   const [varlikKatsayilari, setVarlikKatsayilari] = useState({
     altin: null,   // null = hiç alınmadı
     bist: null,
+    bist_bankacilik: null,
+    bist_teknoloji: null,
+    bist_insaat: null,
+    bist_saglik: null,
+    bist_perakende: null,
     dolar: null,
     mevduat: null,
   })
@@ -147,9 +175,14 @@ export default function App() {
     const mevduat0 = portfoy.mevduat_tl
     const altinTL0 = portfoy.altin_gram * fiyatlar.altin_try_gram
     const bistTL0 = portfoy.bist_adet * fiyatlar.bist_endeks
+    const bistBankacilikTL0 = (portfoy.bist_bankacilik_adet || 0) * (fiyatlar.bist_bankacilik || 100)
+    const bistTeknolojiTL0 = (portfoy.bist_teknoloji_adet || 0) * (fiyatlar.bist_teknoloji || 100)
+    const bistInsaatTL0 = (portfoy.bist_insaat_adet || 0) * (fiyatlar.bist_insaat || 100)
+    const bistSaglikTL0 = (portfoy.bist_saglik_adet || 0) * (fiyatlar.bist_saglik || 100)
+    const bistPerakendeTL0 = (portfoy.bist_perakende_adet || 0) * (fiyatlar.bist_perakende || 100)
     const dolarTL0 = portfoy.dolar * fiyatlar.dolar_try
     const emlakTL0 = sahipOlunanEvler.reduce((t, ev) => t + evGuncelDegerHesapla(ev), 0)
-    const toplam0 = nakit0 + mevduat0 + altinTL0 + bistTL0 + dolarTL0 + emlakTL0
+    const toplam0 = nakit0 + mevduat0 + altinTL0 + bistTL0 + bistBankacilikTL0 + bistTeknolojiTL0 + bistInsaatTL0 + bistSaglikTL0 + bistPerakendeTL0 + dolarTL0 + emlakTL0
 
 
 
@@ -185,8 +218,15 @@ export default function App() {
         altin_boga_yil: data.altin_boga_yil,
         faiz: data.faiz,
         bist: data.bist,
+        bist_bankacilik: data.bist_bankacilik,
+        bist_teknoloji: data.bist_teknoloji,
+        bist_insaat: data.bist_insaat,
+        bist_saglik: data.bist_saglik,
+        bist_perakende: data.bist_perakende,
         mevduat_birikim: data.mevduat_birikim,
         emlak_endeksi_usd: data.emlak_endeksi_usd,
+        fisilti_sayaci: data.fisilti_sayaci,
+        gelecek_makro: data.gelecek_makro,
       })
 
       const yeniTemelMaas = Math.round(temelMaas * (1 + data.yil_sonucu.enflasyon / 100))
@@ -202,6 +242,11 @@ export default function App() {
       let w_start_gercek = nakitRef.current + Math.round(
         portfoy.altin_gram * fiyatlar.altin_try_gram +
         portfoy.bist_adet * fiyatlar.bist_endeks +
+        (portfoy.bist_bankacilik_adet || 0) * (fiyatlar.bist_bankacilik || 100) +
+        (portfoy.bist_teknoloji_adet || 0) * (fiyatlar.bist_teknoloji || 100) +
+        (portfoy.bist_insaat_adet || 0) * (fiyatlar.bist_insaat || 100) +
+        (portfoy.bist_saglik_adet || 0) * (fiyatlar.bist_saglik || 100) +
+        (portfoy.bist_perakende_adet || 0) * (fiyatlar.bist_perakende || 100) +
         portfoy.dolar * fiyatlar.dolar_try +
         portfoy.mevduat_tl
       )
@@ -216,6 +261,11 @@ export default function App() {
       const w_appreciated = nakitReel + Math.round(
         portfoy.altin_gram * data.yil_sonucu.fiyatlar.altin_try_gram +
         portfoy.bist_adet * data.yil_sonucu.fiyatlar.bist_endeks +
+        (portfoy.bist_bankacilik_adet || 0) * data.yil_sonucu.fiyatlar.bist_bankacilik +
+        (portfoy.bist_teknoloji_adet || 0) * data.yil_sonucu.fiyatlar.bist_teknoloji +
+        (portfoy.bist_insaat_adet || 0) * data.yil_sonucu.fiyatlar.bist_insaat +
+        (portfoy.bist_saglik_adet || 0) * data.yil_sonucu.fiyatlar.bist_saglik +
+        (portfoy.bist_perakende_adet || 0) * data.yil_sonucu.fiyatlar.bist_perakende +
         portfoy.dolar * data.yil_sonucu.fiyatlar.dolar_try +
         mevduatReel * (1 + data.yil_sonucu.mev_faiz / 100)
       )
@@ -261,6 +311,11 @@ export default function App() {
         setFiyatlar(prev => ({
           altin_try_gram: Math.round(prev.altin_try_gram / 1000),
           bist_endeks: Math.round(prev.bist_endeks / 1000),
+          bist_bankacilik: Math.round((prev.bist_bankacilik || 100) / 1000),
+          bist_teknoloji: Math.round((prev.bist_teknoloji || 100) / 1000),
+          bist_insaat: Math.round((prev.bist_insaat || 100) / 1000),
+          bist_saglik: Math.round((prev.bist_saglik || 100) / 1000),
+          bist_perakende: Math.round((prev.bist_perakende || 100) / 1000),
           dolar_try: Math.round(prev.dolar_try / 1000),
           mev_faiz_oran: prev.mev_faiz_oran,
         }))
@@ -268,6 +323,11 @@ export default function App() {
         setFiyatGecmisi(prev => ({
           altin: prev.altin.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
           bist: prev.bist.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
+          bist_bankacilik: (prev.bist_bankacilik && prev.bist_bankacilik.length > 0 ? prev.bist_bankacilik : prev.bist).map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
+          bist_teknoloji: (prev.bist_teknoloji && prev.bist_teknoloji.length > 0 ? prev.bist_teknoloji : prev.bist).map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
+          bist_insaat: (prev.bist_insaat && prev.bist_insaat.length > 0 ? prev.bist_insaat : prev.bist).map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
+          bist_saglik: (prev.bist_saglik && prev.bist_saglik.length > 0 ? prev.bist_saglik : prev.bist).map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
+          bist_perakende: (prev.bist_perakende && prev.bist_perakende.length > 0 ? prev.bist_perakende : prev.bist).map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
           dolar: prev.dolar.map(p => ({ ...p, fiyat: p.fiyat / 1000 })),
           mevduat: prev.mevduat,
         }))
@@ -307,6 +367,11 @@ export default function App() {
       setFiyatGecmisi(prev => ({
         altin: [...prev.altin, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.altin_try_gram }],
         bist: [...prev.bist, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_endeks }],
+        bist_bankacilik: [...(prev.bist_bankacilik && prev.bist_bankacilik.length > 0 ? prev.bist_bankacilik : prev.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_bankacilik }],
+        bist_teknoloji: [...(prev.bist_teknoloji && prev.bist_teknoloji.length > 0 ? prev.bist_teknoloji : prev.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_teknoloji }],
+        bist_insaat: [...(prev.bist_insaat && prev.bist_insaat.length > 0 ? prev.bist_insaat : prev.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_insaat }],
+        bist_saglik: [...(prev.bist_saglik && prev.bist_saglik.length > 0 ? prev.bist_saglik : prev.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_saglik }],
+        bist_perakende: [...(prev.bist_perakende && prev.bist_perakende.length > 0 ? prev.bist_perakende : prev.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_perakende }],
         dolar: [...prev.dolar, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.dolar_try }],
         mevduat: [...prev.mevduat, { yil: yil + 1, fiyat: data.yil_sonucu.mev_faiz }],
       }))
@@ -321,6 +386,11 @@ export default function App() {
         return {
           altin: prev.altin !== null ? prev.altin * (1 + getiriler.altin) : null,
           bist: prev.bist !== null ? prev.bist * (1 + getiriler.bist) : null,
+          bist_bankacilik: prev.bist_bankacilik !== null ? prev.bist_bankacilik * (1 + (data.yil_sonucu.sektor_getirileri.bankacilik - data.yil_sonucu.enflasyon)/100) : null,
+          bist_teknoloji: prev.bist_teknoloji !== null ? prev.bist_teknoloji * (1 + (data.yil_sonucu.sektor_getirileri.teknoloji - data.yil_sonucu.enflasyon)/100) : null,
+          bist_insaat: prev.bist_insaat !== null ? prev.bist_insaat * (1 + (data.yil_sonucu.sektor_getirileri.insaat - data.yil_sonucu.enflasyon)/100) : null,
+          bist_saglik: prev.bist_saglik !== null ? prev.bist_saglik * (1 + (data.yil_sonucu.sektor_getirileri.saglik - data.yil_sonucu.enflasyon)/100) : null,
+          bist_perakende: prev.bist_perakende !== null ? prev.bist_perakende * (1 + (data.yil_sonucu.sektor_getirileri.perakende - data.yil_sonucu.enflasyon)/100) : null,
           dolar: prev.dolar !== null ? prev.dolar * (1 + getiriler.dolar) : null,
           mevduat: prev.mevduat !== null ? prev.mevduat * (1 + getiriler.mevduat) : null,
         }
@@ -352,6 +422,11 @@ export default function App() {
         mevduat: data.yil_sonucu.reel_mevduat,
         altin: data.yil_sonucu.reel_altin,
         bist: data.yil_sonucu.reel_bist,
+        bist_bankacilik: data.yil_sonucu.sektor_getirileri.bankacilik - data.yil_sonucu.enflasyon,
+        bist_teknoloji: data.yil_sonucu.sektor_getirileri.teknoloji - data.yil_sonucu.enflasyon,
+        bist_insaat: data.yil_sonucu.sektor_getirileri.insaat - data.yil_sonucu.enflasyon,
+        bist_saglik: data.yil_sonucu.sektor_getirileri.saglik - data.yil_sonucu.enflasyon,
+        bist_perakende: data.yil_sonucu.sektor_getirileri.perakende - data.yil_sonucu.enflasyon,
         dolar: data.yil_sonucu.reel_doviz,
         emlak: data.yil_sonucu.reel_emlak,
       }
@@ -370,6 +445,11 @@ export default function App() {
         (mevduat0 / toplam0) * adaylar.mevduat +
         (altinTL0 / toplam0) * adaylar.altin +
         (bistTL0 / toplam0) * adaylar.bist +
+        (bistBankacilikTL0 / toplam0) * adaylar.bist_bankacilik +
+        (bistTeknolojiTL0 / toplam0) * adaylar.bist_teknoloji +
+        (bistInsaatTL0 / toplam0) * adaylar.bist_insaat +
+        (bistSaglikTL0 / toplam0) * adaylar.bist_saglik +
+        (bistPerakendeTL0 / toplam0) * adaylar.bist_perakende +
         (dolarTL0 / toplam0) * adaylar.dolar +
         (emlakTL0 / toplam0) * adaylar.emlak
         : 0
@@ -578,6 +658,11 @@ export default function App() {
     let maliyet = 0
     if (varlik === "altin") maliyet = miktarSayi * fiyatlar.altin_try_gram
     if (varlik === "bist") maliyet = miktarSayi * fiyatlar.bist_endeks
+    if (varlik === "bist_bankacilik") maliyet = miktarSayi * fiyatlar.bist_bankacilik
+    if (varlik === "bist_teknoloji") maliyet = miktarSayi * fiyatlar.bist_teknoloji
+    if (varlik === "bist_insaat") maliyet = miktarSayi * fiyatlar.bist_insaat
+    if (varlik === "bist_saglik") maliyet = miktarSayi * fiyatlar.bist_saglik
+    if (varlik === "bist_perakende") maliyet = miktarSayi * fiyatlar.bist_perakende
     if (varlik === "dolar") maliyet = miktarSayi * fiyatlar.dolar_try
     if (varlik === "mevduat") maliyet = miktarSayi
 
@@ -596,6 +681,11 @@ export default function App() {
       ...prev,
       altin_gram: varlik === "altin" ? prev.altin_gram + miktarSayi : prev.altin_gram,
       bist_adet: varlik === "bist" ? prev.bist_adet + miktarSayi : prev.bist_adet,
+      bist_bankacilik_adet: varlik === "bist_bankacilik" ? (prev.bist_bankacilik_adet || 0) + miktarSayi : (prev.bist_bankacilik_adet || 0),
+      bist_teknoloji_adet: varlik === "bist_teknoloji" ? (prev.bist_teknoloji_adet || 0) + miktarSayi : (prev.bist_teknoloji_adet || 0),
+      bist_insaat_adet: varlik === "bist_insaat" ? (prev.bist_insaat_adet || 0) + miktarSayi : (prev.bist_insaat_adet || 0),
+      bist_saglik_adet: varlik === "bist_saglik" ? (prev.bist_saglik_adet || 0) + miktarSayi : (prev.bist_saglik_adet || 0),
+      bist_perakende_adet: varlik === "bist_perakende" ? (prev.bist_perakende_adet || 0) + miktarSayi : (prev.bist_perakende_adet || 0),
       dolar: varlik === "dolar" ? prev.dolar + miktarSayi : prev.dolar,
       mevduat_tl: varlik === "mevduat" ? prev.mevduat_tl + miktarSayi : prev.mevduat_tl,
     }))
@@ -608,6 +698,11 @@ export default function App() {
     let gelir = 0
     if (varlik === "altin" && portfoy.altin_gram >= miktarSayi) gelir = miktarSayi * fiyatlar.altin_try_gram
     if (varlik === "bist" && portfoy.bist_adet >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_endeks
+    if (varlik === "bist_bankacilik" && (portfoy.bist_bankacilik_adet || 0) >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_bankacilik
+    if (varlik === "bist_teknoloji" && (portfoy.bist_teknoloji_adet || 0) >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_teknoloji
+    if (varlik === "bist_insaat" && (portfoy.bist_insaat_adet || 0) >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_insaat
+    if (varlik === "bist_saglik" && (portfoy.bist_saglik_adet || 0) >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_saglik
+    if (varlik === "bist_perakende" && (portfoy.bist_perakende_adet || 0) >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_perakende
     if (varlik === "dolar" && portfoy.dolar >= miktarSayi) gelir = miktarSayi * fiyatlar.dolar_try
     if (varlik === "mevduat" && portfoy.mevduat_tl >= miktarSayi) gelir = miktarSayi
 
@@ -621,6 +716,11 @@ export default function App() {
       ...prev,
       altin_gram: varlik === "altin" ? prev.altin_gram - miktarSayi : prev.altin_gram,
       bist_adet: varlik === "bist" ? prev.bist_adet - miktarSayi : prev.bist_adet,
+      bist_bankacilik_adet: varlik === "bist_bankacilik" ? (prev.bist_bankacilik_adet || 0) - miktarSayi : (prev.bist_bankacilik_adet || 0),
+      bist_teknoloji_adet: varlik === "bist_teknoloji" ? (prev.bist_teknoloji_adet || 0) - miktarSayi : (prev.bist_teknoloji_adet || 0),
+      bist_insaat_adet: varlik === "bist_insaat" ? (prev.bist_insaat_adet || 0) - miktarSayi : (prev.bist_insaat_adet || 0),
+      bist_saglik_adet: varlik === "bist_saglik" ? (prev.bist_saglik_adet || 0) - miktarSayi : (prev.bist_saglik_adet || 0),
+      bist_perakende_adet: varlik === "bist_perakende" ? (prev.bist_perakende_adet || 0) - miktarSayi : (prev.bist_perakende_adet || 0),
       dolar: varlik === "dolar" ? prev.dolar - miktarSayi : prev.dolar,
       mevduat_tl: varlik === "mevduat" ? prev.mevduat_tl - miktarSayi : prev.mevduat_tl,
     }))
@@ -677,6 +777,11 @@ export default function App() {
   const portfoyDegeri = Math.round(
     portfoy.altin_gram * fiyatlar.altin_try_gram +
     portfoy.bist_adet * fiyatlar.bist_endeks +
+    (portfoy.bist_bankacilik_adet || 0) * (fiyatlar.bist_bankacilik || 100) +
+    (portfoy.bist_teknoloji_adet || 0) * (fiyatlar.bist_teknoloji || 100) +
+    (portfoy.bist_insaat_adet || 0) * (fiyatlar.bist_insaat || 100) +
+    (portfoy.bist_saglik_adet || 0) * (fiyatlar.bist_saglik || 100) +
+    (portfoy.bist_perakende_adet || 0) * (fiyatlar.bist_perakende || 100) +
     portfoy.dolar * fiyatlar.dolar_try +
     portfoy.mevduat_tl
   )
@@ -1001,6 +1106,19 @@ export default function App() {
                     <p className="font-data-sm text-data-sm uppercase">BEKLEYEN OLAY YOK</p>
                   </div>
                 )}
+                
+                {sonuc?.fisilti && (
+                  <div className="mt-4 pt-4 border-t border-outline flex flex-col gap-2 bg-surface-container-high p-3 rounded">
+                    <div className="flex gap-2 items-center">
+                      <span className="text-[10px] px-1 font-bold uppercase bg-[#f5c842] text-black">
+                        Fısıltı Haber
+                      </span>
+                    </div>
+                    <p className="text-sm font-data-sm italic text-on-surface-variant">
+                      "{sonuc.fisilti}"
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* AI Coach Panel */}
@@ -1080,6 +1198,22 @@ export default function App() {
             evdeYasamayaBasla={evdeYasamayaBasla}
             evdenCik={evdenCik}
             emlakEndeksiGecmisi={emlakEndeksiGecmisi}
+            onAcTutorial={() => setTutorialAcik(true)}
+            onBorsaDetay={() => setAktifSayfa("borsa")}
+          />
+        )}
+
+        {aktifSayfa === "borsa" && (
+          <BorsaSayfasi
+            fiyatGecmisi={fiyatGecmisi}
+            fiyatlar={fiyatlar}
+            portfoy={portfoy}
+            sonuc={sonuc}
+            varlikAl={varlikAl}
+            varlikSat={varlikSat}
+            nakit={nakit}
+            toplamDeger={toplamDeger}
+            onGeri={() => setAktifSayfa("varliklar")}
             onAcTutorial={() => setTutorialAcik(true)}
           />
         )}

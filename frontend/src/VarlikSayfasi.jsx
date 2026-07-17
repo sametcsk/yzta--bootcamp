@@ -17,7 +17,7 @@ const VARLIK_CONFIG = {
   mevduat: { ad: "Mevduat", icon: "%", renk: "#a78bfa", birim: "% faiz", sinif: "Güvenli Alan", tone: "violet" },
 }
 
-function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSat, nakit }) {
+function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSat, nakit, onBorsaDetay }) {
   const cfg = VARLIK_CONFIG[varlik]
   const gecmis = fiyatGecmisi[varlik] || []
   const sonFiyat = gecmis.length > 0 ? gecmis[gecmis.length - 1].fiyat : null
@@ -131,6 +131,15 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
           } color="inherit" />
         </div>
       </div>
+
+      {varlik === "bist" && onBorsaDetay && (
+        <button
+          onClick={onBorsaDetay}
+          className="w-full bg-surface-container-high text-primary font-data-sm text-data-sm uppercase py-2 border border-outline hover:border-primary transition-colors mb-2 font-bold"
+        >
+          SEKTÖREL BORSA EKRANINA GİT <span className="material-symbols-outlined align-middle ml-1 text-sm">arrow_forward</span>
+        </button>
+      )}
 
       <AlSatPanel varlik={varlik} onAl={onAl} onSat={onSat} />
     </article>
@@ -305,7 +314,7 @@ function EvIslemKutusu({ ev, guncelDeger, oturuluyorMu, onKapat, onKiraDegistir,
 export default function VarlikSayfasi({
   fiyatGecmisi, fiyatlar, portfoy, sonuc, varlikAl, varlikSat, nakit, toplamDeger,
   emlakPiyasasi, sahipOlunanEvler, evSatinAl, evKiraDurumunuDegistir, evSat, evGuncelDegerHesapla,
-  oturulanEvId, evdeYasamayaBasla, evdenCik, emlakEndeksiGecmisi, onAcTutorial
+  oturulanEvId, evdeYasamayaBasla, evdenCik, emlakEndeksiGecmisi, onAcTutorial, onBorsaDetay
 }) {
   const [seciliEv, setSeciliEv] = useState(null)
   const [emlakGrafikAcik, setEmlakGrafikAcik] = useState(false)
@@ -340,6 +349,7 @@ export default function VarlikSayfasi({
             onAl={varlikAl}
             onSat={varlikSat}
             nakit={nakit}
+            onBorsaDetay={onBorsaDetay}
           />
         ))}
       </div>

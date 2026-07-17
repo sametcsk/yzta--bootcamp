@@ -23,6 +23,10 @@ export default function TutorialModal({ isOpen, onClose, page }) {
           <strong className="text-primary uppercase text-sm block mb-1">Yapay Zeka Analiz Kaydı</strong>
           Aldığın kararlarındaki davranışsal finans hatalarını (bias) anlık olarak tespit eder ve sana geri bildirim verir.
         </div>
+        <div>
+          <strong className="text-[#f5c842] uppercase text-sm block mb-1">Fısıltı Haberler</strong>
+          Bazen olay panelinde sana piyasalar hakkında kulaktan dolma duyumlar (fısıltılar) gelir. Bu fısıltıların doğru çıkma ihtimali tam olarak %50'dir. Gelecek yıla dair karar alırken onlara körü körüne güvenmek veya tamamen yok saymak senin elinde!
+        </div>
       </div>
     )
   } else if (page === "varliklar") {
@@ -64,6 +68,33 @@ export default function TutorialModal({ isOpen, onClose, page }) {
         <div>
           <strong className="text-primary uppercase text-sm block mb-1">Varlık Performansı (Reel)</strong>
           Sahip olduğun her bir varlığın, ilk aldığın andan bugüne kadar enflasyondan tamamen arındırılmış net (reel) getirisini gösterir. Gerçekten kazanıp kazanmadığını buradan görebilirsin.
+        </div>
+      </div>
+    )
+  } else if (page === "borsa") {
+    baslik = "SEKTÖREL ENDEKSLER (BORSA)"
+    icerik = (
+      <div className="flex flex-col gap-4 text-on-surface-variant">
+        <p className="italic mb-2">Borsa İstanbul içerisindeki şirketlerin faaliyet alanlarına göre gruplanmış halidir.</p>
+        <div>
+          <strong className="text-primary uppercase text-sm block mb-1">Bankacılık Endeksi</strong>
+          Faiz oranlarının yüksek olduğu dönemlerde bankaların kârlılığı artar. Enflasyonun ve faizlerin seyri bu sektörü doğrudan etkiler.
+        </div>
+        <div>
+          <strong className="text-primary uppercase text-sm block mb-1">Teknoloji Endeksi</strong>
+          Faizlerin düşük olduğu, büyümenin ön planda olduğu dönemlerde en hızlı yükselen ve en riskli olan gruptur.
+        </div>
+        <div>
+          <strong className="text-primary uppercase text-sm block mb-1">İnşaat Endeksi</strong>
+          Kredi faizlerinin düştüğü dönemlerde canlanan konut piyasasından doğrudan olumlu etkilenir.
+        </div>
+        <div>
+          <strong className="text-primary uppercase text-sm block mb-1">Sağlık & İlaç Endeksi</strong>
+          Kriz veya pandemi gibi sağlık risklerinin olduğu dönemlerde güvenli liman (defansif) hisse grubu olarak öne çıkar.
+        </div>
+        <div>
+          <strong className="text-primary uppercase text-sm block mb-1">Perakende Endeksi</strong>
+          Enflasyonun yüksek olduğu dönemlerde satış fiyatlarını hızla artırabildikleri için enflasyonist dönemlerin yıldızlarıdır.
         </div>
       </div>
     )
