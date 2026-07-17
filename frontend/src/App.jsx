@@ -121,6 +121,7 @@ export default function App() {
   const [redenominasyonKarti, setRedenominasyonKarti] = useState(null)
   const [tutorialAcik, setTutorialAcik] = useState(false)
   const bekleyenEventKaydiRef = useRef(null)
+  const [firsatMaliyetiGecmisi, setFirsatMaliyetiGecmisi] = useState([])
 
 
   useEffect(() => {
@@ -141,6 +142,17 @@ export default function App() {
 
   async function yilAtla() {
     setLoading(true)
+
+    const nakit0 = nakitRef.current
+    const mevduat0 = portfoy.mevduat_tl
+    const altinTL0 = portfoy.altin_gram * fiyatlar.altin_try_gram
+    const bistTL0 = portfoy.bist_adet * fiyatlar.bist_endeks
+    const dolarTL0 = portfoy.dolar * fiyatlar.dolar_try
+    const emlakTL0 = sahipOlunanEvler.reduce((t, ev) => t + evGuncelDegerHesapla(ev), 0)
+    const toplam0 = nakit0 + mevduat0 + altinTL0 + bistTL0 + dolarTL0 + emlakTL0
+
+
+
     try {
       const res = await fetch(`${API_BASE_URL}/yil-atla`, {
         method: "POST",
@@ -333,8 +345,44 @@ export default function App() {
       setEnflasyonGecmisi(prev => [...prev, { yil: yil + 1, deger: Math.round(yeniEnflasyonEndeksi) }])
       setEmlakEndeksiGecmisi(prev => [...prev, { yil: yil + 1, deger: yeniEmlakEndeksiUsd }])
 
-      // Portföy endeksi geçmişi (Maaş etkisi arındırılmış yatırım performansı)
-      setPortfoyGecmisi(prev => [...prev, { yil: yil + 1, deger: yeniPortfoyEndeksi }])
+      // Fırsat maliyeti hesabı
+      const enf = data.yil_sonucu.enflasyon
+      const reelNakit = -enf
+      const adaylar = {
+        mevduat: data.yil_sonucu.reel_mevduat,
+        altin: data.yil_sonucu.reel_altin,
+        bist: data.yil_sonucu.reel_bist,
+        dolar: data.yil_sonucu.reel_doviz,
+        emlak: data.yil_sonucu.reel_emlak,
+      }
+
+      let enIyiVarlik = null
+      let enIyiGetiri = -Infinity
+      for (const [varlik, getiri] of Object.entries(adaylar)) {
+        if (getiri > enIyiGetiri) {
+          enIyiGetiri = getiri
+          enIyiVarlik = varlik
+        }
+      }
+
+      const agirlikliReelGetiri = toplam0 > 0
+        ? (nakit0 / toplam0) * reelNakit +
+        (mevduat0 / toplam0) * adaylar.mevduat +
+        (altinTL0 / toplam0) * adaylar.altin +
+        (bistTL0 / toplam0) * adaylar.bist +
+        (dolarTL0 / toplam0) * adaylar.dolar +
+        (emlakTL0 / toplam0) * adaylar.emlak
+        : 0
+
+      setFirsatMaliyetiGecmisi(prev => [
+        ...prev,
+        {
+          yil: yil + 1,
+          gercekGetiri: Math.round(agirlikliReelGetiri * 10) / 10,
+          enIyiGetiri: Math.round(enIyiGetiri * 10) / 10,
+          enIyiVarlik,
+        },
+      ])
 
       if (yeniYas >= 85) {
         setOyunBitti(true)
@@ -694,9 +742,10 @@ export default function App() {
         yil={yil}
         toplamDeger={toplamDeger}
         nakit={nakit}
+        oturum={oturum}
         onTekrarDene={finalRaporuOlustur}
         onTekrarOyna={tekrarOyna}
-        oturum={oturum}
+        firsatMaliyetiGecmisi={firsatMaliyetiGecmisi}
       />
     )
   }
@@ -906,8 +955,8 @@ export default function App() {
                               <div className="font-data-sm text-data-sm uppercase mb-1">{kilitli ? "KİLİTLİ" : `SEÇ_0${i + 1}`}</div>
                               {s.risk_seviyesi && s.risk_seviyesi !== "risksiz" && (
                                 <span className={`text-[10px] px-1 font-bold uppercase ${s.risk_seviyesi === "yüksek" ? "bg-error text-background" :
-                                    s.risk_seviyesi === "orta" ? "bg-[#f5c842] text-black" :
-                                      "bg-[#34d399] text-black"
+                                  s.risk_seviyesi === "orta" ? "bg-[#f5c842] text-black" :
+                                    "bg-[#34d399] text-black"
                                   }`}>
                                   {s.risk_seviyesi} risk
                                 </span>

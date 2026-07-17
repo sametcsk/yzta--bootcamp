@@ -64,7 +64,8 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     mevduat_birikim = round(mevduat_birikim * (1 + mev_faiz / 100), 2)
 
     # 6. Gayrimenkul
-    emlak_endeksi_usd = emlak_endeksi_usd_guncelle(emlak_endeksi_usd)
+    emlak_endeks_getiri, emlak_endeksi_usd = emlak_endeksi_usd_guncelle(emlak_endeksi_usd)
+    emlak_try_getiri = round(emlak_endeks_getiri + doviz_degisim, 1)
     emlak_piyasasi = piyasa_uret(mevcut_yil, kur, emlak_endeksi_usd)
 
     # 7. Event
@@ -111,6 +112,8 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
             "reel_altin": round(altin_try_getiri - enf, 1),
             "reel_mevduat": round(mev_faiz - enf, 1),
             "reel_doviz": round(doviz_degisim - enf, 1),
+            "emlak_try_getiri": emlak_try_getiri,
+            "reel_emlak": round(emlak_try_getiri - enf, 1),
             "emlak_piyasasi": emlak_piyasasi,
             "fiyatlar": {
                 "altin_try_gram": round((altin_usd / 31.1) * kur, 2),

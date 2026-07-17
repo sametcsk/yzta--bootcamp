@@ -1,9 +1,70 @@
 import { useEffect, useRef, useState } from "react"
 import { supabase } from "./supabaseClient"
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
+
 
 function money(value) {
   return `₺${Number(value || 0).toLocaleString("tr-TR")}`
 }
+
+function FirsatMaliyetiGrafigi({ veri }) {
+  const [kumulatif, setKumulatif] = useState(true)
+
+  if (!veri || veri.length < 2) return null
+
+  const grafikVerisi = (() => {
+    if (kumulatif) {
+      let gercek = 100
+      let enIyi = 100
+      return veri.map(satir => {
+        gercek *= (1 + satir.gercekGetiri / 100)
+        enIyi *= (1 + satir.enIyiGetiri / 100)
+        return { yil: satir.yil, "Gerçek": Math.round(gercek), "Fırsat Maliyeti": Math.round(enIyi) }
+      })
+    }
+    return veri.map(satir => ({
+      yil: satir.yil,
+      "Gerçek": satir.gercekGetiri,
+      "Fırsat Maliyeti": satir.enIyiGetiri,
+    }))
+  })()
+
+  return (
+    <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col gap-stack-sm">
+      <div className="flex justify-between items-center border-b border-outline-variant pb-2">
+        <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Fırsat Maliyeti</h2>
+        <button
+          onClick={() => setKumulatif(prev => !prev)}
+          className="font-data-sm text-data-sm uppercase border border-outline px-3 py-1 hover:border-primary transition-colors"
+        >
+          {kumulatif ? "Yıllık Göster" : "Kümülatif Göster"}
+        </button>
+      </div>
+
+      <p className="text-on-surface-variant text-body-md">
+        Üstteki çizgi, her yıl elindeki sermayeyi o yılın en iyi performans gösteren
+        varlığına yatırmış olsaydın ulaşacağın noktayı gösteriyor. Alttaki çizgi,
+        gerçekte aldığın sonuç. Aradaki fark bir eleştiri değil — sadece hangi
+        kararların ne kadara mal olduğunu görebilmen için.
+      </p>
+
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={grafikVerisi}>
+            <XAxis dataKey="yil" tick={{ fontSize: 11, fill: "#8a8168" }} />
+            <YAxis tick={{ fontSize: 11, fill: "#8a8168" }} />
+            <Tooltip
+              contentStyle={{ background: "#110e06", border: "1px solid #4e4634", borderRadius: 0, fontFamily: "JetBrains Mono", fontSize: 12 }}
+            />
+            <Line type="monotone" dataKey="Fırsat Maliyeti" stroke="#f87171" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="Gerçek" stroke="#34d399" strokeWidth={2} dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
 
 export default function BitisSayfasi({
   bitisSebebi,
@@ -17,6 +78,7 @@ export default function BitisSayfasi({
   oturum,
   onTekrarDene,
   onTekrarOyna,
+  firsatMaliyetiGecmisi,
 }) {
   const [kaydedildi, setKaydedildi] = useState(false)
   const [kayitHatasi, setKayitHatasi] = useState(null)
@@ -56,6 +118,7 @@ export default function BitisSayfasi({
     }
     kaydet()
   }, [finalRapor, finalRaporLoading, oturum, toplamDeger, yas, yil])
+
 
   // Kayıt başarılı olunca leaderboard'u çek
   useEffect(() => {
@@ -201,6 +264,11 @@ export default function BitisSayfasi({
                 {finalRapor.disclaimer}
               </p>
             </div>
+          )}
+
+          {/* Fırsat Maliyeti Grafiği */}
+          {!finalRaporLoading && finalRapor && (
+            <FirsatMaliyetiGrafigi veri={firsatMaliyetiGecmisi} />
           )}
 
           {/* Leaderboard */}

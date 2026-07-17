@@ -4,7 +4,7 @@ from .utils import normal
 # Gayrimenkul, dolar bazında kendi bağımsız driftiyle ilerler (altın gibi
 # ayrı bir varlık sınıfı, ama boğa/ayı gibi sert rejimleri yok — tek,
 # düşük oynaklıklı bir dağılım yeterli).
-EMLAK_GETIRI_ORT = 0.0
+EMLAK_GETIRI_ORT = 0
 EMLAK_GETIRI_STD = 0.05
 EMLAK_GETIRI_MIN = -0.10
 EMLAK_GETIRI_MAX = 0.10
@@ -31,10 +31,15 @@ EV_SAYISI_PER_SEGMENT = 2
 
 
 def emlak_endeksi_usd_guncelle(endeks_usd):
-    """Gayrimenkulün dolar bazındaki bağımsız piyasa hareketi. Kur'dan ayrık."""
+    """
+    Gayrimenkulün dolar bazındaki bağımsız piyasa hareketi. Kur'dan ayrık.
+    Artık hem yüzdesel getiriyi hem yeni endeksi döndürüyor (reel_emlak
+    hesabı için gerekli).
+    """
     yillik_getiri = normal(EMLAK_GETIRI_ORT, EMLAK_GETIRI_STD,
                             min_val=EMLAK_GETIRI_MIN, max_val=EMLAK_GETIRI_MAX)
-    return round(endeks_usd * (1 + yillik_getiri), 2)
+    yeni_endeks = round(endeks_usd * (1 + yillik_getiri), 2)
+    return round(yillik_getiri * 100, 1), yeni_endeks
 
 
 def ev_fiyati_hesapla(fiyat_usd_taban, dolar_try, emlak_endeksi_usd):
