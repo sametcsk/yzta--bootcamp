@@ -79,6 +79,8 @@ export default function BitisSayfasi({
   onTekrarDene,
   onTekrarOyna,
   firsatMaliyetiGecmisi,
+  nakitGerekenEventSayisi = 0,
+  nakitYetersizKalanEventSayisi = 0,
 }) {
   const [kaydedildi, setKaydedildi] = useState(false)
   const [kayitHatasi, setKayitHatasi] = useState(null)
@@ -175,7 +177,7 @@ export default function BitisSayfasi({
           </div>
 
           {/* Final durum özeti */}
-          <div className="grid grid-cols-2 gap-gutter">
+          <div className="grid grid-cols-3 gap-gutter">
             <div className="bg-surface-container border border-outline card-shadow p-stack-sm">
               <div className="font-data-sm text-data-sm uppercase text-on-surface-variant">Net Servet</div>
               <div className="font-data-lg text-data-lg text-primary">{money(toplamDeger)}</div>
@@ -183,6 +185,10 @@ export default function BitisSayfasi({
             <div className="bg-surface-container border border-outline card-shadow p-stack-sm">
               <div className="font-data-sm text-data-sm uppercase text-on-surface-variant">Nakit Rezervi</div>
               <div className="font-data-lg text-data-lg text-primary">{money(nakit)}</div>
+            </div>
+            <div className="bg-surface-container border border-outline card-shadow p-stack-sm">
+              <div className="font-data-sm text-data-sm uppercase text-on-surface-variant">Kaçırılan Fırsatlar</div>
+              <div className="font-data-lg text-data-lg text-primary">{nakitYetersizKalanEventSayisi} <span className="text-data-sm text-on-surface-variant">/ {nakitGerekenEventSayisi}</span></div>
             </div>
           </div>
 

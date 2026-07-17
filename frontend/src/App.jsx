@@ -101,6 +101,9 @@ export default function App() {
   const [kiraGeliriYillik, setKiraGeliriYillik] = useState(0)
 
   const nakitRef = useRef(nakit)
+  const bekleyenSektorEkstraGetiriRef = useRef(null)
+  const [nakitGerekenEventSayisi, setNakitGerekenEventSayisi] = useState(0)
+  const [nakitYetersizKalanEventSayisi, setNakitYetersizKalanEventSayisi] = useState(0)
 
   const nakitiGuncelle = (yeniNakit) => {
     nakitRef.current = yeniNakit
@@ -159,6 +162,43 @@ export default function App() {
   }, [oyunBitti])
 
   useEffect(() => {
+    if (mevcutEvent && mevcutEvent.secenekler) {
+      let nakitSartiVar = false
+      let seceneklerinHepsineNakitYetersiz = true
+      
+      mevcutEvent.secenekler.forEach(s => {
+        if (!s.kilit) return
+        
+        let kilitli = false
+        if (s.kilit.tur === "nakit") {
+          nakitSartiVar = true
+          if (nakitRef.current < s.kilit.min) kilitli = true
+        } else if (s.kilit.tur === "nakit_usd") {
+          nakitSartiVar = true
+          if (nakitRef.current < s.kilit.min * (fiyatlar.dolar_try || 40)) kilitli = true
+        } else if (s.kilit.tur === "sektor_pozisyon_yuzdesi") {
+          nakitSartiVar = true
+          const adetKey = `bist_${s.kilit.sektor}_adet`
+          const fiyatKey = `bist_${s.kilit.sektor}`
+          const pozisyonDegeri = (portfoy[adetKey] || 0) * (fiyatlar[fiyatKey] || 100)
+          if (nakitRef.current < pozisyonDegeri * s.kilit.oran) kilitli = true
+        }
+        
+        if (!kilitli && ["nakit", "nakit_usd", "sektor_pozisyon_yuzdesi"].includes(s.kilit.tur)) {
+            seceneklerinHepsineNakitYetersiz = false
+        }
+      })
+      
+      if (nakitSartiVar) {
+        setNakitGerekenEventSayisi(prev => prev + 1)
+        if (seceneklerinHepsineNakitYetersiz) {
+            setNakitYetersizKalanEventSayisi(prev => prev + 1)
+        }
+      }
+    }
+  }, [mevcutEvent?.id])
+
+  useEffect(() => {
     if (!supabaseAktif) return
     supabase.auth.getSession().then(({ data }) => setOturum(data.session))
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -199,8 +239,10 @@ export default function App() {
           portfoy: portfoy,
           is_yeri: isYeri,
           is_level: isLevel,
+          sektor_ekstra_getiri: bekleyenSektorEkstraGetiriRef.current,
         }),
       })
+      bekleyenSektorEkstraGetiriRef.current = null;
       const data = await res.json()
 
       setGameState({
@@ -408,6 +450,16 @@ export default function App() {
           setTetiklenenler(prev => [...prev, data.yil_sonucu.event.id])
         }
       }
+      
+      if (data.yil_sonucu.oyun_bitti || (yeniYas >= 65 && data.yil_sonucu.event && data.yil_sonucu.event.id === "ev_emeklilik")) {
+        setOyunBitti({
+          netWorth: w_appreciated,
+          sonYas: yeniYas,
+          nakitGerekenEventSayisi: nakitGerekenEventSayisi,
+          nakitYetersizKalanEventSayisi: nakitYetersizKalanEventSayisi
+        })
+      }
+
       setGecmis(prev => [...prev, { yil: yeniYil, yas: yeniYas, ...data.yil_sonucu }])
       // Enflasyon endeksi güncelle
       const yeniEnflasyonEndeksi = enflasyonEndeksi * (1 + data.yil_sonucu.enflasyon / 100)
@@ -582,8 +634,15 @@ export default function App() {
     }))
 
     if (secenek.nakit_etki_usd && secenek.nakit_etki_usd !== 0) {
-      const tlEtkisi = Math.round(secenek.nakit_etki_usd * fiyatlar.dolar_try)
-      nakitiGuncelle(Math.max(20000, nakitRef.current + tlEtkisi))
+      const guncelDolarKuru = fiyatlar?.dolar_try || 40;
+      const tlEtkisi = Math.round(secenek.nakit_etki_usd * guncelDolarKuru)
+      
+      setNakit(prevNakit => {
+        const currentNakit = isNaN(prevNakit) ? 20000 : prevNakit;
+        const yeniNakit = Math.max(20000, currentNakit + tlEtkisi);
+        nakitRef.current = yeniNakit;
+        return yeniNakit;
+      })
     }
 
     if (secenek.yillik_gelir_usd) {
@@ -597,6 +656,45 @@ export default function App() {
         setYillikGelir(prev => Math.round(prev * carpan))
       } else if (tip === "sabit_oran") {
         setYillikGelir(prev => Math.round(prev * oran))
+      }
+    }
+
+    if (secenek.aksiyon) {
+      const { tip, sektor, oran } = secenek.aksiyon
+      const adetKey = `bist_${sektor}_adet`
+      const fiyatKey = `bist_${sektor}`
+      const mevcutPay = portfoy[adetKey] || 0
+      const guncelFiyat = fiyatlar[fiyatKey] || 100
+      const mevcutDeger = mevcutPay * guncelFiyat
+
+      if (tip === "sektor_al") {
+        const alinacakTutar = mevcutDeger * oran
+        if (nakitRef.current >= alinacakTutar) {
+          const alinacakPay = alinacakTutar / guncelFiyat
+          setNakit(prevNakit => {
+            const currentNakit = isNaN(prevNakit) ? 20000 : prevNakit
+            const yeniNakit = Math.round(currentNakit - alinacakTutar)
+            nakitRef.current = yeniNakit
+            return yeniNakit
+          })
+          setPortfoy(prev => ({
+            ...prev,
+            [adetKey]: (prev[adetKey] || 0) + alinacakPay
+          }))
+        }
+      } else if (tip === "sektor_sat") {
+        const satilacakPay = mevcutPay * oran
+        const gelir = satilacakPay * guncelFiyat
+        setNakit(prevNakit => {
+            const currentNakit = isNaN(prevNakit) ? 20000 : prevNakit
+            const yeniNakit = Math.round(currentNakit + gelir)
+            nakitRef.current = yeniNakit
+            return yeniNakit
+        })
+        setPortfoy(prev => ({
+          ...prev,
+          [adetKey]: (prev[adetKey] || 0) - satilacakPay
+        }))
       }
     }
 
@@ -621,6 +719,14 @@ export default function App() {
     if (secenek.olasilik_sonuclari && secenek.olasilik_sonuclari.length > 0) {
       const cikanDal = agirlikliSecim(secenek.olasilik_sonuclari)
       levelDegistir(cikanDal.level_etki)
+
+      if (cikanDal.sektor_ekstra_getiri && secilenEvent.sektor) {
+        bekleyenSektorEkstraGetiriRef.current = {
+          sektor: secilenEvent.sektor,
+          getiri: cikanDal.sektor_ekstra_getiri
+        }
+      }
+
       bekleyenEventKaydiRef.current = eventKaydi
       setSonucKarti({ baslik: secilenEvent.baslik, metin: cikanDal.sonuc_metin })
     } else {
@@ -851,6 +957,8 @@ export default function App() {
         onTekrarDene={finalRaporuOlustur}
         onTekrarOyna={tekrarOyna}
         firsatMaliyetiGecmisi={firsatMaliyetiGecmisi}
+        nakitGerekenEventSayisi={oyunBitti.nakitGerekenEventSayisi}
+        nakitYetersizKalanEventSayisi={oyunBitti.nakitYetersizKalanEventSayisi}
       />
     )
   }
@@ -1043,7 +1151,8 @@ export default function App() {
                           (s.kilit.tur === "sabir" && bars.sabir < s.kilit.min) ||
                           (s.kilit.tur === "mutluluk" && bars.mutluluk < s.kilit.min) ||
                           (s.kilit.tur === "nakit" && nakit < s.kilit.min) ||
-                          (s.kilit.tur === "nakit_usd" && nakit < s.kilit.min * fiyatlar.dolar_try)
+                          (s.kilit.tur === "nakit_usd" && nakit < s.kilit.min * fiyatlar.dolar_try) ||
+                          (s.kilit.tur === "sektor_pozisyon_yuzdesi" && nakit < (portfoy[`bist_${s.kilit.sektor}_adet`] || 0) * (fiyatlar[`bist_${s.kilit.sektor}`] || 100) * s.kilit.oran)
                         )
                         const olumluDal = s.olasilik_sonuclari?.find(d => d.level_etki > 0)
                         return (

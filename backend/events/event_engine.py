@@ -60,6 +60,10 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
         gerekli = e.get("gerekli_varlik")
         if gerekli == "bist" and portfoy.get("bist_adet", 0) <= 0:
             continue
+        if gerekli and gerekli.startswith("bist_") and gerekli != "bist":
+            adet_key = f"{gerekli}_adet"
+            if portfoy.get(adet_key, 0) <= 0:
+                continue
         if gerekli == "altin" and portfoy.get("altin_gram", 0) <= 0:
             continue
         if gerekli == "dolar" and portfoy.get("dolar", 0) <= 0:

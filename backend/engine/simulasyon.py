@@ -103,6 +103,13 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     kur_ham = round(state.get("kur_ham", 40.0) * (1 + doviz_degisim / 100), 2)
     kur = round(state.get("kur", 40.0) * (1 + doviz_degisim / 100), 2)
     
+    sektor_ekstra = state.get("sektor_ekstra_getiri")
+    if sektor_ekstra and isinstance(sektor_ekstra, dict):
+        s_isim = sektor_ekstra.get("sektor")
+        s_getiri = sektor_ekstra.get("getiri", 0)
+        if s_isim in sektor_getirileri:
+            sektor_getirileri[s_isim] += s_getiri
+    
     bist = round(state.get("bist", 100.0) * (1 + bist_pct / 100), 2)
     bist_bankacilik = round(state.get("bist_bankacilik", 100.0) * (1 + sektor_getirileri["bankacilik"] / 100), 2)
     bist_teknoloji  = round(state.get("bist_teknoloji", 100.0) * (1 + sektor_getirileri["teknoloji"] / 100), 2)

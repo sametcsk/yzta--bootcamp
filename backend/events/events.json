@@ -1,2030 +1,2600 @@
 [
-  {
-    "id": "ev_001",
-    "kategori": "finansal",
-    "bias_etiketi": "loss_aversion",
-    "baslik": "Borsada sert düşüş var",
-    "metin": "Portföyündeki hisseler bu hafta sert düştü. Uzmanlar bir kısmının toparlanamayacağını söylüyor, bir kısmı ise sabır tavsiye ediyor.",
-    "agirlik": 3,
-    "cooldown_yil": 2,
-    "tek_seferlik": false,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "gerekli_varlik": "bist",
-    "secenekler": [
-      {
-        "id": "ev_001_a",
-        "metin": "Sabırla bekle, toparlanmayı bekle",
-        "sabir_etki": -10,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "sabir",
-          "min": 40
-        }
-      },
-      {
-        "id": "ev_001_b",
-        "metin": "Pozisyonun yarısını sat, riski azalt",
-        "sabir_etki": -5,
-        "mutluluk_etki": -10,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": {
-          "tip": "sat",
-          "varlik": "bist",
-          "oran": 0.5
-        },
-        "kilit": null
-      },
-      {
-        "id": "ev_001_c",
-        "metin": "Düşüşten faydallan, daha fazla al",
-        "sabir_etki": 5,
-        "mutluluk_etki": 5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "sabir",
-          "min": 60
-        }
-      }
-    ]
-  },
-  {
-    "id": "ev_002",
-    "kategori": "sosyal",
-    "bias_etiketi": "mental_accounting",
-    "baslik": "Arkadaşından yurt dışı tatil teklifi geldi",
-    "metin": "Yakın arkadaşın seni yurt dışı tatile davet etti. Güzel bir deneyim olacak ama masraflar ciddi.",
-    "agirlik": 2,
-    "cooldown_yil": 3,
-    "tek_seferlik": false,
-    "tetik": "her_zaman",
-    "min_yas": 25,
-    "max_yas": 45,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_002_a",
-        "metin": "Git, deneyimler paradan değerlidir",
-        "sabir_etki": 5,
-        "mutluluk_etki": 20,
-        "nakit_etki_usd": -750,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 750
-        }
-      },
-      {
-        "id": "ev_002_b",
-        "metin": "Gitme, birikimlerini koru",
-        "sabir_etki": 10,
-        "mutluluk_etki": -10,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_002_c",
-        "metin": "Yurt içi alternatif öner",
-        "sabir_etki": 5,
-        "mutluluk_etki": 8,
-        "nakit_etki_usd": -250,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 250
-        }
-      }
-    ]
-  },
-  {
-    "id": "ev_003",
-    "kategori": "finansal",
-    "bias_etiketi": "anchoring",
-    "baslik": "Altının değeri geçen yıla göre düştü",
-    "metin": "Altın pozisyonun değer kaybetti. Bir kısım uzman daha da düşeceğini, diğerleri toparlanacağını söylüyor.",
-    "agirlik": 2,
-    "cooldown_yil": 2,
-    "tek_seferlik": false,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "gerekli_varlik": "altin",
-    "secenekler": [
-      {
-        "id": "ev_003_a",
-        "metin": "Aldığım fiyata dönünce satarım, bekleyeyim",
-        "sabir_etki": -8,
-        "mutluluk_etki": -8,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "sabir",
-          "min": 35
-        }
-      },
-      {
-        "id": "ev_003_b",
-        "metin": "Yarısını sat, zararı sınırla",
-        "sabir_etki": -5,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": {
-          "tip": "sat",
-          "varlik": "altin",
-          "oran": 0.5
-        },
-        "kilit": null
-      },
-      {
-        "id": "ev_003_c",
-        "metin": "Ortalama maliyetimi düşürmek için daha fazla al",
-        "sabir_etki": 5,
-        "mutluluk_etki": 5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "sabir",
-          "min": 55
-        }
-      }
-    ]
-  },
-  {
-    "id": "ev_004",
-    "kategori": "finansal",
-    "bias_etiketi": "mental_accounting",
-    "baslik": "Yıl sonu ikramiyeni aldın",
-    "metin": "Bu ay maaşının yanında yıllık ikramiyeni de aldın. Normalde biriktirdiğinden çok daha fazlası hesabında.",
-    "agirlik": 2,
-    "cooldown_yil": 4,
-    "tek_seferlik": false,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_004_a",
-        "metin": "Tamamını yatırıma yönlendir",
-        "sabir_etki": 15,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_004_b",
-        "metin": "Yarısını yatır, yarısıyla kendine bir şey al",
-        "sabir_etki": 5,
-        "mutluluk_etki": 15,
-        "nakit_etki_usd": -500,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 500
-        }
-      },
-      {
-        "id": "ev_004_c",
-        "metin": "Hepsini harca, bu zaten ekstra para",
-        "sabir_etki": -10,
-        "mutluluk_etki": 20,
-        "nakit_etki_usd": -1250,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 1250
-        }
-      }
-    ]
-  },
-  {
-    "id": "ev_005",
-    "kategori": "makroekonomik",
-    "bias_etiketi": "loss_aversion",
-    "baslik": "Merkez bankası faizi sert artırdı",
-    "metin": "Merkez bankası politika faizini büyük oranda artırdı. Mevduat getirileri yükseldi, borsa sert tepki verdi.",
-    "agirlik": 2,
-    "cooldown_yil": 3,
-    "tek_seferlik": false,
-    "tetik": "kriz",
-    "min_yas": null,
-    "max_yas": null,
-    "gerekli_varlik": "bist",
-    "secenekler": [
-      {
-        "id": "ev_005_a",
-        "metin": "Borsadaki varlıklarımın yarısını mevduata taşı",
-        "sabir_etki": -5,
-        "mutluluk_etki": 5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": {
-          "tip": "sat",
-          "varlik": "bist",
-          "oran": 0.5
-        },
-        "kilit": null
-      },
-      {
-        "id": "ev_005_b",
-        "metin": "Borsada kal, kısa vadeli panik",
-        "sabir_etki": -10,
-        "mutluluk_etki": -10,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "sabir",
-          "min": 45
-        }
-      },
-      {
-        "id": "ev_005_c",
-        "metin": "Düşüşten faydallan, borsa al",
-        "sabir_etki": 5,
-        "mutluluk_etki": 5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "sabir",
-          "min": 65
-        }
-      }
-    ]
-  },
-  {
-    "id": "ev_006",
-    "kategori": "yasam",
-    "bias_etiketi": "mental_accounting",
-    "baslik": "İş değiştirme teklifi aldın",
-    "metin": "Farklı bir şirketten cazip bir teklif geldi. Maaş daha iyi ama yeni bir ortama alışmak zaman alacak.",
-    "agirlik": 2,
-    "cooldown_yil": 5,
-    "tek_seferlik": false,
-    "tetik": "yas_aralik",
-    "min_yas": 25,
-    "max_yas": 50,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_006_a",
-        "metin": "Teklifi kabul et",
-        "sabir_etki": -5,
-        "mutluluk_etki": 10,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": {
-          "tip": "randomize",
-          "min": 0.15,
-          "max": 0.4
-        },
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_006_b",
-        "metin": "Reddet, mevcut işte kal",
-        "sabir_etki": 5,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_007",
-    "kategori": "yasam",
-    "bias_etiketi": "loss_aversion",
-    "baslik": "Annen hastalandı",
-    "metin": "Annen ciddi bir rahatsızlık geçirdi. Tedavi masrafları ve bakım süreci seni de etkiliyor.",
-    "agirlik": 1,
-    "cooldown_yil": 999,
-    "tek_seferlik": true,
-    "tetik": "yas_aralik",
-    "min_yas": 35,
-    "max_yas": 60,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_007_a",
-        "metin": "Özel hastanede en iyi tedaviyi al",
-        "sabir_etki": -10,
-        "mutluluk_etki": 10,
-        "nakit_etki_usd": -2000,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 2000
-        }
-      },
-      {
-        "id": "ev_007_b",
-        "metin": "Devlet hastanesinde tedavi et",
-        "sabir_etki": -5,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": -500,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 500
-        }
-      },
-      {
-        "id": "ev_007_c",
-        "metin": "Kardeşlerle masrafı paylaş",
-        "sabir_etki": -5,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": -750,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 750
-        }
-      }
-    ]
-  },
-  {
-    "id": "ev_008",
-    "kategori": "makroekonomik",
-    "bias_etiketi": "loss_aversion",
-    "baslik": "Kur krizi kapıda",
-    "metin": "Dolar bu ay rekor kırdı, ekonomistler kur krizinin başladığını söylüyor. Herkes ne yapacağını bilemiyor.",
-    "agirlik": 2,
-    "cooldown_yil": 4,
-    "tek_seferlik": false,
-    "tetik": "kriz",
-    "min_yas": null,
-    "max_yas": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_008_a",
-        "metin": "TL birikimlerimi dolara çevir",
-        "sabir_etki": -5,
-        "mutluluk_etki": 5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_008_b",
-        "metin": "Altına yönel, güvenli liman",
-        "sabir_etki": 5,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "sabir",
-          "min": 40
-        }
-      },
-      {
-        "id": "ev_008_c",
-        "metin": "Bekle, abartıyorlar",
-        "sabir_etki": -10,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "sabir",
-          "min": 50
-        }
-      }
-    ]
-  },
-  {
-    "id": "ev_009",
-    "kategori": "sosyal",
-    "bias_etiketi": "present_bias",
-    "baslik": "Kendine iyi bak zamanı",
-    "metin": "Uzun süredir kendin için harcama yapmadın. Bir tatil ya da özel bir şey almak için fırsat var.",
-    "agirlik": 2,
-    "cooldown_yil": 3,
-    "tek_seferlik": false,
-    "tetik": "sakin",
-    "min_yas": null,
-    "max_yas": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_009_a",
-        "metin": "Hak ettim, kendime güzel bir şey alayım",
-        "sabir_etki": -5,
-        "mutluluk_etki": 20,
-        "nakit_etki_usd": -1000,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 1000
-        }
-      },
-      {
-        "id": "ev_009_b",
-        "metin": "Hayır, birikimlerime dokunmayayım",
-        "sabir_etki": 10,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_009_c",
-        "metin": "Küçük bir şey alayım, dengeyi korum",
-        "sabir_etki": 0,
-        "mutluluk_etki": 10,
-        "nakit_etki_usd": -300,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 300
-        }
-      }
-    ]
-  },
-  {
-    "id": "ev_010",
-    "kategori": "yasam",
-    "bias_etiketi": "mental_accounting",
-    "baslik": "Ek iş teklifi aldın",
-    "metin": "Tanıdığın biri sana part-time bir iş teklif etti. Ekstra gelir cazip ama zamanın ve enerjin kısıtlanacak.",
-    "agirlik": 2,
-    "cooldown_yil": 4,
-    "tek_seferlik": false,
-    "tetik": "yas_aralik",
-    "min_yas": 25,
-    "max_yas": 50,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_010_a",
-        "metin": "Kabul et, ekstra gelir lazım",
-        "sabir_etki": -15,
-        "mutluluk_etki": -10,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": {
-          "tip": "sabit_oran",
-          "oran": 1.25
-        },
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_010_b",
-        "metin": "Reddet, zamanım daha değerli",
-        "sabir_etki": 10,
-        "mutluluk_etki": 10,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_011",
-    "kategori": "makroekonomik",
-    "bias_etiketi": "loss_aversion",
-    "baslik": "Enflasyon rekor kırdı",
-    "metin": "Bu ay açıklanan enflasyon rakamı beklentilerin çok üzerinde çıktı. Market fiyatları hızla artıyor, alım gücü eriyor.",
-    "agirlik": 2,
-    "cooldown_yil": 3,
-    "tek_seferlik": false,
-    "tetik": "kriz",
-    "min_yas": null,
-    "max_yas": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_011_a",
-        "metin": "Nakit birikimlerimi enflasyona karşı koruyacak varlığa yönlendir",
-        "sabir_etki": 5,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "sabir",
-          "min": 40
-        }
-      },
-      {
-        "id": "ev_011_b",
-        "metin": "Mevduatta kal, faiz enflasyonu karşılar",
-        "sabir_etki": 0,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_011_c",
-        "metin": "Dayanıklı tüketim malı al, değer korur",
-        "sabir_etki": -5,
-        "mutluluk_etki": 10,
-        "nakit_etki_usd": -1000,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 1000
-        }
-      }
-    ]
-  },
-  {
-    "id": "ev_012",
-    "kategori": "yasam",
-    "bias_etiketi": "loss_aversion",
-    "baslik": "İşini kaybetme riski",
-    "metin": "Şirketin zor bir dönemden geçiyor. Yakında işten çıkarmalar olacağı dedikodusu var.",
-    "agirlik": 1,
-    "cooldown_yil": 999,
-    "tek_seferlik": true,
-    "tetik": "kriz",
-    "min_yas": 28,
-    "max_yas": 55,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_012_a",
-        "metin": "Hemen iş aramaya başla, proaktif ol",
-        "sonuc_metni": "İyi ki erken davrandın. Yeni bir iş buldun.",
-        "sabir_etki": -10,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": {
-          "tip": "randomize",
-          "min": -0.1,
-          "max": 0.2
-        },
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_012_b",
-        "metin": "Bekle, belki seni kesmezler",
-        "sonuc_metni": "Ucuz kurtuldun! Bu sefer atlatıldı.",
-        "sabir_etki": -15,
-        "mutluluk_etki": -15,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_013",
-    "kategori": "sosyal",
-    "bias_etiketi": "mental_accounting",
-    "baslik": "Yakın arkadaşının düğünü var",
-    "metin": "En yakın arkadaşın evleniyor. Düğün hediyesi ve organizasyona katılım masrafları seni bekliyor.",
-    "agirlik": 2,
-    "cooldown_yil": 5,
-    "tek_seferlik": false,
-    "tetik": "yas_aralik",
-    "min_yas": 25,
-    "max_yas": 45,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_013_a",
-        "metin": "Cömert ol, özel bir gün",
-        "sabir_etki": 0,
-        "mutluluk_etki": 15,
-        "nakit_etki_usd": -625,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 625
-        }
-      },
-      {
-        "id": "ev_013_b",
-        "metin": "Sembolik hediyeyle geç",
-        "sabir_etki": 5,
-        "mutluluk_etki": 5,
-        "nakit_etki_usd": -200,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "nakit_usd",
-          "min": 200
-        }
-      }
-    ]
-  },
-  {
-    "id": "ev_015",
-    "kategori": "finansal",
-    "bias_etiketi": "anchoring",
-    "baslik": "Dolar rekor kırdı, ne yaparsın?",
-    "metin": "Dolar/TL kuru tarihi zirveye ulaştı. Elindeki TL birikimler her geçen gün değer kaybediyor.",
-    "agirlik": 2,
-    "cooldown_yil": 3,
-    "tek_seferlik": false,
-    "tetik": "kriz",
-    "min_yas": null,
-    "max_yas": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_015_a",
-        "metin": "Pahalı ama dolar al, TL'yi koru",
-        "sabir_etki": -5,
-        "mutluluk_etki": 5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "sabir",
-          "min": 35
-        }
-      },
-      {
-        "id": "ev_015_b",
-        "metin": "Düşünce alırım, şimdi çok pahalı",
-        "sabir_etki": -10,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_015_c",
-        "metin": "Altına yönel, daha güvenli",
-        "sabir_etki": 5,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": {
-          "tur": "sabir",
-          "min": 45
-        }
-      }
-    ]
-  },
-  {
-    "id": "ev_emeklilik",
-    "kategori": "finansal",
-    "bias_etiketi": "status_quo",
-    "baslik": "Zorunlu Emeklilik",
-    "metin": "Yaşın ve çalıştığın kurumun politikaları gereği emekliliğe ayrılman gerekiyor. Artık maaşın yerine sabit bir emekli maaşı alacaksın.",
-    "agirlik": 3,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": 60,
-    "max_yas": 65,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_emeklilik_a",
-        "metin": "Kabul et, yeni döneme uyum sağla",
-        "sabir_etki": 5,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "yillik_gelir_usd": 500,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_emeklilik_b",
-        "metin": "İtiraz et, ama karar değişmiyor",
-        "sabir_etki": -10,
-        "mutluluk_etki": -10,
-        "nakit_etki_usd": 0,
-        "yillik_gelir_usd": 500,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_emeklilik_c",
-        "metin": "Şaşkına dön, zamanın nasıl geçtiğini fark et",
-        "sabir_etki": 0,
-        "mutluluk_etki": -8,
-        "nakit_etki_usd": 0,
-        "yillik_gelir_usd": 500,
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_bw_001",
-    "meslek": "beyaz_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "asiri_ozguven",
-    "baslik": "Coworker ile Rekabet",
-    "metin": "Aynı pozisyona başka bir çalışan da göz koymuş durumda. Öne çıkmak için fazladan çaba göstermek seni yorabilir.",
-    "agirlik": 3,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_bw_001_a",
-        "metin": "Daha çok çalış, öne çık",
-        "sabir_etki": -8,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "orta",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.7,
-            "level_etki": 1,
-            "sonuc_metin": "Çabaların karşılığını aldın, terfi ettin."
-          },
-          {
-            "ihtimal": 0.3,
-            "level_etki": 0,
-            "sonuc_metin": "Bu sefer olmadı, ama emeğin boşa gitmedi."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_bw_001_b",
-        "metin": "Bırak, o öne çıksın",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_bw_002",
-    "meslek": "beyaz_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "loss_aversion",
-    "baslik": "İşte Hata Yapmışsın",
-    "metin": "Önemli bir projede gözden kaçan bir hata ortaya çıktı. Yöneticin açıklama bekliyor.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": 2,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_bw_002_a",
-        "metin": "Özür dile, sorumluluk al",
-        "sabir_etki": -5,
-        "mutluluk_etki": -3,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "düşük",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_bw_002_b",
-        "metin": "Düzeltmeye çalış",
-        "sabir_etki": -3,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "orta",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.6,
-            "level_etki": 0,
-            "sonuc_metin": "Hatayı zamanında telafi ettin, mutluluğun arttı."
-          },
-          {
-            "ihtimal": 0.4,
-            "level_etki": 0,
-            "sonuc_metin": "Tam düzeltemedin, biraz üzüldün."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_bw_003",
-    "meslek": "beyaz_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Yılın Çalışanı Oldun",
-    "metin": "Yıl sonu değerlendirmesinde performansınla öne çıktın ve yılın çalışanı seçildin.",
-    "agirlik": 1,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_bw_003_a",
-        "metin": "Gururla kabul et",
-        "sabir_etki": 5,
-        "mutluluk_etki": 10,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 1.0,
-            "level_etki": 1,
-            "sonuc_metin": "Bu başarı seni bir üst pozisyona taşıdı."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_bw_004",
-    "meslek": "beyaz_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "present_bias",
-    "baslik": "Şirket İçi Eğitim Programı",
-    "metin": "Şirket, seçilmiş çalışanlar için ücretsiz bir gelişim programı başlattı.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_bw_004_a",
-        "metin": "Katıl",
-        "sabir_etki": -3,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "düşük",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.5,
-            "level_etki": 1,
-            "sonuc_metin": "Programdan çok şey öğrendin, bu seni öne çıkardı."
-          },
-          {
-            "ihtimal": 0.5,
-            "level_etki": 0,
-            "sonuc_metin": "Faydalı bir deneyimdi ama hemen bir karşılığı olmadı."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_bw_004_b",
-        "metin": "Katılma",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_bw_005",
-    "meslek": "beyaz_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Yeni Yönetim Sistemi Bildirisi",
-    "metin": "Şirket yeni bir performans takip sistemine geçtiğini duyurdu. Seçim hakkın yok, uyum sağlaman gerekiyor.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_bw_005_a",
-        "metin": "Bildiriyi onayla",
-        "sabir_etki": -2,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_bw_006",
-    "meslek": "beyaz_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "asiri_ozguven",
-    "baslik": "Performans Değerlendirmesi",
-    "metin": "Yıllık performans görüşmen yaklaşıyor. Kendini nasıl konumlandıracağını düşünmelisin.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_bw_006_a",
-        "metin": "Öne çık, katkılarını vurgula",
-        "sabir_etki": -5,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "orta",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.5,
-            "level_etki": 1,
-            "sonuc_metin": "Değerlendirme olumlu geçti, terfi ettin."
-          },
-          {
-            "ihtimal": 0.5,
-            "level_etki": 0,
-            "sonuc_metin": "Değerlendirme nötr geçti, değişen bir şey olmadı."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_bw_006_b",
-        "metin": "Sessiz kal, süreci izle",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_bw_007",
-    "meslek": "beyaz_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "present_bias",
-    "baslik": "Ofis Sosyal Etkinliği",
-    "metin": "Ekip, iş dışında bir sosyal etkinlik düzenliyor.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_bw_007_a",
-        "metin": "Katıl",
-        "sabir_etki": -2,
-        "mutluluk_etki": 5,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_bw_007_b",
-        "metin": "Katılma",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_bw_008",
-    "meslek": "beyaz_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "mental_accounting",
-    "baslik": "Mentorluk Teklifi",
-    "metin": "Kıdemli bir yönetici sana mentorluk yapmayı teklif etti.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": 3,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_bw_008_a",
-        "metin": "Kabul et",
-        "sabir_etki": -3,
-        "mutluluk_etki": 3,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "orta",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.4,
-            "level_etki": 1,
-            "sonuc_metin": "Mentorluk sayesinde yeni bir kapı açıldı."
-          },
-          {
-            "ihtimal": 0.6,
-            "level_etki": 0,
-            "sonuc_metin": "Değerli bir deneyimdi, henüz somut bir karşılığı olmadı."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_bw_008_b",
-        "metin": "Reddet",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_bw_009",
-    "meslek": "beyaz_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Kurumsal Politika Değişikliği",
-    "metin": "Şirket, uzaktan çalışma politikasında değişikliğe gitti. Bu, günlük rutinini etkileyecek.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_bw_009_a",
-        "metin": "Bildiriyi onayla",
-        "sabir_etki": 0,
-        "mutluluk_etki": -2,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_bw_010",
-    "meslek": "beyaz_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "asiri_ozguven",
-    "baslik": "Terfi Görüşmesi",
-    "metin": "En üst kademeye çıkman için son bir görüşme yapılacak.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": 4,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_bw_010_a",
-        "metin": "Hazırlan, kendini kanıtla",
-        "sabir_etki": -8,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "yüksek",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.6,
-            "level_etki": 1,
-            "sonuc_metin": "Görüşme mükemmel geçti, en üst kademeye çıktın."
-          },
-          {
-            "ihtimal": 0.4,
-            "level_etki": 0,
-            "sonuc_metin": "Bu sefer olmadı, tekrar denemen gerekecek."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_bw_010_b",
-        "metin": "Bekle, hazır olmadığını düşün",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mem_001",
-    "meslek": "memur",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Kademe Sınavı",
-    "metin": "Bir üst kademeye geçmen için sınava girme hakkın doğdu.",
-    "agirlik": 3,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mem_001_a",
-        "metin": "Sınava gir, çalış",
-        "sabir_etki": -5,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "düşük",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.8,
-            "level_etki": 1,
-            "sonuc_metin": "Sınavı geçtin, bir üst kademeye yükseldin."
-          },
-          {
-            "ihtimal": 0.2,
-            "level_etki": 0,
-            "sonuc_metin": "Bu sefer geçemedin, gelecek yıl tekrar deneyebilirsin."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_mem_001_b",
-        "metin": "Girme, mevcut kademede kal",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mem_002",
-    "meslek": "memur",
-    "kategori": "is_yeri",
-    "bias_etiketi": "loss_aversion",
-    "baslik": "Rotasyon/Tayin Kararı",
-    "metin": "Kurumun rotasyon politikası gereği farklı bir şehre/birime tayin çıkma ihtimalin var.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mem_002_a",
-        "metin": "Kabul et, uyum sağla",
-        "sabir_etki": 3,
-        "mutluluk_etki": -5,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_mem_002_b",
-        "metin": "İtiraz et, yerinde kalmaya çalış",
-        "sabir_etki": -5,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "düşük",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mem_003",
-    "meslek": "memur",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Toplu Sözleşme Zammı",
-    "metin": "Kamu çalışanları için toplu sözleşme görüşmeleri sonuçlandı, iyileştirme duyuruldu.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mem_003_a",
-        "metin": "Bildiriyi onayla",
-        "sabir_etki": 0,
-        "mutluluk_etki": 3,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mem_004",
-    "meslek": "memur",
-    "kategori": "is_yeri",
-    "bias_etiketi": "loss_aversion",
-    "baslik": "Disiplin Soruşturması",
-    "metin": "Küçük bir usul hatası nedeniyle hakkında bir soruşturma açıldı.",
-    "agirlik": 1,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": 2,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mem_004_a",
-        "metin": "Kendini savun",
-        "sabir_etki": -8,
-        "mutluluk_etki": -3,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "düşük",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.9,
-            "level_etki": 0,
-            "sonuc_metin": "Soruşturma sonuçsuz kapandı."
-          },
-          {
-            "ihtimal": 0.1,
-            "level_etki": -1,
-            "sonuc_metin": "Küçük bir yaptırım uygulandı, kademen geriledi."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mem_005",
-    "meslek": "memur",
-    "kategori": "is_yeri",
-    "bias_etiketi": "present_bias",
-    "baslik": "Hizmet İçi Eğitim",
-    "metin": "Kurumun düzenlediği bir hizmet içi eğitime katılma fırsatın var.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mem_005_a",
-        "metin": "Katıl",
-        "sabir_etki": -3,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "düşük",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.3,
-            "level_etki": 1,
-            "sonuc_metin": "Eğitim, bir üst kademeye geçişini hızlandırdı."
-          },
-          {
-            "ihtimal": 0.7,
-            "level_etki": 0,
-            "sonuc_metin": "Faydalı bir eğitimdi, somut bir karşılığı olmadı."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_mem_005_b",
-        "metin": "Katılma",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mem_006",
-    "meslek": "memur",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Yeni Yönetmelik Bildirisi",
-    "metin": "Kurumun iç işleyişini düzenleyen yeni bir yönetmelik yürürlüğe girdi.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mem_006_a",
-        "metin": "Bildiriyi onayla",
-        "sabir_etki": -2,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mem_007",
-    "meslek": "memur",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Teşekkür Belgesi",
-    "metin": "Gösterdiğin özenli çalışma nedeniyle kurumdan bir teşekkür belgesi aldın.",
-    "agirlik": 1,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mem_007_a",
-        "metin": "Gururla kabul et",
-        "sabir_etki": 3,
-        "mutluluk_etki": 8,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mem_008",
-    "meslek": "memur",
-    "kategori": "is_yeri",
-    "bias_etiketi": "mental_accounting",
-    "baslik": "Ek Görev Teklifi",
-    "metin": "Birim amirin sana ek sorumluluk gerektiren bir görev teklif etti.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mem_008_a",
-        "metin": "Kabul et",
-        "sabir_etki": -5,
-        "mutluluk_etki": -3,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "orta",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.5,
-            "level_etki": 1,
-            "sonuc_metin": "Ek görevdeki başarın kademe atlamana yardımcı oldu."
-          },
-          {
-            "ihtimal": 0.5,
-            "level_etki": 0,
-            "sonuc_metin": "Görevi tamamladın, hemen bir karşılığı olmadı."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_mem_008_b",
-        "metin": "Reddet",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mem_009",
-    "meslek": "memur",
-    "kategori": "is_yeri",
-    "bias_etiketi": "present_bias",
-    "baslik": "Kurum İçi Yer Değişikliği Talebi",
-    "metin": "Aynı kurumda farklı bir birime geçmek için talepte bulunabilirsin.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mem_009_a",
-        "metin": "Talep et",
-        "sabir_etki": -3,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "düşük",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.6,
-            "level_etki": 0,
-            "sonuc_metin": "Talebin kabul edildi, yeni birim seni mutlu etti."
-          },
-          {
-            "ihtimal": 0.4,
-            "level_etki": 0,
-            "sonuc_metin": "Talebin reddedildi, mevcut yerinde kaldın."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_mem_009_b",
-        "metin": "Talep etme",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mem_010",
-    "meslek": "memur",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Kıdem Teşvik Bildirisi",
-    "metin": "Kurum, belirli kıdem üzerindeki personele yönelik bir teşvik programı duyurdu.",
-    "agirlik": 1,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": 4,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mem_010_a",
-        "metin": "Bildiriyi onayla",
-        "sabir_etki": 3,
-        "mutluluk_etki": 5,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mv_001",
-    "meslek": "mavi_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Ustalık Belgesi Sınavı",
-    "metin": "Bir üst ustalık seviyesine geçmen için sınava girme hakkın doğdu.",
-    "agirlik": 3,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mv_001_a",
-        "metin": "Sınava gir",
-        "sabir_etki": -5,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "orta",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.5,
-            "level_etki": 1,
-            "sonuc_metin": "Sınavı geçtin, ustalık seviyen yükseldi."
-          },
-          {
-            "ihtimal": 0.5,
-            "level_etki": 0,
-            "sonuc_metin": "Bu sefer geçemedin, tekrar deneyebilirsin."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_mv_001_b",
-        "metin": "Girme",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mv_002",
-    "meslek": "mavi_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "mental_accounting",
-    "baslik": "Sendika Toplantısı Daveti",
-    "metin": "İş yerindeki sendika seni bir toplantıya davet etti.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mv_002_a",
-        "metin": "Katıl",
-        "sabir_etki": -3,
-        "mutluluk_etki": 5,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_mv_002_b",
-        "metin": "Katılma",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mv_003",
-    "meslek": "mavi_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Vardiya Değişikliği Bildirisi",
-    "metin": "Üretim planlaması nedeniyle vardiya düzeninde değişikliğe gidildi.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mv_003_a",
-        "metin": "Bildiriyi onayla",
-        "sabir_etki": -2,
-        "mutluluk_etki": -3,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mv_004",
-    "meslek": "mavi_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "İş Güvenliği Eğitimi Bildirisi",
-    "metin": "Yasal zorunluluk gereği tüm çalışanlar iş güvenliği eğitimine katılacak.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mv_004_a",
-        "metin": "Bildiriyi onayla",
-        "sabir_etki": -2,
-        "mutluluk_etki": 2,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mv_005",
-    "meslek": "mavi_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "present_bias",
-    "baslik": "Ustalığa Geçiş Fırsatı",
-    "metin": "Kalfalıktan ustalığa geçmen için bir fırsat doğdu.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": 2,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mv_005_a",
-        "metin": "Değerlendir",
-        "sabir_etki": -5,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "orta",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.6,
-            "level_etki": 1,
-            "sonuc_metin": "Fırsatı iyi değerlendirdin, seviyen yükseldi."
-          },
-          {
-            "ihtimal": 0.4,
-            "level_etki": 0,
-            "sonuc_metin": "Bu sefer olmadı, ama tecrübe kazandın."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_mv_005_b",
-        "metin": "Değerlendirme",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mv_006",
-    "meslek": "mavi_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Yılın Ustası Seçildin",
-    "metin": "Gösterdiğin özenli işçilik nedeniyle yılın ustası seçildin.",
-    "agirlik": 1,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mv_006_a",
-        "metin": "Gururla kabul et",
-        "sabir_etki": 5,
-        "mutluluk_etki": 10,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 1.0,
-            "level_etki": 1,
-            "sonuc_metin": "Bu unvan seni bir üst seviyeye taşıdı."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mv_007",
-    "meslek": "mavi_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "present_bias",
-    "baslik": "Yeni Ekipman Eğitimi",
-    "metin": "Atölyeye yeni bir makine/ekipman geldi, kullanım eğitimi veriliyor.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mv_007_a",
-        "metin": "Katıl",
-        "sabir_etki": -3,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "düşük",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.4,
-            "level_etki": 1,
-            "sonuc_metin": "Yeni ekipmanda ustalaştın, seviyen yükseldi."
-          },
-          {
-            "ihtimal": 0.6,
-            "level_etki": 0,
-            "sonuc_metin": "Faydalı bir eğitimdi, hemen bir karşılığı olmadı."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_mv_007_b",
-        "metin": "Katılma",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mv_008",
-    "meslek": "mavi_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Kıdem Tazminatı Düzenlemesi Bildirisi",
-    "metin": "Kıdem tazminatı hesaplamasında yasal bir düzenleme yapıldı.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mv_008_a",
-        "metin": "Bildiriyi onayla",
-        "sabir_etki": 0,
-        "mutluluk_etki": -2,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mv_009",
-    "meslek": "mavi_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "mental_accounting",
-    "baslik": "Ekip Liderliği Teklifi",
-    "metin": "Küçük bir ekibe liderlik etmen için teklif aldın.",
-    "agirlik": 2,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": 3,
-    "max_level": 4,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mv_009_a",
-        "metin": "Kabul et",
-        "sabir_etki": -5,
-        "mutluluk_etki": -3,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "orta",
-        "olasilik_sonuclari": [
-          {
-            "ihtimal": 0.5,
-            "level_etki": 1,
-            "sonuc_metin": "Liderlik deneyimin seni bir üst seviyeye taşıdı."
-          },
-          {
-            "ihtimal": 0.5,
-            "level_etki": 0,
-            "sonuc_metin": "Deneyim kazandın, hemen bir karşılığı olmadı."
-          }
-        ],
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      },
-      {
-        "id": "ev_mv_009_b",
-        "metin": "Reddet",
-        "sabir_etki": 0,
-        "mutluluk_etki": 0,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  },
-  {
-    "id": "ev_mv_010",
-    "meslek": "mavi_yaka",
-    "kategori": "is_yeri",
-    "bias_etiketi": "status_quo",
-    "baslik": "Fabrika İçi Ödül Töreni",
-    "metin": "Yıllık performans töreninde emeğin takdir edildi.",
-    "agirlik": 1,
-    "cooldown_yil": 0,
-    "tek_seferlik": true,
-    "tetik": "her_zaman",
-    "min_yas": null,
-    "max_yas": null,
-    "min_level": null,
-    "max_level": null,
-    "gerekli_varlik": null,
-    "secenekler": [
-      {
-        "id": "ev_mv_010_a",
-        "metin": "Gururla kabul et",
-        "sabir_etki": 3,
-        "mutluluk_etki": 8,
-        "nakit_etki_usd": 0,
-        "risk_seviyesi": "risksiz",
-        "gelir_degisim": null,
-        "aksiyon": null,
-        "kilit": null
-      }
-    ]
-  }
+    {
+        "id": "ev_001",
+        "kategori": "finansal",
+        "bias_etiketi": "loss_aversion",
+        "baslik": "Borsada sert düşüş var",
+        "metin": "Portföyündeki hisseler bu hafta sert düştü. Uzmanlar bir kısmının toparlanamayacağını söylüyor, bir kısmı ise sabır tavsiye ediyor.",
+        "agirlik": 3,
+        "cooldown_yil": 2,
+        "tek_seferlik": false,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist",
+        "secenekler": [
+            {
+                "id": "ev_001_a",
+                "metin": "Sabırla bekle, toparlanmayı bekle",
+                "sabir_etki": -10,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "sabir",
+                    "min": 40
+                }
+            },
+            {
+                "id": "ev_001_b",
+                "metin": "Pozisyonun yarısını sat, riski azalt",
+                "sabir_etki": -5,
+                "mutluluk_etki": -10,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": {
+                    "tip": "sat",
+                    "varlik": "bist",
+                    "oran": 0.5
+                },
+                "kilit": null
+            },
+            {
+                "id": "ev_001_c",
+                "metin": "Düşüşten faydallan, daha fazla al",
+                "sabir_etki": 5,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "sabir",
+                    "min": 60
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_002",
+        "kategori": "sosyal",
+        "bias_etiketi": "mental_accounting",
+        "baslik": "Arkadaşından yurt dışı tatil teklifi geldi",
+        "metin": "Yakın arkadaşın seni yurt dışı tatile davet etti. Güzel bir deneyim olacak ama masraflar ciddi.",
+        "agirlik": 2,
+        "cooldown_yil": 3,
+        "tek_seferlik": false,
+        "tetik": "her_zaman",
+        "min_yas": 25,
+        "max_yas": 45,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_002_a",
+                "metin": "Git, deneyimler paradan değerlidir",
+                "sabir_etki": 5,
+                "mutluluk_etki": 20,
+                "nakit_etki_usd": -750,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 750
+                }
+            },
+            {
+                "id": "ev_002_b",
+                "metin": "Gitme, birikimlerini koru",
+                "sabir_etki": 10,
+                "mutluluk_etki": -10,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_002_c",
+                "metin": "Yurt içi alternatif öner",
+                "sabir_etki": 5,
+                "mutluluk_etki": 8,
+                "nakit_etki_usd": -250,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 250
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_003",
+        "kategori": "finansal",
+        "bias_etiketi": "anchoring",
+        "baslik": "Altının değeri geçen yıla göre düştü",
+        "metin": "Altın pozisyonun değer kaybetti. Bir kısım uzman daha da düşeceğini, diğerleri toparlanacağını söylüyor.",
+        "agirlik": 2,
+        "cooldown_yil": 2,
+        "tek_seferlik": false,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "altin",
+        "secenekler": [
+            {
+                "id": "ev_003_a",
+                "metin": "Aldığım fiyata dönünce satarım, bekleyeyim",
+                "sabir_etki": -8,
+                "mutluluk_etki": -8,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "sabir",
+                    "min": 35
+                }
+            },
+            {
+                "id": "ev_003_b",
+                "metin": "Yarısını sat, zararı sınırla",
+                "sabir_etki": -5,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": {
+                    "tip": "sat",
+                    "varlik": "altin",
+                    "oran": 0.5
+                },
+                "kilit": null
+            },
+            {
+                "id": "ev_003_c",
+                "metin": "Ortalama maliyetimi düşürmek için daha fazla al",
+                "sabir_etki": 5,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "sabir",
+                    "min": 55
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_004",
+        "kategori": "finansal",
+        "bias_etiketi": "mental_accounting",
+        "baslik": "Yıl sonu ikramiyeni aldın",
+        "metin": "Bu ay maaşının yanında yıllık ikramiyeni de aldın. Normalde biriktirdiğinden çok daha fazlası hesabında.",
+        "agirlik": 2,
+        "cooldown_yil": 4,
+        "tek_seferlik": false,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_004_a",
+                "metin": "Tamamını yatırıma yönlendir",
+                "sabir_etki": 15,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_004_b",
+                "metin": "Yarısını yatır, yarısıyla kendine bir şey al",
+                "sabir_etki": 5,
+                "mutluluk_etki": 15,
+                "nakit_etki_usd": -500,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 500
+                }
+            },
+            {
+                "id": "ev_004_c",
+                "metin": "Hepsini harca, bu zaten ekstra para",
+                "sabir_etki": -10,
+                "mutluluk_etki": 20,
+                "nakit_etki_usd": -1250,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 1250
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_005",
+        "kategori": "makroekonomik",
+        "bias_etiketi": "loss_aversion",
+        "baslik": "Merkez bankası faizi sert artırdı",
+        "metin": "Merkez bankası politika faizini büyük oranda artırdı. Mevduat getirileri yükseldi, borsa sert tepki verdi.",
+        "agirlik": 2,
+        "cooldown_yil": 3,
+        "tek_seferlik": false,
+        "tetik": "kriz",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist",
+        "secenekler": [
+            {
+                "id": "ev_005_a",
+                "metin": "Borsadaki varlıklarımın yarısını mevduata taşı",
+                "sabir_etki": -5,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": {
+                    "tip": "sat",
+                    "varlik": "bist",
+                    "oran": 0.5
+                },
+                "kilit": null
+            },
+            {
+                "id": "ev_005_b",
+                "metin": "Borsada kal, kısa vadeli panik",
+                "sabir_etki": -10,
+                "mutluluk_etki": -10,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "sabir",
+                    "min": 45
+                }
+            },
+            {
+                "id": "ev_005_c",
+                "metin": "Düşüşten faydallan, borsa al",
+                "sabir_etki": 5,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "sabir",
+                    "min": 65
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_006",
+        "kategori": "yasam",
+        "bias_etiketi": "mental_accounting",
+        "baslik": "İş değiştirme teklifi aldın",
+        "metin": "Farklı bir şirketten cazip bir teklif geldi. Maaş daha iyi ama yeni bir ortama alışmak zaman alacak.",
+        "agirlik": 2,
+        "cooldown_yil": 5,
+        "tek_seferlik": false,
+        "tetik": "yas_aralik",
+        "min_yas": 25,
+        "max_yas": 50,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_006_a",
+                "metin": "Teklifi kabul et",
+                "sabir_etki": -5,
+                "mutluluk_etki": 10,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": {
+                    "tip": "randomize",
+                    "min": 0.15,
+                    "max": 0.4
+                },
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_006_b",
+                "metin": "Reddet, mevcut işte kal",
+                "sabir_etki": 5,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_007",
+        "kategori": "yasam",
+        "bias_etiketi": "loss_aversion",
+        "baslik": "Annen hastalandı",
+        "metin": "Annen ciddi bir rahatsızlık geçirdi. Tedavi masrafları ve bakım süreci seni de etkiliyor.",
+        "agirlik": 1,
+        "cooldown_yil": 999,
+        "tek_seferlik": true,
+        "tetik": "yas_aralik",
+        "min_yas": 35,
+        "max_yas": 60,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_007_a",
+                "metin": "Özel hastanede en iyi tedaviyi al",
+                "sabir_etki": -10,
+                "mutluluk_etki": 10,
+                "nakit_etki_usd": -2000,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 2000
+                }
+            },
+            {
+                "id": "ev_007_b",
+                "metin": "Devlet hastanesinde tedavi et",
+                "sabir_etki": -5,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": -500,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 500
+                }
+            },
+            {
+                "id": "ev_007_c",
+                "metin": "Kardeşlerle masrafı paylaş",
+                "sabir_etki": -5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": -750,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 750
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_008",
+        "kategori": "makroekonomik",
+        "bias_etiketi": "loss_aversion",
+        "baslik": "Kur krizi kapıda",
+        "metin": "Dolar bu ay rekor kırdı, ekonomistler kur krizinin başladığını söylüyor. Herkes ne yapacağını bilemiyor.",
+        "agirlik": 2,
+        "cooldown_yil": 4,
+        "tek_seferlik": false,
+        "tetik": "kriz",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_008_a",
+                "metin": "TL birikimlerimi dolara çevir",
+                "sabir_etki": -5,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_008_b",
+                "metin": "Altına yönel, güvenli liman",
+                "sabir_etki": 5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "sabir",
+                    "min": 40
+                }
+            },
+            {
+                "id": "ev_008_c",
+                "metin": "Bekle, abartıyorlar",
+                "sabir_etki": -10,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "sabir",
+                    "min": 50
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_009",
+        "kategori": "sosyal",
+        "bias_etiketi": "present_bias",
+        "baslik": "Kendine iyi bak zamanı",
+        "metin": "Uzun süredir kendin için harcama yapmadın. Bir tatil ya da özel bir şey almak için fırsat var.",
+        "agirlik": 2,
+        "cooldown_yil": 3,
+        "tek_seferlik": false,
+        "tetik": "sakin",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_009_a",
+                "metin": "Hak ettim, kendime güzel bir şey alayım",
+                "sabir_etki": -5,
+                "mutluluk_etki": 20,
+                "nakit_etki_usd": -1000,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 1000
+                }
+            },
+            {
+                "id": "ev_009_b",
+                "metin": "Hayır, birikimlerime dokunmayayım",
+                "sabir_etki": 10,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_009_c",
+                "metin": "Küçük bir şey alayım, dengeyi korum",
+                "sabir_etki": 0,
+                "mutluluk_etki": 10,
+                "nakit_etki_usd": -300,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 300
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_010",
+        "kategori": "yasam",
+        "bias_etiketi": "mental_accounting",
+        "baslik": "Ek iş teklifi aldın",
+        "metin": "Tanıdığın biri sana part-time bir iş teklif etti. Ekstra gelir cazip ama zamanın ve enerjin kısıtlanacak.",
+        "agirlik": 2,
+        "cooldown_yil": 4,
+        "tek_seferlik": false,
+        "tetik": "yas_aralik",
+        "min_yas": 25,
+        "max_yas": 50,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_010_a",
+                "metin": "Kabul et, ekstra gelir lazım",
+                "sabir_etki": -15,
+                "mutluluk_etki": -10,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": {
+                    "tip": "sabit_oran",
+                    "oran": 1.25
+                },
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_010_b",
+                "metin": "Reddet, zamanım daha değerli",
+                "sabir_etki": 10,
+                "mutluluk_etki": 10,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_011",
+        "kategori": "makroekonomik",
+        "bias_etiketi": "loss_aversion",
+        "baslik": "Enflasyon rekor kırdı",
+        "metin": "Bu ay açıklanan enflasyon rakamı beklentilerin çok üzerinde çıktı. Market fiyatları hızla artıyor, alım gücü eriyor.",
+        "agirlik": 2,
+        "cooldown_yil": 3,
+        "tek_seferlik": false,
+        "tetik": "kriz",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_011_a",
+                "metin": "Nakit birikimlerimi enflasyona karşı koruyacak varlığa yönlendir",
+                "sabir_etki": 5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "sabir",
+                    "min": 40
+                }
+            },
+            {
+                "id": "ev_011_b",
+                "metin": "Mevduatta kal, faiz enflasyonu karşılar",
+                "sabir_etki": 0,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_011_c",
+                "metin": "Dayanıklı tüketim malı al, değer korur",
+                "sabir_etki": -5,
+                "mutluluk_etki": 10,
+                "nakit_etki_usd": -1000,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 1000
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_012",
+        "kategori": "yasam",
+        "bias_etiketi": "loss_aversion",
+        "baslik": "İşini kaybetme riski",
+        "metin": "Şirketin zor bir dönemden geçiyor. Yakında işten çıkarmalar olacağı dedikodusu var.",
+        "agirlik": 1,
+        "cooldown_yil": 999,
+        "tek_seferlik": true,
+        "tetik": "kriz",
+        "min_yas": 28,
+        "max_yas": 55,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_012_a",
+                "metin": "Hemen iş aramaya başla, proaktif ol",
+                "sonuc_metni": "İyi ki erken davrandın. Yeni bir iş buldun.",
+                "sabir_etki": -10,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": {
+                    "tip": "randomize",
+                    "min": -0.1,
+                    "max": 0.2
+                },
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_012_b",
+                "metin": "Bekle, belki seni kesmezler",
+                "sonuc_metni": "Ucuz kurtuldun! Bu sefer atlatıldı.",
+                "sabir_etki": -15,
+                "mutluluk_etki": -15,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_013",
+        "kategori": "sosyal",
+        "bias_etiketi": "mental_accounting",
+        "baslik": "Yakın arkadaşının düğünü var",
+        "metin": "En yakın arkadaşın evleniyor. Düğün hediyesi ve organizasyona katılım masrafları seni bekliyor.",
+        "agirlik": 2,
+        "cooldown_yil": 5,
+        "tek_seferlik": false,
+        "tetik": "yas_aralik",
+        "min_yas": 25,
+        "max_yas": 45,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_013_a",
+                "metin": "Cömert ol, özel bir gün",
+                "sabir_etki": 0,
+                "mutluluk_etki": 15,
+                "nakit_etki_usd": -625,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 625
+                }
+            },
+            {
+                "id": "ev_013_b",
+                "metin": "Sembolik hediyeyle geç",
+                "sabir_etki": 5,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": -200,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 200
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_015",
+        "kategori": "finansal",
+        "bias_etiketi": "anchoring",
+        "baslik": "Dolar rekor kırdı, ne yaparsın?",
+        "metin": "Dolar/TL kuru tarihi zirveye ulaştı. Elindeki TL birikimler her geçen gün değer kaybediyor.",
+        "agirlik": 2,
+        "cooldown_yil": 3,
+        "tek_seferlik": false,
+        "tetik": "kriz",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_015_a",
+                "metin": "Pahalı ama dolar al, TL'yi koru",
+                "sabir_etki": -5,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "sabir",
+                    "min": 35
+                }
+            },
+            {
+                "id": "ev_015_b",
+                "metin": "Düşünce alırım, şimdi çok pahalı",
+                "sabir_etki": -10,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_015_c",
+                "metin": "Altına yönel, daha güvenli",
+                "sabir_etki": 5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": {
+                    "tur": "sabir",
+                    "min": 45
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_emeklilik",
+        "kategori": "finansal",
+        "bias_etiketi": "status_quo",
+        "baslik": "Zorunlu Emeklilik",
+        "metin": "Yaşın ve çalıştığın kurumun politikaları gereği emekliliğe ayrılman gerekiyor. Artık maaşın yerine sabit bir emekli maaşı alacaksın.",
+        "agirlik": 3,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": 60,
+        "max_yas": 65,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_emeklilik_a",
+                "metin": "Kabul et, yeni döneme uyum sağla",
+                "sabir_etki": 5,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "yillik_gelir_usd": 500,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_emeklilik_b",
+                "metin": "İtiraz et, ama karar değişmiyor",
+                "sabir_etki": -10,
+                "mutluluk_etki": -10,
+                "nakit_etki_usd": 0,
+                "yillik_gelir_usd": 500,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_emeklilik_c",
+                "metin": "Şaşkına dön, zamanın nasıl geçtiğini fark et",
+                "sabir_etki": 0,
+                "mutluluk_etki": -8,
+                "nakit_etki_usd": 0,
+                "yillik_gelir_usd": 500,
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_bw_001",
+        "meslek": "beyaz_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "asiri_ozguven",
+        "baslik": "Coworker ile Rekabet",
+        "metin": "Aynı pozisyona başka bir çalışan da göz koymuş durumda. Öne çıkmak için fazladan çaba göstermek seni yorabilir.",
+        "agirlik": 3,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_bw_001_a",
+                "metin": "Daha çok çalış, öne çık",
+                "sabir_etki": -8,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.7,
+                        "level_etki": 1,
+                        "sonuc_metin": "Çabaların karşılığını aldın, terfi ettin."
+                    },
+                    {
+                        "ihtimal": 0.3,
+                        "level_etki": 0,
+                        "sonuc_metin": "Bu sefer olmadı, ama emeğin boşa gitmedi."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_bw_001_b",
+                "metin": "Bırak, o öne çıksın",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_bw_002",
+        "meslek": "beyaz_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "loss_aversion",
+        "baslik": "İşte Hata Yapmışsın",
+        "metin": "Önemli bir projede gözden kaçan bir hata ortaya çıktı. Yöneticin açıklama bekliyor.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": 2,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_bw_002_a",
+                "metin": "Özür dile, sorumluluk al",
+                "sabir_etki": -5,
+                "mutluluk_etki": -3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "düşük",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_bw_002_b",
+                "metin": "Düzeltmeye çalış",
+                "sabir_etki": -3,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.6,
+                        "level_etki": 0,
+                        "sonuc_metin": "Hatayı zamanında telafi ettin, mutluluğun arttı."
+                    },
+                    {
+                        "ihtimal": 0.4,
+                        "level_etki": 0,
+                        "sonuc_metin": "Tam düzeltemedin, biraz üzüldün."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_bw_003",
+        "meslek": "beyaz_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Yılın Çalışanı Oldun",
+        "metin": "Yıl sonu değerlendirmesinde performansınla öne çıktın ve yılın çalışanı seçildin.",
+        "agirlik": 1,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_bw_003_a",
+                "metin": "Gururla kabul et",
+                "sabir_etki": 5,
+                "mutluluk_etki": 10,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 1.0,
+                        "level_etki": 1,
+                        "sonuc_metin": "Bu başarı seni bir üst pozisyona taşıdı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_bw_004",
+        "meslek": "beyaz_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "present_bias",
+        "baslik": "Şirket İçi Eğitim Programı",
+        "metin": "Şirket, seçilmiş çalışanlar için ücretsiz bir gelişim programı başlattı.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_bw_004_a",
+                "metin": "Katıl",
+                "sabir_etki": -3,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "düşük",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 1,
+                        "sonuc_metin": "Programdan çok şey öğrendin, bu seni öne çıkardı."
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 0,
+                        "sonuc_metin": "Faydalı bir deneyimdi ama hemen bir karşılığı olmadı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_bw_004_b",
+                "metin": "Katılma",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_bw_005",
+        "meslek": "beyaz_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Yeni Yönetim Sistemi Bildirisi",
+        "metin": "Şirket yeni bir performans takip sistemine geçtiğini duyurdu. Seçim hakkın yok, uyum sağlaman gerekiyor.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_bw_005_a",
+                "metin": "Bildiriyi onayla",
+                "sabir_etki": -2,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_bw_006",
+        "meslek": "beyaz_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "asiri_ozguven",
+        "baslik": "Performans Değerlendirmesi",
+        "metin": "Yıllık performans görüşmen yaklaşıyor. Kendini nasıl konumlandıracağını düşünmelisin.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_bw_006_a",
+                "metin": "Öne çık, katkılarını vurgula",
+                "sabir_etki": -5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 1,
+                        "sonuc_metin": "Değerlendirme olumlu geçti, terfi ettin."
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 0,
+                        "sonuc_metin": "Değerlendirme nötr geçti, değişen bir şey olmadı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_bw_006_b",
+                "metin": "Sessiz kal, süreci izle",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_bw_007",
+        "meslek": "beyaz_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "present_bias",
+        "baslik": "Ofis Sosyal Etkinliği",
+        "metin": "Ekip, iş dışında bir sosyal etkinlik düzenliyor.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_bw_007_a",
+                "metin": "Katıl",
+                "sabir_etki": -2,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_bw_007_b",
+                "metin": "Katılma",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_bw_008",
+        "meslek": "beyaz_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "mental_accounting",
+        "baslik": "Mentorluk Teklifi",
+        "metin": "Kıdemli bir yönetici sana mentorluk yapmayı teklif etti.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": 3,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_bw_008_a",
+                "metin": "Kabul et",
+                "sabir_etki": -3,
+                "mutluluk_etki": 3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.4,
+                        "level_etki": 1,
+                        "sonuc_metin": "Mentorluk sayesinde yeni bir kapı açıldı."
+                    },
+                    {
+                        "ihtimal": 0.6,
+                        "level_etki": 0,
+                        "sonuc_metin": "Değerli bir deneyimdi, henüz somut bir karşılığı olmadı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_bw_008_b",
+                "metin": "Reddet",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_bw_009",
+        "meslek": "beyaz_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Kurumsal Politika Değişikliği",
+        "metin": "Şirket, uzaktan çalışma politikasında değişikliğe gitti. Bu, günlük rutinini etkileyecek.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_bw_009_a",
+                "metin": "Bildiriyi onayla",
+                "sabir_etki": 0,
+                "mutluluk_etki": -2,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_bw_010",
+        "meslek": "beyaz_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "asiri_ozguven",
+        "baslik": "Terfi Görüşmesi",
+        "metin": "En üst kademeye çıkman için son bir görüşme yapılacak.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": 4,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_bw_010_a",
+                "metin": "Hazırlan, kendini kanıtla",
+                "sabir_etki": -8,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "yüksek",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.6,
+                        "level_etki": 1,
+                        "sonuc_metin": "Görüşme mükemmel geçti, en üst kademeye çıktın."
+                    },
+                    {
+                        "ihtimal": 0.4,
+                        "level_etki": 0,
+                        "sonuc_metin": "Bu sefer olmadı, tekrar denemen gerekecek."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_bw_010_b",
+                "metin": "Bekle, hazır olmadığını düşün",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mem_001",
+        "meslek": "memur",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Kademe Sınavı",
+        "metin": "Bir üst kademeye geçmen için sınava girme hakkın doğdu.",
+        "agirlik": 3,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mem_001_a",
+                "metin": "Sınava gir, çalış",
+                "sabir_etki": -5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "düşük",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.8,
+                        "level_etki": 1,
+                        "sonuc_metin": "Sınavı geçtin, bir üst kademeye yükseldin."
+                    },
+                    {
+                        "ihtimal": 0.2,
+                        "level_etki": 0,
+                        "sonuc_metin": "Bu sefer geçemedin, gelecek yıl tekrar deneyebilirsin."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_mem_001_b",
+                "metin": "Girme, mevcut kademede kal",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mem_002",
+        "meslek": "memur",
+        "kategori": "is_yeri",
+        "bias_etiketi": "loss_aversion",
+        "baslik": "Rotasyon/Tayin Kararı",
+        "metin": "Kurumun rotasyon politikası gereği farklı bir şehre/birime tayin çıkma ihtimalin var.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mem_002_a",
+                "metin": "Kabul et, uyum sağla",
+                "sabir_etki": 3,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_mem_002_b",
+                "metin": "İtiraz et, yerinde kalmaya çalış",
+                "sabir_etki": -5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "düşük",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mem_003",
+        "meslek": "memur",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Toplu Sözleşme Zammı",
+        "metin": "Kamu çalışanları için toplu sözleşme görüşmeleri sonuçlandı, iyileştirme duyuruldu.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mem_003_a",
+                "metin": "Bildiriyi onayla",
+                "sabir_etki": 0,
+                "mutluluk_etki": 3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mem_004",
+        "meslek": "memur",
+        "kategori": "is_yeri",
+        "bias_etiketi": "loss_aversion",
+        "baslik": "Disiplin Soruşturması",
+        "metin": "Küçük bir usul hatası nedeniyle hakkında bir soruşturma açıldı.",
+        "agirlik": 1,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": 2,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mem_004_a",
+                "metin": "Kendini savun",
+                "sabir_etki": -8,
+                "mutluluk_etki": -3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "düşük",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.9,
+                        "level_etki": 0,
+                        "sonuc_metin": "Soruşturma sonuçsuz kapandı."
+                    },
+                    {
+                        "ihtimal": 0.1,
+                        "level_etki": -1,
+                        "sonuc_metin": "Küçük bir yaptırım uygulandı, kademen geriledi."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mem_005",
+        "meslek": "memur",
+        "kategori": "is_yeri",
+        "bias_etiketi": "present_bias",
+        "baslik": "Hizmet İçi Eğitim",
+        "metin": "Kurumun düzenlediği bir hizmet içi eğitime katılma fırsatın var.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mem_005_a",
+                "metin": "Katıl",
+                "sabir_etki": -3,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "düşük",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.3,
+                        "level_etki": 1,
+                        "sonuc_metin": "Eğitim, bir üst kademeye geçişini hızlandırdı."
+                    },
+                    {
+                        "ihtimal": 0.7,
+                        "level_etki": 0,
+                        "sonuc_metin": "Faydalı bir eğitimdi, somut bir karşılığı olmadı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_mem_005_b",
+                "metin": "Katılma",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mem_006",
+        "meslek": "memur",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Yeni Yönetmelik Bildirisi",
+        "metin": "Kurumun iç işleyişini düzenleyen yeni bir yönetmelik yürürlüğe girdi.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mem_006_a",
+                "metin": "Bildiriyi onayla",
+                "sabir_etki": -2,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mem_007",
+        "meslek": "memur",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Teşekkür Belgesi",
+        "metin": "Gösterdiğin özenli çalışma nedeniyle kurumdan bir teşekkür belgesi aldın.",
+        "agirlik": 1,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mem_007_a",
+                "metin": "Gururla kabul et",
+                "sabir_etki": 3,
+                "mutluluk_etki": 8,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mem_008",
+        "meslek": "memur",
+        "kategori": "is_yeri",
+        "bias_etiketi": "mental_accounting",
+        "baslik": "Ek Görev Teklifi",
+        "metin": "Birim amirin sana ek sorumluluk gerektiren bir görev teklif etti.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mem_008_a",
+                "metin": "Kabul et",
+                "sabir_etki": -5,
+                "mutluluk_etki": -3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 1,
+                        "sonuc_metin": "Ek görevdeki başarın kademe atlamana yardımcı oldu."
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 0,
+                        "sonuc_metin": "Görevi tamamladın, hemen bir karşılığı olmadı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_mem_008_b",
+                "metin": "Reddet",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mem_009",
+        "meslek": "memur",
+        "kategori": "is_yeri",
+        "bias_etiketi": "present_bias",
+        "baslik": "Kurum İçi Yer Değişikliği Talebi",
+        "metin": "Aynı kurumda farklı bir birime geçmek için talepte bulunabilirsin.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mem_009_a",
+                "metin": "Talep et",
+                "sabir_etki": -3,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "düşük",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.6,
+                        "level_etki": 0,
+                        "sonuc_metin": "Talebin kabul edildi, yeni birim seni mutlu etti."
+                    },
+                    {
+                        "ihtimal": 0.4,
+                        "level_etki": 0,
+                        "sonuc_metin": "Talebin reddedildi, mevcut yerinde kaldın."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_mem_009_b",
+                "metin": "Talep etme",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mem_010",
+        "meslek": "memur",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Kıdem Teşvik Bildirisi",
+        "metin": "Kurum, belirli kıdem üzerindeki personele yönelik bir teşvik programı duyurdu.",
+        "agirlik": 1,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": 4,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mem_010_a",
+                "metin": "Bildiriyi onayla",
+                "sabir_etki": 3,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mv_001",
+        "meslek": "mavi_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Ustalık Belgesi Sınavı",
+        "metin": "Bir üst ustalık seviyesine geçmen için sınava girme hakkın doğdu.",
+        "agirlik": 3,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mv_001_a",
+                "metin": "Sınava gir",
+                "sabir_etki": -5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 1,
+                        "sonuc_metin": "Sınavı geçtin, ustalık seviyen yükseldi."
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 0,
+                        "sonuc_metin": "Bu sefer geçemedin, tekrar deneyebilirsin."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_mv_001_b",
+                "metin": "Girme",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mv_002",
+        "meslek": "mavi_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "mental_accounting",
+        "baslik": "Sendika Toplantısı Daveti",
+        "metin": "İş yerindeki sendika seni bir toplantıya davet etti.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mv_002_a",
+                "metin": "Katıl",
+                "sabir_etki": -3,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_mv_002_b",
+                "metin": "Katılma",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mv_003",
+        "meslek": "mavi_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Vardiya Değişikliği Bildirisi",
+        "metin": "Üretim planlaması nedeniyle vardiya düzeninde değişikliğe gidildi.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mv_003_a",
+                "metin": "Bildiriyi onayla",
+                "sabir_etki": -2,
+                "mutluluk_etki": -3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mv_004",
+        "meslek": "mavi_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "İş Güvenliği Eğitimi Bildirisi",
+        "metin": "Yasal zorunluluk gereği tüm çalışanlar iş güvenliği eğitimine katılacak.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mv_004_a",
+                "metin": "Bildiriyi onayla",
+                "sabir_etki": -2,
+                "mutluluk_etki": 2,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mv_005",
+        "meslek": "mavi_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "present_bias",
+        "baslik": "Ustalığa Geçiş Fırsatı",
+        "metin": "Kalfalıktan ustalığa geçmen için bir fırsat doğdu.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": 2,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mv_005_a",
+                "metin": "Değerlendir",
+                "sabir_etki": -5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.6,
+                        "level_etki": 1,
+                        "sonuc_metin": "Fırsatı iyi değerlendirdin, seviyen yükseldi."
+                    },
+                    {
+                        "ihtimal": 0.4,
+                        "level_etki": 0,
+                        "sonuc_metin": "Bu sefer olmadı, ama tecrübe kazandın."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_mv_005_b",
+                "metin": "Değerlendirme",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mv_006",
+        "meslek": "mavi_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Yılın Ustası Seçildin",
+        "metin": "Gösterdiğin özenli işçilik nedeniyle yılın ustası seçildin.",
+        "agirlik": 1,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mv_006_a",
+                "metin": "Gururla kabul et",
+                "sabir_etki": 5,
+                "mutluluk_etki": 10,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 1.0,
+                        "level_etki": 1,
+                        "sonuc_metin": "Bu unvan seni bir üst seviyeye taşıdı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mv_007",
+        "meslek": "mavi_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "present_bias",
+        "baslik": "Yeni Ekipman Eğitimi",
+        "metin": "Atölyeye yeni bir makine/ekipman geldi, kullanım eğitimi veriliyor.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mv_007_a",
+                "metin": "Katıl",
+                "sabir_etki": -3,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "düşük",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.4,
+                        "level_etki": 1,
+                        "sonuc_metin": "Yeni ekipmanda ustalaştın, seviyen yükseldi."
+                    },
+                    {
+                        "ihtimal": 0.6,
+                        "level_etki": 0,
+                        "sonuc_metin": "Faydalı bir eğitimdi, hemen bir karşılığı olmadı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_mv_007_b",
+                "metin": "Katılma",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mv_008",
+        "meslek": "mavi_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Kıdem Tazminatı Düzenlemesi Bildirisi",
+        "metin": "Kıdem tazminatı hesaplamasında yasal bir düzenleme yapıldı.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mv_008_a",
+                "metin": "Bildiriyi onayla",
+                "sabir_etki": 0,
+                "mutluluk_etki": -2,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mv_009",
+        "meslek": "mavi_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "mental_accounting",
+        "baslik": "Ekip Liderliği Teklifi",
+        "metin": "Küçük bir ekibe liderlik etmen için teklif aldın.",
+        "agirlik": 2,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": 3,
+        "max_level": 4,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mv_009_a",
+                "metin": "Kabul et",
+                "sabir_etki": -5,
+                "mutluluk_etki": -3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 1,
+                        "sonuc_metin": "Liderlik deneyimin seni bir üst seviyeye taşıdı."
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 0,
+                        "sonuc_metin": "Deneyim kazandın, hemen bir karşılığı olmadı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_mv_009_b",
+                "metin": "Reddet",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_mv_010",
+        "meslek": "mavi_yaka",
+        "kategori": "is_yeri",
+        "bias_etiketi": "status_quo",
+        "baslik": "Fabrika İçi Ödül Töreni",
+        "metin": "Yıllık performans töreninde emeğin takdir edildi.",
+        "agirlik": 1,
+        "cooldown_yil": 0,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "min_level": null,
+        "max_level": null,
+        "gerekli_varlik": null,
+        "secenekler": [
+            {
+                "id": "ev_mv_010_a",
+                "metin": "Gururla kabul et",
+                "sabir_etki": 3,
+                "mutluluk_etki": 8,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_sektor_bank_poz",
+        "sektor": "bankacilik",
+        "kategori": "piyasa_haberi",
+        "bias_etiketi": "suru_davranisi",
+        "baslik": "Kredi Notu Yükseltildi",
+        "metin": "Uluslararası bir kredi derecelendirme kuruluşu ülkenin notunu yükseltti. Bankacılık hisseleri hızla yükseliyor, herkes konudan bahsediyor.",
+        "agirlik": 3,
+        "cooldown_yil": 3,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist_bankacilik",
+        "secenekler": [
+            {
+                "id": "ev_sektor_bank_poz_a",
+                "metin": "Herkes alıyor, sen de üstüne ekle",
+                "sabir_etki": -3,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "yüksek",
+                "kilit": {
+                    "tur": "sektor_pozisyon_yuzdesi",
+                    "sektor": "bankacilik",
+                    "oran": 0.1
+                },
+                "aksiyon": {
+                    "tip": "sektor_al",
+                    "sektor": "bankacilik",
+                    "oran": 0.1
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.45,
+                        "sektor_ekstra_getiri": 12,
+                        "sonuc_metin": "Yükseliş devam etti, zamanlaman iyiydi."
+                    },
+                    {
+                        "ihtimal": 0.55,
+                        "sektor_ekstra_getiri": -8,
+                        "sonuc_metin": "Haber zaten fiyatlanmıştı — geri çekilme yaşandı."
+                    }
+                ],
+                "gelir_degisim": null
+            },
+            {
+                "id": "ev_sektor_bank_poz_b",
+                "metin": "Mevcut pozisyonunu koru, izle",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_sektor_bank_neg",
+        "sektor": "bankacilik",
+        "kategori": "piyasa_haberi",
+        "bias_etiketi": "kayiptan_kacinma",
+        "baslik": "Kredi Kartı Borç Krizi Haberleri",
+        "metin": "Hane halkı borçluluğunun rekor seviyede olduğu haberleri manşetlerde. Bankacılık hisseleri baskı altında.",
+        "agirlik": 3,
+        "cooldown_yil": 3,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist_bankacilik",
+        "secenekler": [
+            {
+                "id": "ev_sektor_bank_neg_a",
+                "metin": "Panikle, yarısını sat",
+                "sabir_etki": -5,
+                "mutluluk_etki": -3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "aksiyon": {
+                    "tip": "sektor_sat",
+                    "sektor": "bankacilik",
+                    "oran": 0.5
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.55,
+                        "sektor_ekstra_getiri": -6,
+                        "sonuc_metin": "Satmakta haklıydın, düşüş devam etti."
+                    },
+                    {
+                        "ihtimal": 0.45,
+                        "sektor_ekstra_getiri": 10,
+                        "sonuc_metin": "Panik yersizmiş, hisse hızla toparladı — sen çoktan satmıştın."
+                    }
+                ],
+                "gelir_degisim": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_sektor_bank_neg_b",
+                "metin": "Sakin kal, pozisyonunu koru",
+                "sabir_etki": 5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_sektor_tekno_poz",
+        "sektor": "teknoloji",
+        "kategori": "piyasa_haberi",
+        "bias_etiketi": "asiri_ozguven",
+        "baslik": "Yapay Zeka Yatırımı Duyurusu",
+        "metin": "Sektördeki büyük bir şirket dev bir yapay zeka yatırımı açıkladı. Teknoloji hisseleri coşkuyla yükseliyor.",
+        "agirlik": 3,
+        "cooldown_yil": 3,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist_teknoloji",
+        "secenekler": [
+            {
+                "id": "ev_sektor_tekno_poz_a",
+                "metin": "Trene atla, üstüne ekle",
+                "sabir_etki": -3,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "yüksek",
+                "kilit": {
+                    "tur": "sektor_pozisyon_yuzdesi",
+                    "sektor": "teknoloji",
+                    "oran": 0.1
+                },
+                "aksiyon": {
+                    "tip": "sektor_al",
+                    "sektor": "teknoloji",
+                    "oran": 0.1
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.4,
+                        "sektor_ekstra_getiri": 18,
+                        "sonuc_metin": "Coşku haklı çıktı, sert yükseliş devam etti."
+                    },
+                    {
+                        "ihtimal": 0.6,
+                        "sektor_ekstra_getiri": -14,
+                        "sonuc_metin": "Balon şişmişti — kısa süre sonra sert bir düzeltme geldi."
+                    }
+                ],
+                "gelir_degisim": null
+            },
+            {
+                "id": "ev_sektor_tekno_poz_b",
+                "metin": "Heyecana kapılma, bekle",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_sektor_tekno_neg",
+        "sektor": "teknoloji",
+        "kategori": "piyasa_haberi",
+        "bias_etiketi": "kayiptan_kacinma",
+        "baslik": "Siber Saldırı Haberi",
+        "metin": "Sektördeki bir şirket büyük bir veri ihlali yaşadı. Teknoloji hisseleri satış baskısı altında.",
+        "agirlik": 3,
+        "cooldown_yil": 3,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist_teknoloji",
+        "secenekler": [
+            {
+                "id": "ev_sektor_tekno_neg_a",
+                "metin": "Riskten kaç, yarısını sat",
+                "sabir_etki": -5,
+                "mutluluk_etki": -3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "aksiyon": {
+                    "tip": "sektor_sat",
+                    "sektor": "teknoloji",
+                    "oran": 0.5
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "sektor_ekstra_getiri": -10,
+                        "sonuc_metin": "Haber büyüdü, düşüş derinleşti — satmak isabetliydi."
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "sektor_ekstra_getiri": 9,
+                        "sonuc_metin": "Tepki abartılıydı, hisse hızla toparladı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_sektor_tekno_neg_b",
+                "metin": "Uzun vadeli düşün, kalsın",
+                "sabir_etki": 5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_sektor_insaat_poz",
+        "sektor": "insaat",
+        "kategori": "piyasa_haberi",
+        "bias_etiketi": "asiri_ozguven",
+        "baslik": "Dev Altyapı Projesi İhalesi",
+        "metin": "Büyük bir kamu altyapı projesinin ihalesi sektöre gitti. İnşaat hisseleri sert yükseliyor.",
+        "agirlik": 3,
+        "cooldown_yil": 3,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist_insaat",
+        "secenekler": [
+            {
+                "id": "ev_sektor_insaat_poz_a",
+                "metin": "Fırsatı büyüt, üstüne ekle",
+                "sabir_etki": -3,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "yüksek",
+                "kilit": {
+                    "tur": "sektor_pozisyon_yuzdesi",
+                    "sektor": "insaat",
+                    "oran": 0.1
+                },
+                "aksiyon": {
+                    "tip": "sektor_al",
+                    "sektor": "insaat",
+                    "oran": 0.1
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "sektor_ekstra_getiri": 14,
+                        "sonuc_metin": "Proje gerçekten büyüktü, yükseliş kalıcı oldu."
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "sektor_ekstra_getiri": -9,
+                        "sonuc_metin": "İhale haberi zaten fiyatlanmıştı, kâr satışı geldi."
+                    }
+                ],
+                "gelir_degisim": null
+            },
+            {
+                "id": "ev_sektor_insaat_poz_b",
+                "metin": "Mevcut pozisyonda kal",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_sektor_insaat_neg",
+        "sektor": "insaat",
+        "kategori": "piyasa_haberi",
+        "bias_etiketi": "son_donem_onyargisi",
+        "baslik": "Konut Satışlarında Rekor Düşüş",
+        "metin": "Aylık konut satış verisi beklentilerin çok altında geldi. İnşaat hisseleri geriliyor.",
+        "agirlik": 3,
+        "cooldown_yil": 3,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist_insaat",
+        "secenekler": [
+            {
+                "id": "ev_sektor_insaat_neg_a",
+                "metin": "Kötü veri kalıcıdır, yarısını sat",
+                "sabir_etki": -5,
+                "mutluluk_etki": -3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "aksiyon": {
+                    "tip": "sektor_sat",
+                    "sektor": "insaat",
+                    "oran": 0.5
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.45,
+                        "sektor_ekstra_getiri": -7,
+                        "sonuc_metin": "Zayıflık sürdü, satış doğru karardı."
+                    },
+                    {
+                        "ihtimal": 0.55,
+                        "sektor_ekstra_getiri": 8,
+                        "sonuc_metin": "Tek aylık bir veriydi, sektör hızla toparladı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_sektor_insaat_neg_b",
+                "metin": "Tek bir veri, sabret",
+                "sabir_etki": 5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_sektor_saglik_poz",
+        "sektor": "saglik",
+        "kategori": "piyasa_haberi",
+        "bias_etiketi": "capalama",
+        "baslik": "Yerli İlaç Onayı",
+        "metin": "Bir ilaç şirketinin geliştirdiği ürün ruhsat aldı. Sağlık hisseleri yükseliyor.",
+        "agirlik": 3,
+        "cooldown_yil": 3,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist_saglik",
+        "secenekler": [
+            {
+                "id": "ev_sektor_saglik_poz_a",
+                "metin": "Habere güven, üstüne ekle",
+                "sabir_etki": -3,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "yüksek",
+                "kilit": {
+                    "tur": "sektor_pozisyon_yuzdesi",
+                    "sektor": "saglik",
+                    "oran": 0.1
+                },
+                "aksiyon": {
+                    "tip": "sektor_al",
+                    "sektor": "saglik",
+                    "oran": 0.1
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "sektor_ekstra_getiri": 13,
+                        "sonuc_metin": "Onay satışlara yansıdı, yükseliş kalıcı oldu."
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "sektor_ekstra_getiri": -8,
+                        "sonuc_metin": "Piyasa haberi zaten fiyatlamıştı, geri çekilme yaşandı."
+                    }
+                ],
+                "gelir_degisim": null
+            },
+            {
+                "id": "ev_sektor_saglik_poz_b",
+                "metin": "Pozisyonunu koru",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_sektor_saglik_neg",
+        "sektor": "saglik",
+        "kategori": "piyasa_haberi",
+        "bias_etiketi": "kayiptan_kacinma",
+        "baslik": "İlaç Geri Çağırma",
+        "metin": "Bir ürünle ilgili güvenlik sorunu tespit edildi, geri çağırma süreci başladı. Sağlık hisseleri düşüyor.",
+        "agirlik": 3,
+        "cooldown_yil": 3,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist_saglik",
+        "secenekler": [
+            {
+                "id": "ev_sektor_saglik_neg_a",
+                "metin": "Güven sarsıldı, yarısını sat",
+                "sabir_etki": -5,
+                "mutluluk_etki": -3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "aksiyon": {
+                    "tip": "sektor_sat",
+                    "sektor": "saglik",
+                    "oran": 0.5
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "sektor_ekstra_getiri": -9,
+                        "sonuc_metin": "Sorun büyüdü, düşüş devam etti."
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "sektor_ekstra_getiri": 7,
+                        "sonuc_metin": "Sorun küçüktü, hisse hızla toparladı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_sektor_saglik_neg_b",
+                "metin": "Detayları bekle, kalsın",
+                "sabir_etki": 5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_sektor_perakende_poz",
+        "sektor": "perakende",
+        "kategori": "piyasa_haberi",
+        "bias_etiketi": "capalama",
+        "baslik": "Yerli Marka Küresel Başarı",
+        "metin": "Bir Türk perakende markası yurt dışında büyük bir başarı yakaladı. Perakende hisseleri yükseliyor.",
+        "agirlik": 3,
+        "cooldown_yil": 3,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist_perakende",
+        "secenekler": [
+            {
+                "id": "ev_sektor_perakende_poz_a",
+                "metin": "Başarıya ortak ol, üstüne ekle",
+                "sabir_etki": -3,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "yüksek",
+                "kilit": {
+                    "tur": "sektor_pozisyon_yuzdesi",
+                    "sektor": "perakende",
+                    "oran": 0.1
+                },
+                "aksiyon": {
+                    "tip": "sektor_al",
+                    "sektor": "perakende",
+                    "oran": 0.1
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.45,
+                        "sektor_ekstra_getiri": 11,
+                        "sonuc_metin": "Büyüme hikayesi gerçekti, yükseliş sürdü."
+                    },
+                    {
+                        "ihtimal": 0.55,
+                        "sektor_ekstra_getiri": -7,
+                        "sonuc_metin": "Haber zaten fiyatlanmıştı, kâr satışı geldi."
+                    }
+                ],
+                "gelir_degisim": null
+            },
+            {
+                "id": "ev_sektor_perakende_poz_b",
+                "metin": "Pozisyonunu koru",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    },
+    {
+        "id": "ev_sektor_perakende_neg",
+        "sektor": "perakende",
+        "kategori": "piyasa_haberi",
+        "bias_etiketi": "kayiptan_kacinma",
+        "baslik": "Mağaza Kapanış Dalgası",
+        "metin": "Büyük bir zincir çok sayıda mağazasını kapattığını duyurdu. Perakende hisseleri satış baskısında.",
+        "agirlik": 3,
+        "cooldown_yil": 3,
+        "tek_seferlik": true,
+        "tetik": "her_zaman",
+        "min_yas": null,
+        "max_yas": null,
+        "gerekli_varlik": "bist_perakende",
+        "secenekler": [
+            {
+                "id": "ev_sektor_perakende_neg_a",
+                "metin": "Kötü gidişat, yarısını sat",
+                "sabir_etki": -5,
+                "mutluluk_etki": -3,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "orta",
+                "aksiyon": {
+                    "tip": "sektor_sat",
+                    "sektor": "perakende",
+                    "oran": 0.5
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "sektor_ekstra_getiri": -8,
+                        "sonuc_metin": "Kapanışlar devam etti, düşüş kalıcı oldu."
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "sektor_ekstra_getiri": 8,
+                        "sonuc_metin": "Sektör geneli değil tek şirket sorunuymuş, toparlandı."
+                    }
+                ],
+                "gelir_degisim": null,
+                "kilit": null
+            },
+            {
+                "id": "ev_sektor_perakende_neg_b",
+                "metin": "Sektör genelini yansıtmaz, kalsın",
+                "sabir_etki": 5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "gelir_degisim": null,
+                "aksiyon": null,
+                "kilit": null
+            }
+        ]
+    }
 ]
