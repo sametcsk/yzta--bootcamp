@@ -101,12 +101,12 @@ Sprint 2'nin temel hedefi; Intro Testi ve Event Tetikleme Motoru'nun tamamlanmas
 
 Story'ler modüllerine göre aşağıdaki başlıklar altında organize edilmiştir:
 
-Sprint 1'den Devreden Story'ler
-Event Sistemi
-Backend Entegrasyonu
-Frontend Event Arayüzü
-Kullanıcı Deneyimi (UI)
-Finansal Görselleştirme
+-Sprint 1'den Devreden Story'ler
+-Event Sistemi
+-Backend Entegrasyonu
+-Frontend Event Arayüzü
+-Kullanıcı Deneyimi (UI)
+-Finansal Görselleştirme
 
 Her Story ekip üyeleri arasında görev dağılımı yapılarak Sprint Board üzerinde takip edilmiş ve tamamlanan görevler ilgili sütunlara taşınmıştır.
 
