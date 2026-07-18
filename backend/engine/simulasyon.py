@@ -4,7 +4,8 @@ from .altin import altin_sim
 from .bist import faiz_uret, bist_getiri_uret, sektorleri_uret, SEKTOR_AGIRLIKLARI
 from .mevduat import mevduat_faizi_uret
 from .gayrimenkul import emlak_endeksi_usd_guncelle, piyasa_uret
-from events.event_engine import event_sec
+from .arac import arac_piyasasi_uret, vergi_zammi_uygula
+from events.event_engine import event_sec, yan_event_sec
 from .fisilti import fisilti_uret
 import random
 
@@ -138,6 +139,12 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     emlak_try_getiri = round(emlak_endeks_getiri + doviz_degisim, 1)
     emlak_piyasasi = piyasa_uret(mevcut_yil, kur, emlak_endeksi_usd)
 
+    arac_vergi_carpani = state.get("arac_vergi_carpani", 1.0)
+    if state.get("arac_vergi_zammi"):
+        arac_vergi_carpani = vergi_zammi_uygula(arac_vergi_carpani)
+        
+    arac_piyasasi = arac_piyasasi_uret(state.get("enflasyonEndeksi", 100.0), arac_vergi_carpani)
+
     # 7. Event
     secilen_event = event_sec(
         mevcut_yil=mevcut_yil,
@@ -151,6 +158,13 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     )
 
     # Fısıltı Mantığı (Gelecek Yıl Tahmini)
+    secilen_yan_eventler = yan_event_sec(
+        mevcut_yil=mevcut_yil,
+        mevcut_yas=mevcut_yas,
+        event_gecmisi=event_gecmisi,
+        tetiklenenler=tetiklenenler
+    )
+
     fisilti_sayaci = state.get("fisilti_sayaci", 0)
     fisilti_metni = None
     yeni_gelecek_makro = None
@@ -201,6 +215,7 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
         "emlak_endeksi_usd": emlak_endeksi_usd,
         "fisilti_sayaci": fisilti_sayaci,
         "gelecek_makro": yeni_gelecek_makro,
+        "arac_vergi_carpani": arac_vergi_carpani,
         "yil_sonucu": {
             "enflasyon": round(enf, 1),
             "enf_durum": enf_durum,
@@ -219,6 +234,7 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
             "emlak_try_getiri": emlak_try_getiri,
             "reel_emlak": round(emlak_try_getiri - enf, 1),
             "emlak_piyasasi": emlak_piyasasi,
+            "arac_piyasasi": arac_piyasasi,
             "sektor_getirileri": sektor_getirileri,
             "fiyatlar": {
                 "altin_try_gram": round((altin_usd / 31.1) * kur, 2),
@@ -235,10 +251,11 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
                 "id": secilen_event["id"],
                 "baslik": secilen_event["baslik"],
                 "metin": secilen_event["metin"],
-                "bias_etiketi": secilen_event["bias_etiketi"],
+                "bias_etiketi": secilen_event.get("bias_etiketi", "none"),
                 "tek_seferlik": secilen_event.get("tek_seferlik", False),
                 "secenekler": secilen_event["secenekler"],
             } if secilen_event else None,
+            "yan_eventler": secilen_yan_eventler,
             "fisilti": fisilti_metni,
         }
     }

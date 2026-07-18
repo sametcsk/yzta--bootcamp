@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts"
+import { TutorialOdak } from "./TutorialComponents"
 
 const ARALIKLAR = [
   { id: "5", label: "5Y" },
@@ -129,7 +130,8 @@ function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portfoy, fiyatlar, v
         </div>
 
         {/* Portföy Dağılımı */}
-        <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col">
+        <TutorialOdak hedefId="portfoy-grafik" disablePadding>
+          <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col h-full">
           <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-4">
             <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Portföy Dağılımı</h2>
             <span className="material-symbols-outlined text-on-surface-variant">pie_chart</span>
@@ -170,6 +172,7 @@ function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portfoy, fiyatlar, v
             ))}
           </div>
         </div>
+        </TutorialOdak>
 
         {/* Portfolio vs Inflation */}
         <div className="col-span-1 lg:col-span-3 bg-surface-container border border-outline card-shadow p-stack-md flex flex-col">

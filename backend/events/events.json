@@ -2596,5 +2596,48 @@
                 "kilit": null
             }
         ]
+    },
+    {
+        "id": "ev_otv_zammi",
+        "baslik": "ÖTV'de Büyük Artış!",
+        "metin": "Hükümet, cari açığı kapatmak amacıyla otomobil alım satımındaki Özel Tüketim Vergisi (ÖTV) oranlarında ciddi bir artışa gitti. Araç fiyatlarının önümüzdeki haftadan itibaren fırlaması bekleniyor.",
+        "kategori": "yan_event",
+        "agirlik": 1,
+        "tek_seferlik": false,
+        "cooldown_yil": 15,
+        "secenekler": [
+            {
+                "id": "ev_otv_zammi_a",
+                "metin": "Zaten araba almayı düşünmüyordum",
+                "sabir_etki": 0,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "aksiyon": null,
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 1.0,
+                        "arac_vergi_zammi": true,
+                        "sonuc_metin": "Otomobil piyasası bir anda alevlendi ama senin gündeminde yok."
+                    }
+                ]
+            },
+            {
+                "id": "ev_otv_zammi_b",
+                "metin": "Belki fiyatlar düşer diye beklerim",
+                "sabir_etki": -5,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 0,
+                "risk_seviyesi": "risksiz",
+                "aksiyon": null,
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 1.0,
+                        "arac_vergi_zammi": true,
+                        "sonuc_metin": "Fiyatlar düşmedi, vergi artışı kalıcı oldu. Araba almak iyice zorlaştı."
+                    }
+                ]
+            }
+        ]
     }
 ]

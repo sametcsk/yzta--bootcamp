@@ -71,6 +71,10 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
         if gerekli == "mevduat" and portfoy.get("mevduat_tl", 0) <= 0:
             continue
 
+        # Yan eventler ana event havuzunda değerlendirilemez
+        if e.get("kategori") == "yan_event":
+            continue
+
         uygun.append(e)  # ← tek bir kez, tüm kontrollerden sonra
 
     if not uygun:
@@ -84,6 +88,37 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
 
     agirliklar = [e.get("agirlik", 1) for e in uygun]
     return random.choices(uygun, weights=agirliklar, k=1)[0]
+
+
+def yan_event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, tetiklenenler: list = None) -> list:
+    """
+    Belirli ihtimallerle (ve cooldown kurallarıyla) ana event haricinde tetiklenen
+    ekstra (side) eventleri döndürür.
+    """
+    if tetiklenenler is None:
+        tetiklenenler = []
+    
+    secilen_yan_eventler = []
+    yan_event_havuzu = [e for e in EVENT_HAVUZU if e.get("kategori") == "yan_event"]
+    
+    for e in yan_event_havuzu:
+        # Tek seferlik kontrolü
+        if e.get("tek_seferlik", False) and e["id"] in tetiklenenler:
+            continue
+        # Cooldown kontrolü
+        son_tetik = event_gecmisi.get(e["id"], 0)
+        if mevcut_yil - son_tetik < e.get("cooldown_yil", 0):
+            continue
+            
+        # OTV Zammı eventi için özel ihtimal (%7 şans)
+        if e["id"] == "ev_otv_zammi":
+            if random.random() < 0.07:
+                secilen_yan_eventler.append(e)
+                
+        # Diğer yan eventler için varsayılan bir şans mekanizması eklenebilir
+        # if random.random() < 0.05: ...
+                
+    return secilen_yan_eventler
 
 
 def detayli_bias_raporu(event_kayitlari: list) -> dict:

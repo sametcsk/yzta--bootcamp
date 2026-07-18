@@ -1,19 +1,25 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { TutorialOdak } from "./TutorialComponents"
+import { useTutorial } from "./TutorialContext"
 import ucuzevImg from "./assets/evler/ucuzev.png"
 import ortaevImg from "./assets/evler/ortaev.png"
 import pahalievImg from "./assets/evler/pahaliev.png"
+import ucuzaracImg from "./assets/araclar/ucuzarac.png"
+import ortaaracImg from "./assets/araclar/ortaarac.png"
+import sporaracImg from "./assets/araclar/sporarac.png"
 
 const GORSEL_MAP = { ucuzev: ucuzevImg, ortaev: ortaevImg, pahaliev: pahalievImg }
+const ARAC_GORSEL_MAP = { kucuk: ucuzaracImg, orta: ortaaracImg, spor: sporaracImg }
 const SEGMENT_BILGI = {
-  ucuz:   { ad: "Müstakil Ev" },
-  orta:   { ad: "Apartman Dairesi" },
+  ucuz: { ad: "Müstakil Ev" },
+  orta: { ad: "Apartman Dairesi" },
   pahali: { ad: "Villa" },
 }
 const VARLIK_CONFIG = {
   altin: { ad: "Altın", icon: "Au", renk: "#f5c842", birim: "₺/gr", sinif: "Nadir Varlık", tone: "gold" },
-  bist:  { ad: "Borsa",  icon: "BI", renk: "#34d399", birim: "endeks", sinif: "Riskli Varlık", tone: "green" },
-  dolar: { ad: "Dolar", icon: "$",  renk: "#60a8f0", birim: "₺/$", sinif: "Döviz", tone: "blue" },
+  bist: { ad: "Borsa", icon: "BI", renk: "#34d399", birim: "endeks", sinif: "Riskli Varlık", tone: "green" },
+  dolar: { ad: "Dolar", icon: "$", renk: "#60a8f0", birim: "₺/$", sinif: "Döviz", tone: "blue" },
   mevduat: { ad: "Mevduat", icon: "%", renk: "#a78bfa", birim: "% faiz", sinif: "Güvenli Alan", tone: "violet" },
 }
 
@@ -103,8 +109,14 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="font-data-sm text-data-sm uppercase text-on-surface-variant opacity-50">
-            YETERSİZ VERİ
+          <div className="flex flex-col items-center justify-center text-on-surface-variant opacity-50 text-center p-4">
+            <span className="material-symbols-outlined text-2xl mb-1">monitoring</span>
+            <div className="font-data-sm text-data-sm uppercase">
+              YETERSİZ VERİ
+            </div>
+            <div className="text-[10px] uppercase mt-1">
+              (Grafikler 3. yıldan itibaren oluşur)
+            </div>
           </div>
         )}
       </div>
@@ -114,9 +126,9 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
           <>
             <Satir label="PORTFÖY" value={
               varlik === "altin" ? `${portfoyMiktar.toFixed(2)} gr` :
-              varlik === "bist" ? `${Math.round(portfoyMiktar)} adet` :
-              varlik === "dolar" ? `$${Math.round(portfoyMiktar).toLocaleString("tr-TR")}` :
-              `₺${Math.round(portfoyMiktar).toLocaleString("tr-TR")}`
+                varlik === "bist" ? `${Math.round(portfoyMiktar)} adet` :
+                  varlik === "dolar" ? `$${Math.round(portfoyMiktar).toLocaleString("tr-TR")}` :
+                    `₺${Math.round(portfoyMiktar).toLocaleString("tr-TR")}`
             } />
             <Satir label="DEĞER" value={`₺${Math.round(portfoyDeger).toLocaleString("tr-TR")}`} color="#f5c842" />
           </>
@@ -125,9 +137,9 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
         <div className="opacity-50 mt-1">
           <Satir label="ALINABİLİR" value={
             varlik === "altin" ? `${maxAlinabilir.toLocaleString("tr-TR")} gr` :
-            varlik === "bist" ? `${maxAlinabilir.toLocaleString("tr-TR")} adet` :
-            varlik === "dolar" ? `$${maxAlinabilir.toLocaleString("tr-TR")}` :
-            `₺${maxAlinabilir.toLocaleString("tr-TR")}`
+              varlik === "bist" ? `${maxAlinabilir.toLocaleString("tr-TR")} adet` :
+                varlik === "dolar" ? `$${maxAlinabilir.toLocaleString("tr-TR")}` :
+                  `₺${maxAlinabilir.toLocaleString("tr-TR")}`
           } color="inherit" />
         </div>
       </div>
@@ -311,13 +323,117 @@ function EvIslemKutusu({ ev, guncelDeger, oturuluyorMu, onKapat, onKiraDegistir,
   )
 }
 
+function AracPiyasasiKart({ arac, nakit, onSatinAl }) {
+  const alinabilir = nakit >= arac.fiyat
+
+  return (
+    <article className="bg-surface-container border border-outline card-shadow flex flex-col relative overflow-hidden group">
+      <div className="h-32 bg-surface-dim relative border-b border-outline-variant overflow-hidden">
+        <img
+          src={ARAC_GORSEL_MAP[arac.tip]}
+          alt={arac.tip}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute top-2 right-2 bg-background/80 backdrop-blur px-2 py-1 border border-outline text-[10px] font-bold uppercase text-on-surface">
+          Sıfır Araç
+        </div>
+      </div>
+
+      <div className="p-stack-md flex flex-col flex-1">
+        <div className="mb-4">
+          <h3 className="font-headline-sm text-headline-sm text-on-surface uppercase truncate" title={arac.isim}>{arac.isim}</h3>
+          <div className="font-data-sm text-data-sm text-on-surface-variant uppercase mt-1">
+            Segment: {arac.tip}
+          </div>
+        </div>
+
+        <div className="mt-auto pt-4 border-t border-outline-variant flex justify-between items-end">
+          <div>
+            <div className="font-data-sm text-data-sm text-on-surface-variant uppercase">Fiyat</div>
+            <div className="font-data-lg text-data-lg text-primary">₺{Math.round(arac.fiyat).toLocaleString("tr-TR")}</div>
+          </div>
+          <button
+            disabled={!alinabilir}
+            onClick={() => alinabilir && onSatinAl(arac)}
+            className={`px-4 py-2 font-data-sm text-data-sm uppercase font-bold border transition-colors ${alinabilir
+              ? "bg-primary text-background border-primary hover:bg-background hover:text-primary card-shadow"
+              : "bg-surface-container-highest text-on-surface-variant border-outline-variant opacity-50 cursor-not-allowed"
+              }`}
+          >
+            {alinabilir ? "Satın Al" : "Yetersiz Bakiye"}
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function SahipOlunanAracKart({ arac, onSat }) {
+  const guncelDeger = arac.guncelDeger;
+
+  return (
+    <article className="bg-surface-container border border-outline card-shadow flex flex-col relative overflow-hidden group">
+      <div className="h-24 bg-surface-dim relative border-b border-outline-variant overflow-hidden">
+        <img
+          src={ARAC_GORSEL_MAP[arac.tip]}
+          alt={arac.tip}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 grayscale-[20%]"
+        />
+        <div className="absolute top-2 left-2 bg-primary/90 text-background px-2 py-1 text-[10px] font-bold uppercase card-shadow">
+          Senin Aracın
+        </div>
+      </div>
+
+      <div className="p-3 flex flex-col flex-1">
+        <h3 className="font-headline-sm text-sm text-on-surface uppercase truncate" title={arac.isim}>{arac.isim}</h3>
+
+        <div className="flex flex-col gap-1 mt-3 mb-3">
+          <div className="flex justify-between items-center border-b border-outline-variant pb-1">
+            <span className="font-data-sm text-[10px] text-on-surface-variant uppercase">Alış Yılı</span>
+            <span className="font-data-sm text-[11px] text-on-surface uppercase">{arac.alisYili}. Yıl</span>
+          </div>
+          <div className="flex justify-between items-center border-b border-outline-variant pb-1">
+            <span className="font-data-sm text-[10px] text-on-surface-variant uppercase">Alış Fiyatı</span>
+            <span className="font-data-sm text-[11px] text-on-surface uppercase">₺{Math.round(arac.alisFiyati).toLocaleString("tr-TR")}</span>
+          </div>
+          <div className="flex justify-between items-center pb-1">
+            <span className="font-data-sm text-[10px] text-on-surface-variant uppercase">Güncel Değer</span>
+            <span className="font-data-sm text-[11px] text-[#f5c842] uppercase font-bold">₺{Math.round(guncelDeger).toLocaleString("tr-TR")}</span>
+          </div>
+        </div>
+
+        <div className="mt-auto">
+          <button
+            onClick={() => onSat(arac.id)}
+            className="w-full bg-error text-background font-data-sm text-data-sm uppercase py-2 border border-outline font-bold hover:bg-background hover:text-error hover:border-error transition-colors"
+          >
+            Aracı Sat
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
 export default function VarlikSayfasi({
   fiyatGecmisi, fiyatlar, portfoy, sonuc, varlikAl, varlikSat, nakit, toplamDeger,
   emlakPiyasasi, sahipOlunanEvler, evSatinAl, evKiraDurumunuDegistir, evSat, evGuncelDegerHesapla,
+  aracPiyasasi, sahipOlunanAraclar, aracSatinAl, aracSat,
   oturulanEvId, evdeYasamayaBasla, evdenCik, emlakEndeksiGecmisi, onAcTutorial, onBorsaDetay
 }) {
   const [seciliEv, setSeciliEv] = useState(null)
   const [emlakGrafikAcik, setEmlakGrafikAcik] = useState(false)
+  const [altSekme, setAltSekme] = useState("finansal") // finansal, gayrimenkul, otomotiv
+
+  const { aktif, mevcutAdim } = useTutorial()
+
+  useEffect(() => {
+    if (aktif && mevcutAdim) {
+      if (mevcutAdim.hedef === "varlik-gayrimenkul") setAltSekme("gayrimenkul")
+      else if (mevcutAdim.hedef === "varlik-otomotiv") setAltSekme("otomotiv")
+      else if (mevcutAdim.hedef === "varlik-finansal" || mevcutAdim.hedef === "varlik-sekmeleri") setAltSekme("finansal")
+    }
+  }, [aktif, mevcutAdim])
 
   return (
     <div className="flex flex-col gap-stack-lg">
@@ -337,132 +453,227 @@ export default function VarlikSayfasi({
         <OzetKart icon="account_balance_wallet" label="Portföy Değeri" value={`₺${Math.round(toplamDeger || 0).toLocaleString("tr-TR")}`} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
-        {["altin", "bist", "dolar", "mevduat"].map(varlik => (
-          <VarlikKart
-            key={varlik}
-            varlik={varlik}
-            fiyatGecmisi={fiyatGecmisi}
-            fiyatlar={fiyatlar}
-            portfoy={portfoy}
-            sonuc={sonuc}
-            onAl={varlikAl}
-            onSat={varlikSat}
-            nakit={nakit}
-            onBorsaDetay={onBorsaDetay}
-          />
-        ))}
+      <div className="bg-surface-container-high border-l-2 border-primary p-3 flex items-start gap-3">
+        <span className="material-symbols-outlined text-primary mt-0.5">info</span>
+        <div>
+          <div className="font-data-sm text-data-sm text-primary uppercase font-bold mb-1">Veri Akışı Hakkında</div>
+          <p className="text-on-surface-variant text-sm">
+            Tüm piyasa grafikleri (Finansal Varlıklar, Borsa Endeksleri, Gayrimenkul) ve veri trendleri <strong>yeterli veri noktası oluşması için 3. yıldan itibaren</strong> çizilmeye başlar.
+          </p>
+        </div>
       </div>
 
-      {emlakPiyasasi && emlakPiyasasi.length > 0 && (
-        <div className="flex flex-col gap-stack-md">
-          <div className="border-b border-outline-variant pb-2 flex items-center gap-2">
-            <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Emlak Piyasası</h2>
-            <button
-              onClick={() => setEmlakGrafikAcik(prev => !prev)}
-              className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors text-lg"
-              title="Piyasa hareketini göster"
-            >
-              info
-            </button>
-          </div>
-
-          {emlakGrafikAcik && (
-            <div className="bg-surface-container border border-outline card-shadow p-stack-md relative">
-              <button
-                onClick={() => setEmlakGrafikAcik(false)}
-                className="absolute top-2 right-2 material-symbols-outlined text-on-surface-variant hover:text-error"
-              >
-                close
-              </button>
-              <div className="font-data-sm text-data-sm uppercase text-on-surface-variant mb-2">
-                Gayrimenkul Piyasa Endeksi (Dolar Bazında)
-              </div>
-              <p className="text-on-surface-variant text-sm mb-3">
-                Bu endeks, gayrimenkul piyasasının dolar bazındaki gücünü gösterir — kur hareketinden
-                bağımsızdır, kendi arz/talep dinamiğiyle yükselip alçalır.
-              </p>
-              <div className="h-40">
-                {emlakEndeksiGecmisi && emlakEndeksiGecmisi.length > 1 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={emlakEndeksiGecmisi}>
-                      <XAxis dataKey="yil" hide />
-                      <YAxis hide domain={['auto', 'auto']} />
-                      <Tooltip
-                        contentStyle={{ background: "#110e06", border: "1px solid #4e4634", borderRadius: 0, fontFamily: "JetBrains Mono", fontSize: 12 }}
-                        itemStyle={{ color: "#f5c842" }}
-                        formatter={(v) => v.toFixed(1)}
-                        labelStyle={{ display: 'none' }}
-                      />
-                      <Line
-                        type="step"
-                        dataKey="deger"
-                        stroke="#f5c842"
-                        strokeWidth={2}
-                        dot={false}
-                        activeDot={{ r: 4, fill: "#f5c842" }}
-                        isAnimationActive={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="font-data-sm text-data-sm uppercase text-on-surface-variant opacity-50 flex items-center justify-center h-full">
-                    YETERSİZ VERİ
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-gutter">
-            {emlakPiyasasi.map(ev => (
-              <EmlakPiyasasiKart key={ev.id} ev={ev} nakit={nakit} onSatinAl={evSatinAl} />
-            ))}
-          </div>
+      <TutorialOdak hedefId="varlik-sekmeleri">
+        <div className="flex border-b border-outline-variant">
+          <button
+            onClick={() => setAltSekme("finansal")}
+            className={`px-4 py-3 uppercase font-headline-sm transition-colors ${altSekme === "finansal" ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:text-on-surface"}`}
+          >
+            Finansal Piyasalar
+          </button>
+          <button
+            onClick={() => setAltSekme("gayrimenkul")}
+            className={`px-4 py-3 uppercase font-headline-sm transition-colors ${altSekme === "gayrimenkul" ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:text-on-surface"}`}
+          >
+            Gayrimenkul
+          </button>
+          <button
+            onClick={() => setAltSekme("otomotiv")}
+            className={`px-4 py-3 uppercase font-headline-sm transition-colors ${altSekme === "otomotiv" ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:text-on-surface"}`}
+          >
+            Otomotiv
+          </button>
         </div>
-      )}
+      </TutorialOdak>
 
-      {sahipOlunanEvler && sahipOlunanEvler.length > 0 && (
-        <div className="flex flex-col gap-stack-md">
-          <div className="border-b border-outline-variant pb-2">
-            <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Evlerim</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-gutter">
-            {sahipOlunanEvler.map(ev => (
-              <SahipOlunanEvKart
-                key={ev.id}
-                ev={ev}
-                guncelDeger={evGuncelDegerHesapla(ev)}
-                oturuluyorMu={ev.id === oturulanEvId}
-                onTikla={setSeciliEv}
+      {altSekme === "finansal" && (
+        <TutorialOdak hedefId="varlik-finansal" disablePadding>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+            {["altin", "bist", "dolar", "mevduat"].map(varlik => (
+              <VarlikKart
+                key={varlik}
+                varlik={varlik}
+                fiyatGecmisi={fiyatGecmisi}
+                fiyatlar={fiyatlar}
+                portfoy={portfoy}
+                sonuc={sonuc}
+                onAl={varlikAl}
+                onSat={varlikSat}
+                nakit={nakit}
+                onBorsaDetay={onBorsaDetay}
               />
             ))}
           </div>
-        </div>
+        </TutorialOdak>
+      )}
+      {altSekme === "gayrimenkul" && (
+        <TutorialOdak hedefId="varlik-gayrimenkul" disablePadding>
+          <div className="flex flex-col gap-stack-lg">
+              <div className="flex flex-col gap-stack-md">
+                <div className="border-b border-outline-variant pb-2 flex items-center gap-2">
+                  <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Emlak Piyasası</h2>
+                  <button
+                    onClick={() => setEmlakGrafikAcik(prev => !prev)}
+                    className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors text-lg"
+                    title="Piyasa hareketini göster"
+                  >
+                    info
+                  </button>
+                </div>
+
+                {emlakPiyasasi && emlakPiyasasi.length > 0 ? (
+                  <>
+                    {emlakGrafikAcik && (
+                      <div className="bg-surface-container border border-outline card-shadow p-stack-md relative">
+                        <button
+                          onClick={() => setEmlakGrafikAcik(false)}
+                          className="absolute top-2 right-2 material-symbols-outlined text-on-surface-variant hover:text-error"
+                        >
+                          close
+                        </button>
+                        <div className="font-data-sm text-data-sm uppercase text-on-surface-variant mb-2">
+                          Gayrimenkul Piyasa Endeksi (Dolar Bazında)
+                        </div>
+                        <p className="text-on-surface-variant text-sm mb-3">
+                          Bu endeks, gayrimenkul piyasasının dolar bazındaki gücünü gösterir — kur hareketinden
+                          bağımsızdır, kendi arz/talep dinamiğiyle yükselip alçalır.
+                        </p>
+                        <div className="h-40">
+                          {emlakEndeksiGecmisi && emlakEndeksiGecmisi.length > 1 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart data={emlakEndeksiGecmisi}>
+                                <XAxis dataKey="yil" hide />
+                                <YAxis hide domain={['auto', 'auto']} />
+                                <Tooltip
+                                  contentStyle={{ background: "#110e06", border: "1px solid #4e4634", borderRadius: 0, fontFamily: "JetBrains Mono", fontSize: 12 }}
+                                  itemStyle={{ color: "#f5c842" }}
+                                  formatter={(v) => v.toFixed(1)}
+                                  labelStyle={{ display: 'none' }}
+                                />
+                                <Line
+                                  type="step"
+                                  dataKey="deger"
+                                  stroke="#f5c842"
+                                  strokeWidth={2}
+                                  dot={false}
+                                  activeDot={{ r: 4, fill: "#f5c842" }}
+                                  isAnimationActive={false}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center text-on-surface-variant opacity-50 h-full text-center">
+                              <span className="material-symbols-outlined text-2xl mb-1">monitoring</span>
+                              <div className="font-data-sm text-data-sm uppercase">YETERSİZ VERİ</div>
+                              <div className="text-[10px] uppercase mt-1">(Grafikler 3. yıldan itibaren oluşur)</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-gutter">
+                      {emlakPiyasasi.map(ev => (
+                        <EmlakPiyasasiKart key={ev.id} ev={ev} nakit={nakit} onSatinAl={evSatinAl} />
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center bg-surface-container border border-outline border-dashed">
+                    <span className="material-symbols-outlined text-4xl mb-2">real_estate_agent</span>
+                    <p className="font-data-sm text-data-sm uppercase">PİYASADA ŞU AN SATILIK EV YOK</p>
+                    <p className="text-sm mt-2">İlk yılı tamamladıktan sonra ilanlar eklenecektir.</p>
+                  </div>
+                )}
+              </div>
+
+            {sahipOlunanEvler && sahipOlunanEvler.length > 0 && (
+              <div className="flex flex-col gap-stack-md">
+                <div className="border-b border-outline-variant pb-2">
+                  <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Evlerim</h2>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-gutter">
+                  {sahipOlunanEvler.map(ev => (
+                    <SahipOlunanEvKart
+                      key={ev.id}
+                      ev={ev}
+                      guncelDeger={evGuncelDegerHesapla(ev)}
+                      oturuluyorMu={ev.id === oturulanEvId}
+                      onTikla={setSeciliEv}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {seciliEv && (
+              <EvIslemKutusu
+                ev={seciliEv}
+                guncelDeger={evGuncelDegerHesapla(seciliEv)}
+                oturuluyorMu={seciliEv.id === oturulanEvId}
+                onKapat={() => setSeciliEv(null)}
+                onKiraDegistir={(id) => {
+                  evKiraDurumunuDegistir(id)
+                  setSeciliEv(prev => prev ? { ...prev, kirada: !prev.kirada } : prev)
+                }}
+                onSat={(id) => {
+                  evSat(id)
+                  setSeciliEv(null)
+                }}
+                onYasamayaBasla={(id) => {
+                  evdeYasamayaBasla(id)
+                  setSeciliEv(prev => prev ? { ...prev, kirada: false } : prev)
+                }}
+                onCik={() => {
+                  evdenCik()
+                }}
+              />
+            )}
+          </div>
+        </TutorialOdak>
       )}
 
-      {seciliEv && (
-        <EvIslemKutusu
-          ev={seciliEv}
-          guncelDeger={evGuncelDegerHesapla(seciliEv)}
-          oturuluyorMu={seciliEv.id === oturulanEvId}
-          onKapat={() => setSeciliEv(null)}
-          onKiraDegistir={(id) => {
-            evKiraDurumunuDegistir(id)
-            setSeciliEv(prev => prev ? { ...prev, kirada: !prev.kirada } : prev)
-          }}
-          onSat={(id) => {
-            evSat(id)
-            setSeciliEv(null)
-          }}
-          onYasamayaBasla={(id) => {
-            evdeYasamayaBasla(id)
-            setSeciliEv(prev => prev ? { ...prev, kirada: false } : prev)
-          }}
-          onCik={() => {
-            evdenCik()
-          }}
-        />
+      {altSekme === "otomotiv" && (
+        <TutorialOdak hedefId="varlik-otomotiv" disablePadding>
+          <div className="flex flex-col gap-stack-lg">
+              <div className="flex flex-col gap-stack-md">
+                <div className="border-b border-outline-variant pb-2">
+                  <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Araç Piyasası</h2>
+                  <p className="font-data-sm text-data-sm text-on-surface-variant uppercase mt-1">Sıfır araç fiyatları her yıl güncellenir. Amortisman: %6/Yıl</p>
+                </div>
+                {aracPiyasasi && aracPiyasasi.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-gutter">
+                    {aracPiyasasi.map(arac => (
+                      <AracPiyasasiKart key={arac.id} arac={arac} nakit={nakit} onSatinAl={aracSatinAl} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center bg-surface-container border border-outline border-dashed">
+                    <span className="material-symbols-outlined text-4xl mb-2">directions_car</span>
+                    <p className="font-data-sm text-data-sm uppercase">PİYASADA ŞU AN SATILIK ARAÇ YOK</p>
+                    <p className="text-sm mt-2">İlk yılı tamamladıktan sonra bayilere araçlar eklenecektir.</p>
+                  </div>
+                )}
+              </div>
+
+            {sahipOlunanAraclar && sahipOlunanAraclar.length > 0 && (
+              <div className="flex flex-col gap-stack-md">
+                <div className="border-b border-outline-variant pb-2">
+                  <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Garajım</h2>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-gutter">
+                  {sahipOlunanAraclar.map(arac => (
+                    <SahipOlunanAracKart
+                      key={arac.id}
+                      arac={arac}
+                      onSat={aracSat}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </TutorialOdak>
       )}
     </div>
   )

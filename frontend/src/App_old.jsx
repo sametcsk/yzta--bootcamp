@@ -5,9 +5,6 @@ import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalite
 import PortfoySayfasi from "./PortfoySayfasi"
 import AcilisSayfasi from "./AcilisSayfasi"
 import TutorialModal from "./TutorialModal"
-import { TutorialProvider, useTutorial } from "./TutorialContext"
-import { TUTORIAL_ADIMLARI } from "./TutorialAdimlari"
-import { TutorialOdak, TutorialKutusu } from "./TutorialComponents"
 import erkekImg from "./assets/erkek.png"
 import kadinImg from "./assets/kadin.png"
 import { useEffect, useRef, useState } from "react"
@@ -53,9 +50,7 @@ const VARLIK_META = {
   mevduat: { icon: "%", ad: "Mevduat", type: "Güvenli Alan", risk: "Düşük", tone: "violet", score: 1 },
 }
 
-function AppInner() {
-  const { aktif: tutorialAktif, mevcutAdim: tutorialMevcutAdim, adimIndex: tutorialAdimi, ileriGit: tutorialIleriGit, setAktif: setTutorialAktif } = useTutorial()
-
+export default function App() {
   const [gameState, setGameState] = useState(INITIAL_STATE)
   const [yil, setYil] = useState(2025)
   const [yas, setYas] = useState(25)
@@ -102,8 +97,6 @@ function AppInner() {
   const [temelMaas, setTemelMaas] = useState(0)
   const [emlakPiyasasi, setEmlakPiyasasi] = useState([])
   const [sahipOlunanEvler, setSahipOlunanEvler] = useState([])
-  const [aracPiyasasi, setAracPiyasasi] = useState([])
-  const [sahipOlunanAraclar, setSahipOlunanAraclar] = useState([])
   const [oturulanEvId, setOturulanEvId] = useState(null)
   const [kiraGeliriYillik, setKiraGeliriYillik] = useState(0)
 
@@ -160,19 +153,6 @@ function AppInner() {
   const [tutorialAcik, setTutorialAcik] = useState(false)
   const bekleyenEventKaydiRef = useRef(null)
   const [firsatMaliyetiGecmisi, setFirsatMaliyetiGecmisi] = useState([])
-
-  useEffect(() => {
-    if (!tutorialAktif) return
-    const adim = TUTORIAL_ADIMLARI[tutorialAdimi]
-    if (!adim || adim.ilerlemeTipi !== "eylem") return
-
-    if (adim.beklenenEylem === "sayfa:varliklar" && aktifSayfa === "varliklar") tutorialIleriGit()
-    if (adim.beklenenEylem === "sayfa:portfoy" && aktifSayfa === "portfoy") tutorialIleriGit()
-    if (adim.beklenenEylem === "sayfa:standartlar" && aktifSayfa === "standartlar") tutorialIleriGit()
-    if (adim.beklenenEylem === "sayfa:ana" && aktifSayfa === "ana") tutorialIleriGit()
-    if (adim.beklenenEylem === "yil_atla_tiklandi" && loading) tutorialIleriGit()
-    if (adim.beklenenEylem === "event_secildi" && mevcutEvent === null && !!sonucKarti) tutorialIleriGit()
-  }, [tutorialAktif, tutorialAdimi, aktifSayfa, loading, mevcutEvent, sonucKarti])
 
 
   useEffect(() => {
@@ -338,7 +318,6 @@ function AppInner() {
 
       const yeniEmlakEndeksiUsd = data.emlak_endeksi_usd
       setEmlakPiyasasi(data.yil_sonucu.emlak_piyasasi || [])
-      setAracPiyasasi(data.yil_sonucu.arac_piyasasi || [])
       const kiraGeliriToplam = sahipOlunanEvler
         .filter(ev => ev.kirada)
         .reduce((toplam, ev) => {
@@ -559,7 +538,6 @@ function AppInner() {
     setYillikGelir(sonuc.yillikGelir)
     setTemelMaas(sonuc.yillikGelir)
     setIsYeri(sonuc.meslek || null)
-    setTutorialAktif(!!sonuc.tutorialGoster)
     if (sonuc.cinsiyet) setCinsiyet(sonuc.cinsiyet)
 
     try {
@@ -902,58 +880,6 @@ function AppInner() {
     setSahipOlunanEvler(prev => prev.filter(e => e.id !== evId))
   }
 
-  function aracGuncelDegerHesapla(arac) {
-    const sahiplikYili = Math.max(0, yil - arac.alisYili)
-    return Math.round(arac.alisFiyati * Math.pow(0.94, sahiplikYili))
-  }
-
-  function aracSatinAl(arac) {
-    if (nakitRef.current < arac.fiyat) {
-      alert("Yeterli nakit yok!")
-      return
-    }
-    nakitiGuncelle(Math.round(nakitRef.current - arac.fiyat))
-    setSahipOlunanAraclar(prev => [...prev, {
-      id: arac.id,
-      isim: arac.isim,
-      tip: arac.tip,
-      alisFiyati: arac.fiyat,
-      alisYili: yil,
-    }])
-    setAracPiyasasi(prev => prev.filter(a => a.id !== arac.id))
-  }
-
-  function aracSat(aracId) {
-    const arac = sahipOlunanAraclar.find(a => a.id === aracId)
-    if (!arac) return
-    const guncelDeger = aracGuncelDegerHesapla(arac)
-    nakitiGuncelle(Math.round(nakitRef.current + guncelDeger))
-    setSahipOlunanAraclar(prev => prev.filter(a => a.id !== aracId))
-  }
-
-  function portfoyDegeriHesapla() {
-    const yatirimDegeri = Math.round(
-      portfoy.altin_gram * fiyatlar.altin_try_gram +
-      portfoy.bist_adet * fiyatlar.bist_endeks +
-      (portfoy.bist_bankacilik_adet || 0) * (fiyatlar.bist_bankacilik || 100) +
-      (portfoy.bist_teknoloji_adet || 0) * (fiyatlar.bist_teknoloji || 100) +
-      (portfoy.bist_insaat_adet || 0) * (fiyatlar.bist_insaat || 100) +
-      (portfoy.bist_saglik_adet || 0) * (fiyatlar.bist_saglik || 100) +
-      (portfoy.bist_perakende_adet || 0) * (fiyatlar.bist_perakende || 100) +
-      portfoy.dolar * fiyatlar.dolar_try
-    )
-    const mevduatDegeri = portfoy.mevduat_tl || 0
-    let evDegeri = 0
-    sahipOlunanEvler.forEach(ev => {
-      evDegeri += evGuncelDegerHesapla(ev)
-    })
-    let aracDegeri = 0
-    sahipOlunanAraclar.forEach(arac => {
-      aracDegeri += aracGuncelDegerHesapla(arac)
-    })
-    return yatirimDegeri + mevduatDegeri + evDegeri + aracDegeri
-  }
-
   const portfoyDegeri = Math.round(
     portfoy.altin_gram * fiyatlar.altin_try_gram +
     portfoy.bist_adet * fiyatlar.bist_endeks +
@@ -1087,30 +1013,27 @@ function AppInner() {
             { id: "portfoy", label: "Varlık Portföyü", icon: "account_balance" },
             { id: "standartlar", label: "Psikolojik Profil", icon: "psychology" },
           ].map((item) => (
-            <TutorialOdak key={item.id} hedefId={"sidebar-" + item.id} disablePadding>
-              <button
-                onClick={() => setAktifSayfa(item.id)}
-                className={`w-full flex items-center p-stack-md mb-stack-sm font-data-sm text-data-sm uppercase transition-colors ${aktifSayfa === item.id
-                  ? "bg-primary text-on-primary font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-                  : "text-on-surface-variant hover:text-primary hover:bg-surface-container-high"
-                  }`}
-              >
-                <span className="material-symbols-outlined mr-3">{item.icon}</span>
-                {item.label}
-              </button>
-            </TutorialOdak>
+            <button
+              key={item.id}
+              onClick={() => setAktifSayfa(item.id)}
+              className={`w-full flex items-center p-stack-md mb-stack-sm font-data-sm text-data-sm uppercase transition-colors ${aktifSayfa === item.id
+                ? "bg-primary text-on-primary font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                : "text-on-surface-variant hover:text-primary hover:bg-surface-container-high"
+                }`}
+            >
+              <span className="material-symbols-outlined mr-3">{item.icon}</span>
+              {item.label}
+            </button>
           ))}
         </div>
         <div className="mt-auto">
-          <TutorialOdak hedefId="yil-calistir-butonu">
-            <button
-              className="w-full bg-primary-container text-background font-data-lg text-data-lg uppercase py-3 btn-shadow border border-outline transition-transform font-bold mb-6 disabled:opacity-50"
-              onClick={yilAtla}
-              disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent || !!sonucKarti || !!redenominasyonKarti || oyunBitti}
-            >
-              {loading ? "SİSTEM_MEŞGUL" : `YIL_${yil + 1} ÇALIŞTIR`}
-            </button>
-          </TutorialOdak>
+          <button
+            className="w-full bg-primary-container text-background font-data-lg text-data-lg uppercase py-3 btn-shadow border border-outline transition-transform font-bold mb-6 disabled:opacity-50"
+            onClick={yilAtla}
+            disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent || !!sonucKarti || !!redenominasyonKarti || oyunBitti}
+          >
+            {loading ? "SİSTEM_MEŞGUL" : `YIL_${yil + 1} ÇALIŞTIR`}
+          </button>
         </div>
       </nav>
 
@@ -1166,39 +1089,30 @@ function AppInner() {
 
             {/* Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
-              <TutorialOdak hedefId="info-kartlari">
-                <MetricCard
-                  label="Yıllık Gelir"
-                  value={money(yillikGelir + kiraGeliriYillik)}
-                  hint={`Net akış: ${money(netAkis)}`}
-                  tooltipNodes={gelirTooltip}
-                />
-              </TutorialOdak>
-              <TutorialOdak hedefId="info-kartlari">
-                <MetricCard label="Sabır" value={`${bars.sabir}/100`} hint="Psikolojik" tooltipNodes={sabirTooltip} />
-              </TutorialOdak>
-              <TutorialOdak hedefId="info-kartlari">
-                <MetricCard label="Mutluluk" value={`${bars.mutluluk}/100`} hint="Psikolojik" tooltipNodes={mutlulukTooltip} />
-              </TutorialOdak>
-              <TutorialOdak hedefId="sonuc-enflasyon">
-                <MetricCard
-                  label="Enflasyon"
-                  value={sonuc ? `%${sonuc.enflasyon}` : "—"}
-                  hint={sonuc ? sonuc.enf_durum : "SİSTEM_HAZIR"}
-                  alert={krizMi}
-                />
-              </TutorialOdak>
+              <MetricCard
+                label="Yıllık Gelir"
+                value={money(yillikGelir + kiraGeliriYillik)}
+                hint={`Net akış: ${money(netAkis)}`}
+                tooltipNodes={gelirTooltip}
+              />
+              <MetricCard label="Sabır" value={`${bars.sabir}/100`} hint="Psikolojik" tooltipNodes={sabirTooltip} />
+              <MetricCard label="Mutluluk" value={`${bars.mutluluk}/100`} hint="Psikolojik" tooltipNodes={mutlulukTooltip} />
+              <MetricCard
+                label="Enflasyon"
+                value={sonuc ? `%${sonuc.enflasyon}` : "—"}
+                hint={sonuc ? sonuc.enf_durum : "SİSTEM_HAZIR"}
+                alert={krizMi}
+              />
             </div>
 
             {/* Event Panel or Summary */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
               {/* Event Section */}
-              <TutorialOdak hedefId="event-kutusu">
-                <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col h-full">
-                  <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-4">
-                    <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Sistem Olayı</h2>
-                    <span className="material-symbols-outlined text-on-surface-variant">warning</span>
-                  </div>
+              <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col">
+                <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-4">
+                  <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Sistem Olayı</h2>
+                  <span className="material-symbols-outlined text-on-surface-variant">warning</span>
+                </div>
                 {sonucKarti ? (
                   <div className="flex flex-col gap-4">
                     <div className="font-data-sm text-data-sm text-primary uppercase">SONUÇ_{yil}</div>
@@ -1315,21 +1229,19 @@ function AppInner() {
                   </div>
                 )}
               </div>
-              </TutorialOdak>
 
               {/* AI Coach Panel */}
-              <TutorialOdak hedefId="yapay-zeka">
-                <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col h-full">
-                  <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-4">
-                    <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Yapay Zeka Analiz Kaydı</h2>
-                    <span className="material-symbols-outlined text-on-surface-variant">smart_toy</span>
+              <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col">
+                <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-4">
+                  <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Yapay Zeka Analiz Kaydı</h2>
+                  <span className="material-symbols-outlined text-on-surface-variant">smart_toy</span>
+                </div>
+                {coachLoading && (
+                  <div className="flex items-center gap-2 text-primary font-data-sm animate-pulse">
+                    <span className="material-symbols-outlined">sync</span>
+                    DAVRANIŞSAL VERİLER İŞLENİYOR...
                   </div>
-                  {coachLoading && (
-                    <div className="flex items-center gap-2 text-primary font-data-sm animate-pulse">
-                      <span className="material-symbols-outlined">sync</span>
-                      DAVRANIŞSAL VERİLER İŞLENİYOR...
-                    </div>
-                  )}
+                )}
                 {coachYorumu && (
                   <div className="flex flex-col gap-3">
                     <div className="font-data-sm text-data-sm text-primary uppercase">KAYIT_{yil}</div>
@@ -1349,8 +1261,7 @@ function AppInner() {
                     <p className="font-data-sm text-data-sm uppercase">KARAR KAYITLARI BEKLENİYOR</p>
                   </div>
                 )}
-                </div>
-              </TutorialOdak>
+              </div>
             </div>
 
             {/* Year Summary */}
@@ -1396,13 +1307,6 @@ function AppInner() {
             evdeYasamayaBasla={evdeYasamayaBasla}
             evdenCik={evdenCik}
             emlakEndeksiGecmisi={emlakEndeksiGecmisi}
-            aracPiyasasi={aracPiyasasi}
-            sahipOlunanAraclar={sahipOlunanAraclar.map(arac => ({
-              ...arac,
-              guncelDeger: aracGuncelDegerHesapla(arac)
-            }))}
-            aracSatinAl={aracSatinAl}
-            aracSat={aracSat}
             onAcTutorial={() => setTutorialAcik(true)}
             onBorsaDetay={() => setAktifSayfa("borsa")}
           />
@@ -1449,7 +1353,6 @@ function AppInner() {
         )}
 
         <TutorialModal isOpen={tutorialAcik} onClose={() => setTutorialAcik(false)} page={aktifSayfa} />
-        <TutorialKutusu />
       </main>
     </div>
   )
@@ -1507,12 +1410,4 @@ function riskEtiketi(riskLevel) {
 
 function rastgeleGelirCarpani(min, max) {
   return 1 + (Math.random() * (max - min) + min)
-}
-
-export default function App() {
-  return (
-    <TutorialProvider adimlar={TUTORIAL_ADIMLARI}>
-      <AppInner />
-    </TutorialProvider>
-  )
 }

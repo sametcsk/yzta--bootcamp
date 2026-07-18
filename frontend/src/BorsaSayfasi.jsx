@@ -141,8 +141,14 @@ function BorsaKart({
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="font-data-sm text-data-sm uppercase text-on-surface-variant opacity-50">
-            YETERSİZ VERİ
+          <div className="flex flex-col items-center justify-center text-on-surface-variant opacity-50 text-center p-4">
+            <span className="material-symbols-outlined text-2xl mb-1">monitoring</span>
+            <div className="font-data-sm text-data-sm uppercase">
+              YETERSİZ VERİ
+            </div>
+            <div className="text-[10px] uppercase mt-1">
+              (Grafikler 3. yıldan itibaren oluşur)
+            </div>
           </div>
         )}
       </div>

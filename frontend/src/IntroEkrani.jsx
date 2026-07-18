@@ -27,6 +27,10 @@ export default function IntroEkrani({ onBitis }) {
   const ilerlemeKilitliRef = useRef(false)
   const meslekRef = useRef(null)
 
+  const [tutorialGoster, setTutorialGoster] = useState(
+    !localStorage.getItem("finsim_tutorial_tamamlandi")
+  )
+
   const soru = SORULAR[soruIndex]
   const seciliSecenek = secim !== null ? soru.secenekler[secim] : null
 
@@ -77,7 +81,8 @@ export default function IntroEkrani({ onBitis }) {
         yillikGelir: s.gelir || gelir || 216000,
         answers: yeniCevaplar,
         meslek: meslekRef.current,
-        cinsiyet: cinsiyet
+        cinsiyet: cinsiyet,
+        tutorialGoster: tutorialGoster
       })
     } else {
       setSoruIndex((oncekiIndex) => {
@@ -129,14 +134,27 @@ export default function IntroEkrani({ onBitis }) {
           yillikGelir: 300000,
           answers: [],
           meslek: "beyaz_yaka",
-          cinsiyet: "erkek"
+          cinsiyet: "erkek",
+          tutorialGoster: tutorialGoster
         })}
         className="absolute top-4 right-4 text-data-sm font-data-sm opacity-30 hover:opacity-100 hover:text-primary uppercase"
       >
         [GELİŞTİRİCİ_ATLA]
       </button>
 
-      <div className="w-full max-w-4xl border border-outline bg-surface-container card-shadow flex flex-col md:flex-row">
+      <label className="absolute top-12 right-4 flex items-center gap-2 bg-surface-container border border-outline px-3 py-2 z-50 cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-surface-container-high transition-colors">
+        <input
+          type="checkbox"
+          checked={tutorialGoster}
+          onChange={(e) => setTutorialGoster(e.target.checked)}
+          className="accent-primary w-4 h-4"
+        />
+        <span className="font-data-sm text-data-sm uppercase text-primary font-bold">
+          Öğreticiyi Göster
+        </span>
+      </label>
+
+      <div className="w-full max-w-4xl border border-outline bg-surface-container card-shadow flex flex-col md:flex-row mt-12 md:mt-0">
         {/* Left Side: Mission Path */}
         <aside className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-outline-variant p-stack-md flex flex-col bg-surface-container-low">
           <div className="font-headline-lg text-headline-lg text-primary uppercase tracking-tighter mb-4">
