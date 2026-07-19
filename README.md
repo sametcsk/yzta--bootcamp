@@ -112,7 +112,7 @@ Daily Scrum toplantıları Slack üzerinden yapılmaya devam etmiştir. Ekip üy
 
 
 - **Sprint board update**: Sprint board screenshotları: 
-![Sprint Board](sprint1-board.jpg)
+![Sprint Board](Sprint2-board.jpg)
 
 - **Ürün Durumu**: Ekran görüntüleri:
   ![Screenshot 1](docs/images/urundurumu1.png)
