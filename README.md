@@ -95,25 +95,21 @@ Sprint Review Katılımcıları:
 
 
 - **Backlog düzeni ve Story seçimleri**:
-Sprint 2 kapsamında öncelikle Sprint 1'den devreden öncelikli Story'lerin tamamlanması ve Event Sistemi'nin kullanıcıyla etkileşimli hale getirilmesi hedeflenmiştir. Story'ler Product Backlog'daki öncelik sırasına göre Sprint Board'a aktarılmış ve bağımlılık ilişkileri dikkate alınarak sprint planlaması yapılmıştır.
+Sprint 2 kapsamında oyunun temel özelliklerinin üzerine daha karmaşık finansal mekanikler ve iyileştirmeler eklenmesi planlanmıştır.
 
-Sprint 2'nin temel hedefi; Intro Testi ve Event Tetikleme Motoru'nun tamamlanması, Event Sistemi'nin geliştirilmesi, Backend ve Frontend entegrasyonunun sağlanması, kullanıcı arayüzünün iyileştirilmesi ve finansal verilerin kullanıcıya grafiklerle sunulmasını sağlayacak temel mekaniklerin geliştirilmesidir. Sprint kapsamında planlanan geliştirmeler tamamlanarak ürünün oynanabilirliği ve kullanıcı etkileşimi önemli ölçüde artırılmıştır.
-
-Story'ler modüllerine göre aşağıdaki başlıklar altında organize edilmiştir:
-
-- Sprint 1'den Devreden Story'ler
-- Event Sistemi
-- Backend Entegrasyonu
-- Frontend Event Arayüzü
-- Kullanıcı Deneyimi (UI)
-- Finansal Görselleştirme
-
-Her Story ekip üyeleri arasında görev dağılımı yapılarak Sprint Board üzerinde takip edilmiş ve tamamlanan görevler ilgili sütunlara taşınmıştır.
+Yapılan geliştirmeler şu şekilde özetlenebilir:
+- Sektörel borsa eventleri ve fısıltı haberler (Whisper News) mekaniği eklendi.
+- Gayrimenkul sistemi ve araç piyasası entegrasyonu tamamlandı.
+- Reel getiri hesaplamaları ve fırsat maliyeti grafiği oyun raporuna dâhil edildi.
+- Oyuna yeni iş sistemi, öğretici mod (Tutorial) ve açılış ekranında eğitici açıklamalar eklendi.
+- Yaşam standartları maliyetleri ve etkileri dengelendi.
+- AI ajanları (AI agents) entegrasyonu tamamlandı.
+- Varlıklar sayfasına portföy değeri, nakit ve enflasyon kartları eklendi.
+- Geliştirici leaderboard'u (Dev leaderboard) ve UI iyileştirmeleri yapıldı.
 
 - **Daily Scrum**:
-Takım üyeleri Sprint 2 süresince Event Sistemi, Backend-Frontend entegrasyonu ve kullanıcı arayüzü geliştirmelerinin koordineli şekilde ilerleyebilmesi amacıyla düzenli çevrim içi toplantılar gerçekleştirmiştir.
+Daily Scrum toplantıları Slack üzerinden yapılmaya devam etmiştir. Ekip üyeleri kodlama sürecinde karşılaştıkları problemleri hızlıca birbirlerine danışarak (örneğin; build hataları, CORS izinleri) çözüm üretmişlerdir. 
 
-Daily Scrum toplantıları Sprint 1'de alınan karar doğrultusunda Slack üzerinden yürütülmeye devam edilmiştir. Sprint süresince yapılan geliştirmeler günlük olarak Slack üzerinden paylaşılmış, teknik konular ekip üyeleri tarafından değerlendirilmiş ve ihtiyaç duyulan durumlarda çevrim içi toplantılar ile desteklenmiştir.
 
 - **Sprint board update**: Sprint board screenshotları: 
 ![Sprint Board](sprint1-board.jpg)
@@ -125,11 +121,10 @@ Daily Scrum toplantıları Sprint 1'de alınan karar doğrultusunda Slack üzeri
 
 - **Sprint Review**: 
 Alınan kararlar:
-Sprint 2 sonunda Sprint 1'den devreden öncelikli Story'ler tamamlanmış, Event Sistemi'nin temel bileşenleri geliştirilmiş ve Backend ile Frontend entegrasyonu başarıyla gerçekleştirilmiştir.
+Sprint 2 sonucunda temel ve gelişmiş mekaniklerin (Borsa, gayrimenkul, iş, yaşam standartları, AI) birçoğu oyuna entegre edildi ve UI iyileştirilmeleri ile oyuncuya daha iyi bir deneyim sunulması sağlandı.
+Oyun sonu geri bildirimlerin (AI agents, fırsat maliyeti) zenginleştirildiği görüldü.
+Bir sonraki sprintte sistemlerin detaylı test edilmesi, varsa açıkların kapatılması ve oyunun final cila aşamalarının yapılması kararlaştırıldı.
 
-Sprint kapsamında Event JSON veri yapısı oluşturulmuş, Event Havuzu genişletilmiş, Event ekranı geliştirilmiş, Event Cooldown Sistemi uygulanmış ve kullanıcı deneyimini iyileştiren Bar Animasyonları ile Varlık Fiyat Grafiği oyuna entegre edilmiştir.
-
-Sprint sonunda planlanan geliştirmeler tamamlanarak ürünün temel oyun mekanikleri güçlendirilmiş ve kullanıcı etkileşimini artıran yeni özellikler başarıyla sisteme kazandırılmıştır. Bir sonraki sprintte kariyer sistemi, gayrimenkul mekanikleri, borsa ve davranışsal analiz özelliklerinin geliştirilmesine ağırlık verilmesi kararlaştırılmıştır.
 Sprint Review Katılımcıları:
 - Samet Coşkun: Product Owner
 - Gülsüm Bilgen: Scrum Master
@@ -139,11 +134,9 @@ Sprint Review Katılımcıları:
 
 
 - **Sprint Retrospective:**
-- Event sistemi geliştirmelerinde görev bağımlılıklarının daha erken planlanması.
-- Daily Scrum toplantılarının düzenli ve planlı şekilde Slack üzerinden sürdürülmesi.
-- GitHub üzerinde düzenli commit ve kod inceleme (Code Review) süreçlerinin devam ettirilmesi.
-- Event sistemi ve finansal simülasyon mekaniklerinin Sprint 3'te daha da geliştirilmesi.
-- Oyun deneyimini artıracak yeni özellikler ve iyileştirmelerin Sprint 3 kapsamında planlanması.
+- Oyun içi ekonominin (yaşam standartları, enflasyon etkileri vb.) dengelenmesine önem verilmesinin faydalı olduğu anlaşıldı.
+- Commit mesajlarının ve geliştirmelerin özellik (feature) bazlı yapılması iş takibini kolaylaştırdı, bu yaklaşıma devam edilecek.
+- Eksik görülen noktalarda hızlı aksiyon alınıp öğretici (tutorial) eklentileri gibi özelliklerin sunulması ürünün kullanılabilirliğini artırdı.
 
   
 
