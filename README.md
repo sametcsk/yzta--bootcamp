@@ -126,11 +126,9 @@ Oyun sonu geri bildirimlerin (AI agents, fırsat maliyeti) zenginleştirildiği 
 Bir sonraki sprintte sistemlerin detaylı test edilmesi, varsa açıkların kapatılması ve oyunun final cila aşamalarının yapılması kararlaştırıldı.
 
 Sprint Review Katılımcıları:
-- Samet Coşkun: Product Owner
-- Gülsüm Bilgen: Scrum Master
-- Eren Osma: Team Member/Developer
-- Batuhan Demirbas: Team Member/Developer
-- Fırat Özcan: Team Member/Developer
+- Product Owner
+- Scrum Master
+- Development Team
 
 
 - **Sprint Retrospective:**
