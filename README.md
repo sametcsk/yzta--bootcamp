@@ -16,6 +16,8 @@ Takım 306
 
 --FINSIM--
 
+📍 **Ürünün güncel sürümünü incelemek için:** [FINSIM Canlı Ortam](https://frontend-phi-ivory-81.vercel.app)
+
 ## Ürün Açıklaması
 
 - FINSIM, kullanıcıların finansal kararlarını oyunlaştırılmış bir simülasyon içinde deneyimlemelerini sağlayan tarayıcı tabanlı bir finansal davranış simülasyon oyunudur. Kullanıcı, yıllar içinde yatırım kararları alır, ekonomik olaylarla karşılaşır ve oyun sonunda kendi kararlarının sonuçlarını alternatif senaryolarla karşılaştırır.
@@ -119,10 +121,44 @@ Sprint 2 Sprint Board - 1 (Başlangıç): Sprint 2 başlangıcında Product Back
 Sprint 2 Sprint Board - 2 (Sprint Sonu): Sprint 2 süresince Story'lerin ilerleme durumu Miro Sprint Board üzerinden takip edilmiş, tamamlanan görevler geliştirme süreçlerinin ardından Done sütununa taşınmıştır.
 
 
-- **Ürün Durumu**: Ekran görüntüleri:
-  ![Screenshot 1](docs/images/urundurumu1.png)
-  ![Screenshot 2](docs/images/urundurumu2.png)
-  ![Screenshot 3](docs/images/varliklar.png)
+- **Ürün Durumu**: 
+  <details>
+  <summary>Görselleri Göster / Gizle</summary>
+
+  ### Giriş Ekranı
+  ![Giriş Ekranı](docs/images/sprint2/giris.png)
+
+  ### Karakter Intro
+  ![Karakter Intro](docs/images/sprint2/intro.png)
+
+  ### Ana Sayfa
+  ![Ana Sayfa](docs/images/sprint2/anasayfa.png)
+
+  ### Varlıklar
+  ![Varlıklar](docs/images/sprint2/varliklar.png)
+
+  ### Portföy Dağılımı
+  ![Portföy Dağılımı](docs/images/sprint2/portfoy.png)
+
+  ### Gayrimenkul Piyasası
+  ![Gayrimenkul Piyasası](docs/images/sprint2/gayrimenkul.png)
+
+  ### Otomobil Piyasası
+  ![Otomobil Piyasası](docs/images/sprint2/otomobil.png)
+
+  ### Yaşam İhtiyaçları
+  ![Yaşam İhtiyaçları](docs/images/sprint2/yasamihtiyaclari.png)
+
+  ### Sonuç Raporu
+  ![Sonuç Raporu](docs/images/sprint2/sonrapor.png)
+
+  ### Fırsat Maliyeti
+  ![Fırsat Maliyeti](docs/images/sprint2/firsatmaliyeti.png)
+
+  ### Yapay Zeka Değerlendirmesi
+  ![Yapay Zeka Değerlendirmesi](docs/images/sprint2/ai1.png)
+
+  </details>
 
 - **Sprint Review**: 
 Alınan kararlar:
