@@ -111,9 +111,12 @@ Yapılan geliştirmeler şu şekilde özetlenebilir:
 Daily Scrum toplantıları Slack üzerinden yapılmaya devam etmiştir. Ekip üyeleri kodlama sürecinde karşılaştıkları problemleri hızlıca birbirlerine danışarak (örneğin; build hataları, CORS izinleri) çözüm üretmişlerdir. 
 
 
-- **Sprint board update**: Sprint board screenshotları: 
+- **Sprint board update**: Sprint board screenshotları:
+![Sprint Board](docs/images/Sprint2-board1.jpg)
+Sprint 2 Sprint Board 1: Sprint 2 başlangıcında Product Backlog'da yer alan Story'ler öncelik sırasına göre Sprint Board'a aktarılmıştır. Sprint 1'den devreden görevler ile Sprint 2 kapsamında planlanan geliştirmeler Backlog, To Do, In Progress, Review, Done ve Rejected sütunlarına yerleştirilerek sprint planlaması oluşturulmuştur.
+
 ![Sprint Board](docs/images/Sprint2-board.jpg)
-Sprint 2 Sprint Board: Sprint 2 kapsamında planlanan Story'lerin geliştirme süreci Miro Sprint Board üzerinden takip edilmiştir. Görevler geliştirme durumlarına göre Backlog, To Do, In Progress, Review, Done ve Rejected sütunlarında yönetilmiş, tamamlanan çalışmalar sprint sonunda Done sütununa taşınmıştır.
+Sprint 2 Sprint Board 2: Sprint 2 süresince Story'lerin ilerleme durumu Miro Sprint Board üzerinden takip edilmiş, tamamlanan görevler geliştirme süreçlerinin ardından Done sütununa taşınmıştır.
 
 
 - **Ürün Durumu**: Ekran görüntüleri:
