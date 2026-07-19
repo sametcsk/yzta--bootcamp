@@ -4,10 +4,10 @@ from .utils import normal
 
 ALTIN_REJIMLER = {
     "durgun": {"getiri_ort": 0.02, "getiri_std": 0.08, "getiri_min": -0.05, "getiri_max": 0.12},
-    "boga":   {"getiri_ort": 0.20, "getiri_std": 0.18, "getiri_min": 0.05,  "getiri_max": 0.50},
-    "ayi":    {"getiri_ort": -0.12,"getiri_std": 0.12, "getiri_min": -0.35, "getiri_max": -0.001},
+    "boga":   {"getiri_ort": 0.15, "getiri_std": 0.15, "getiri_min": 0.05,  "getiri_max": 0.40},
+    "ayi":    {"getiri_ort": -0.10,"getiri_std": 0.10, "getiri_min": -0.25, "getiri_max": -0.01},
 }
-AYI_ESIGI = -0.35
+AYI_ESIGI = -0.30
 
 def altin_sim(rejim, durgun_yil, boga_yil, zirve_fiyat, fiyat, enflasyon_rejim=0):
     if rejim == 0:
@@ -29,7 +29,7 @@ def altin_sim(rejim, durgun_yil, boga_yil, zirve_fiyat, fiyat, enflasyon_rejim=0
             durum = f"durgun ({durgun_yil}. yıl)"
     elif rejim == 1:
         boga_yil += 1
-        ayi_olasiligi = 0.05 if boga_yil <= 8 else 0.05 + (boga_yil - 8) * 0.12
+        ayi_olasiligi = 0.05 if boga_yil <= 5 else 0.05 + (boga_yil - 5) * 0.15
         if random.random() < ayi_olasiligi:
             rejim, boga_yil = 2, 0
             zirve_fiyat = fiyat

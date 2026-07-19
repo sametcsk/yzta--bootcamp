@@ -4,13 +4,13 @@ from .utils import normal
 def faiz_uret(enflasyon, rejim, onceki_faiz, sapma_olasiligi=0.08):
     sapma = random.random() < sapma_olasiligi
     if sapma:
-        hedef = enflasyon * normal(0.2, 0.08, min_val=0.1, max_val=0.4)
+        hedef = enflasyon * normal(0.4, 0.1, min_val=0.2, max_val=0.6)
         mod = "SAPMA"
     elif rejim == 0:
-        hedef = enflasyon * normal(0.95, 0.10, min_val=0.6, max_val=1.3)
+        hedef = enflasyon * normal(0.95, 0.10, min_val=0.7, max_val=1.2)
         mod = "normal"
     else:
-        hedef = enflasyon * normal(0.75, 0.15, min_val=0.45, max_val=1.1)
+        hedef = enflasyon * normal(0.85, 0.15, min_val=0.5, max_val=1.1)
         mod = "kriz"
     max_degisim = onceki_faiz * (0.50 if rejim == 1 else 0.30)
     faiz = max(onceki_faiz - max_degisim, min(onceki_faiz + max_degisim, hedef))
@@ -22,16 +22,18 @@ def faiz_uret(enflasyon, rejim, onceki_faiz, sapma_olasiligi=0.08):
 
 def bist_getiri_uret(faiz_yon, enflasyon, enf_rejim=0):
     if faiz_yon == "down":
-        bias = normal(0.40, 0.15, min_val=0.0, max_val=0.90)
+        reel_getiri = normal(0.15, 0.10, min_val=0.0, max_val=0.35)
     elif faiz_yon == "up":
-        bias = normal(0.15, 0.15, min_val=-0.30, max_val=0.50)
+        reel_getiri = normal(-0.05, 0.10, min_val=-0.25, max_val=0.15)
     else:
-        bias = normal(0.25, 0.12, min_val=-0.10, max_val=0.50)
+        reel_getiri = normal(0.05, 0.08, min_val=-0.10, max_val=0.20)
+        
     if enf_rejim == 1:
-        bias += normal(0.15, 0.10, min_val=0.0, max_val=0.35)
-    sok = normal(0, 0.20, min_val=-0.40, max_val=0.40)
-    getiri = (bias + sok) * 100
-    return max(-55.0, min(100.0, getiri))
+        reel_getiri += normal(0.10, 0.15, min_val=-0.10, max_val=0.30)
+
+    sok = normal(0, 0.15, min_val=-0.30, max_val=0.30)
+    getiri = enflasyon + ((reel_getiri + sok) * 100)
+    return max(-40.0, min(300.0, round(getiri, 1)))
 
 SEKTOR_AGIRLIKLARI = {
     "bankacilik": 0.30,

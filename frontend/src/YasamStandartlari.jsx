@@ -1,8 +1,9 @@
 import { YASAM_STANDARTLARI, yasamKalitesiEtkisi } from "./data/standartlar"
 import { TutorialOdak } from "./TutorialComponents"
 
-export default function YasamStandartlari({ secimler, onSecimDegis, portfoy, dolarKuru = 40, yasamGideri = 0, oturulanEvVarMi = false, sahipOlunanAraclar = [] }) {
+export default function YasamStandartlari({ secimler, onSecimDegis, portfoy, dolarKuru = 40, yasamGideri = 0, yillikGelir = 0, oturulanEvVarMi = false, sahipOlunanAraclar = [] }) {
   const aylikTl = Math.round(yasamGideri / 12)
+  const aylikGelir = Math.round(yillikGelir / 12)
   const kalite = yasamKalitesiEtkisi(secimler, YASAM_STANDARTLARI)
   const aracVarMi = sahipOlunanAraclar && sahipOlunanAraclar.length > 0;
 
@@ -34,6 +35,11 @@ export default function YasamStandartlari({ secimler, onSecimDegis, portfoy, dol
                 {kalite.sabir > 0 ? '+' : ''}{kalite.sabir}
               </div>
             </div>
+          </div>
+          <div className="text-right border-r border-outline-variant pr-4">
+            <div className="font-data-sm text-data-sm text-on-surface-variant uppercase">Yıllık Gelir</div>
+            <div className="font-data-lg text-data-lg text-primary">₺{yillikGelir.toLocaleString("tr-TR")}</div>
+            <div className="font-data-sm text-data-sm text-on-surface-variant uppercase mt-1 opacity-50">Aylık: ₺{aylikGelir.toLocaleString("tr-TR")}</div>
           </div>
           <div className="text-right">
             <div className="font-data-sm text-data-sm text-on-surface-variant uppercase">Yıllık Gider Hızı</div>

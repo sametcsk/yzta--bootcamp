@@ -2,6 +2,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { useState, useEffect } from "react"
 import { TutorialOdak } from "./TutorialComponents"
 import { useTutorial } from "./TutorialContext"
+import { formatAssetPrice } from "./utils"
 import ucuzevImg from "./assets/evler/ucuzev.png"
 import ortaevImg from "./assets/evler/ortaev.png"
 import pahalievImg from "./assets/evler/pahaliev.png"
@@ -73,7 +74,7 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
         {sonFiyat && (
           <div className="text-right">
             <div className="font-data-lg text-data-lg text-primary">
-              {varlik === "mevduat" ? `%${sonFiyat.toFixed(1)}` : `₺${Math.round(sonFiyat).toLocaleString("tr-TR")}`}
+              {varlik === "mevduat" ? `%${sonFiyat.toFixed(1)}` : `₺${formatAssetPrice(sonFiyat).toLocaleString("tr-TR")}`}
             </div>
             {getiri !== null && (
               <div className={`font-data-sm text-data-sm uppercase mt-1 ${getiri >= 0 ? "text-[#34d399]" : "text-error"}`}>
@@ -94,7 +95,7 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
               <Tooltip
                 contentStyle={{ background: "#110e06", border: "1px solid #4e4634", borderRadius: 0, fontFamily: "JetBrains Mono", fontSize: 12 }}
                 itemStyle={{ color: cfg.renk }}
-                formatter={(v) => varlik === "mevduat" ? `%${v.toFixed(1)}` : `₺${Math.round(v).toLocaleString("tr-TR")}`}
+                formatter={(v) => varlik === "mevduat" ? `%${v.toFixed(1)}` : `₺${formatAssetPrice(v).toLocaleString("tr-TR")}`}
                 labelStyle={{ display: 'none' }}
               />
               <Line
@@ -126,11 +127,11 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
           <>
             <Satir label="PORTFÖY" value={
               varlik === "altin" ? `${portfoyMiktar.toFixed(2)} gr` :
-                varlik === "bist" ? `${Math.round(portfoyMiktar)} adet` :
-                  varlik === "dolar" ? `$${Math.round(portfoyMiktar).toLocaleString("tr-TR")}` :
-                    `₺${Math.round(portfoyMiktar).toLocaleString("tr-TR")}`
+                varlik === "bist" ? `${formatAssetPrice(portfoyMiktar)} adet` :
+                  varlik === "dolar" ? `$${formatAssetPrice(portfoyMiktar).toLocaleString("tr-TR")}` :
+                    `₺${formatAssetPrice(portfoyMiktar).toLocaleString("tr-TR")}`
             } />
-            <Satir label="DEĞER" value={`₺${Math.round(portfoyDeger).toLocaleString("tr-TR")}`} color="#f5c842" />
+            <Satir label="DEĞER" value={`₺${formatAssetPrice(portfoyDeger).toLocaleString("tr-TR")}`} color="#f5c842" />
           </>
         )}
         {portfoyMiktar === 0 && <Satir label="PORTFÖY" value="0.00" />}

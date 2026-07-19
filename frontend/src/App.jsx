@@ -16,7 +16,7 @@ import GirisSayfasi from "./GirisSayfasi"
 import { supabase, supabaseAktif } from "./supabaseClient"
 import { pozisyonAdiGetir, levelCarpaniGetir } from "./data/meslekler"
 import BorsaSayfasi from "./BorsaSayfasi"
-
+import { formatAssetPrice } from "./utils"
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
 
@@ -229,6 +229,7 @@ function AppInner() {
 
 
   async function yilAtla() {
+    setAktifSayfa("ana")
     setLoading(true)
 
     const nakit0 = nakitRef.current
@@ -335,6 +336,7 @@ function AppInner() {
       const getiriOrani = w_start_gercek > 0 ? (w_appreciated - w_start_gercek) / w_start_gercek : 0
       const yeniPortfoyEndeksi = portfoyEndeksi * (1 + getiriOrani)
       setPortfoyEndeksi(yeniPortfoyEndeksi)
+      setPortfoyGecmisi(prev => [...prev, { yil: yil + 1, deger: Math.round(yeniPortfoyEndeksi) }])
 
       const yeniEmlakEndeksiUsd = data.emlak_endeksi_usd
       setEmlakPiyasasi(data.yil_sonucu.emlak_piyasasi || [])
@@ -371,27 +373,16 @@ function AppInner() {
           ...prev,
           mevduat_tl: Math.round(prev.mevduat_tl / 1000),
         }))
-        setFiyatlar(prev => ({
-          altin_try_gram: Math.round(prev.altin_try_gram / 1000),
-          bist_endeks: Math.round(prev.bist_endeks / 1000),
-          bist_bankacilik: Math.round((prev.bist_bankacilik || 100) / 1000),
-          bist_teknoloji: Math.round((prev.bist_teknoloji || 100) / 1000),
-          bist_insaat: Math.round((prev.bist_insaat || 100) / 1000),
-          bist_saglik: Math.round((prev.bist_saglik || 100) / 1000),
-          bist_perakende: Math.round((prev.bist_perakende || 100) / 1000),
-          dolar_try: Math.round(prev.dolar_try / 1000),
-          mev_faiz_oran: prev.mev_faiz_oran,
-        }))
         // Geçmiş fiyatları böl ki grafiklerde kopma olmasın
         setFiyatGecmisi(prev => ({
-          altin: prev.altin.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
-          bist: prev.bist.map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
-          bist_bankacilik: (prev.bist_bankacilik && prev.bist_bankacilik.length > 0 ? prev.bist_bankacilik : prev.bist).map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
-          bist_teknoloji: (prev.bist_teknoloji && prev.bist_teknoloji.length > 0 ? prev.bist_teknoloji : prev.bist).map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
-          bist_insaat: (prev.bist_insaat && prev.bist_insaat.length > 0 ? prev.bist_insaat : prev.bist).map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
-          bist_saglik: (prev.bist_saglik && prev.bist_saglik.length > 0 ? prev.bist_saglik : prev.bist).map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
-          bist_perakende: (prev.bist_perakende && prev.bist_perakende.length > 0 ? prev.bist_perakende : prev.bist).map(p => ({ ...p, fiyat: Math.round(p.fiyat / 1000) })),
-          dolar: prev.dolar.map(p => ({ ...p, fiyat: p.fiyat / 1000 })),
+          altin: prev.altin.map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+          bist: prev.bist.map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+          bist_bankacilik: (prev.bist_bankacilik && prev.bist_bankacilik.length > 0 ? prev.bist_bankacilik : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+          bist_teknoloji: (prev.bist_teknoloji && prev.bist_teknoloji.length > 0 ? prev.bist_teknoloji : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+          bist_insaat: (prev.bist_insaat && prev.bist_insaat.length > 0 ? prev.bist_insaat : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+          bist_saglik: (prev.bist_saglik && prev.bist_saglik.length > 0 ? prev.bist_saglik : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+          bist_perakende: (prev.bist_perakende && prev.bist_perakende.length > 0 ? prev.bist_perakende : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+          dolar: prev.dolar.map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
           mevduat: prev.mevduat,
         }))
         // Varlık katsayıları kümülatif performans olduğu için 1000'e BÖLÜNMEZ.
@@ -422,8 +413,8 @@ function AppInner() {
 
       // Barları güncelle
       setBars(prev => ({
-        sabir: Math.min(80, Math.max(20, prev.sabir + kalite.sabir + finansalDebuff.sabir)),
-        mutluluk: Math.min(80, Math.max(20, prev.mutluluk + kalite.mutluluk + finansalDebuff.mutluluk)),
+        sabir: Math.min(100, Math.max(20, prev.sabir + kalite.sabir + finansalDebuff.sabir)),
+        mutluluk: Math.min(100, Math.max(20, prev.mutluluk + kalite.mutluluk + finansalDebuff.mutluluk)),
       }))
 
       setSonuc(data.yil_sonucu)
@@ -472,7 +463,7 @@ function AppInner() {
         }
       }
       
-      if (data.yil_sonucu.oyun_bitti || (yeniYas >= 65 && data.yil_sonucu.event && data.yil_sonucu.event.id === "ev_emeklilik")) {
+      if (data.yil_sonucu.oyun_bitti) {
         setOyunBitti({
           netWorth: w_appreciated,
           sonYas: yeniYas,
@@ -537,10 +528,10 @@ function AppInner() {
         },
       ])
 
-      if (yeniYas >= 85) {
+      if (yeniYas >= 95) {
         setOyunBitti(true)
         setBitisSebebi("yas_siniri")
-      } else if (yeniYas >= 75) {
+      } else if (yeniYas >= 80) {
         if (Math.random() < erkenOlumOlasiligi(yeniYas)) {
           setOyunBitti(true)
           setBitisSebebi("erken_olum")
@@ -651,8 +642,8 @@ function AppInner() {
     })
 
     setBars(prev => ({
-      sabir: Math.min(80, Math.max(20, prev.sabir + (secenek.sabir_etki || 0))),
-      mutluluk: Math.min(80, Math.max(20, prev.mutluluk + (secenek.mutluluk_etki || 0))),
+      sabir: Math.min(100, Math.max(20, prev.sabir + (secenek.sabir_etki || 0))),
+      mutluluk: Math.min(100, Math.max(20, prev.mutluluk + (secenek.mutluluk_etki || 0))),
     }))
 
     if (secenek.nakit_etki_usd && secenek.nakit_etki_usd !== 0) {
@@ -1090,7 +1081,10 @@ function AppInner() {
             <TutorialOdak key={item.id} hedefId={"sidebar-" + item.id} disablePadding>
               <button
                 onClick={() => setAktifSayfa(item.id)}
-                className={`w-full flex items-center p-stack-md mb-stack-sm font-data-sm text-data-sm uppercase transition-colors ${aktifSayfa === item.id
+                disabled={!!mevcutEvent}
+                className={`w-full flex items-center p-stack-md mb-stack-sm font-data-sm text-data-sm uppercase transition-colors ${
+                  !!mevcutEvent ? "opacity-50 cursor-not-allowed " : ""
+                }${aktifSayfa === item.id
                   ? "bg-primary text-on-primary font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                   : "text-on-surface-variant hover:text-primary hover:bg-surface-container-high"
                   }`}
@@ -1120,7 +1114,7 @@ function AppInner() {
           <div className="bg-primary-container border border-outline card-shadow p-stack-md text-background mb-stack-lg">
             <div className="font-headline-md text-headline-md font-black uppercase">Oyun Sona Erdi</div>
             <p className="font-data-sm text-data-sm uppercase mt-1 mb-4">
-              {bitisSebebi === "yas_siniri" ? "85 yaşına ulaştın." : "Beklenmedik bir şekilde hayatın sona erdi."}
+              {bitisSebebi === "yas_siniri" ? "95 yaşına ulaştın." : "Beklenmedik bir şekilde hayatın sona erdi."}
             </p>
             <button
               onClick={tekrarOyna}
@@ -1264,6 +1258,16 @@ function AppInner() {
                             </div>
                             <div className="font-bold">{s.metin}</div>
                             <div className="flex flex-wrap gap-2 mt-2">
+                              {s.aksiyon && s.aksiyon.tip === "sektor_al" && (
+                                <span className="text-[10px] px-1 font-bold uppercase bg-error text-background">
+                                  Nakit -₺{Math.round((portfoy[`bist_${s.aksiyon.sektor}_adet`] || 0) * (fiyatlar[`bist_${s.aksiyon.sektor}`] || 100) * s.aksiyon.oran).toLocaleString("tr-TR")}
+                                </span>
+                              )}
+                              {s.aksiyon && s.aksiyon.tip === "sektor_sat" && (
+                                <span className="text-[10px] px-1 font-bold uppercase bg-[#34d399] text-black">
+                                  Nakit +₺{Math.round((portfoy[`bist_${s.aksiyon.sektor}_adet`] || 0) * (fiyatlar[`bist_${s.aksiyon.sektor}`] || 100) * s.aksiyon.oran).toLocaleString("tr-TR")}
+                                </span>
+                              )}
                               {s.mutluluk_etki !== undefined && s.mutluluk_etki !== 0 && (
                                 <span className={`text-[10px] px-1 font-bold uppercase ${s.mutluluk_etki > 0 ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
                                   Mutluluk {s.mutluluk_etki > 0 ? '+' : ''}{s.mutluluk_etki}
@@ -1431,6 +1435,7 @@ function AppInner() {
             portfoy={portfoy}
             dolarKuru={fiyatlar.dolar_try}
             yasamGideri={yasamGideri}
+            yillikGelir={yillikGelir}
             oturulanEvVarMi={!!oturulanEvId}
           />
         )}
@@ -1489,8 +1494,8 @@ function pctClass(val) {
 }
 
 function erkenOlumOlasiligi(yas) {
-  const minYas = 75
-  const maxYas = 84
+  const minYas = 80
+  const maxYas = 94
   const minOlasilik = 0.03
   const maxOlasilik = 0.65
   if (yas <= minYas) return minOlasilik

@@ -1,5 +1,6 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 import { useState } from "react"
+import { formatAssetPrice } from "./utils"
 
 const SEKTOR_CONFIG = {
   bankacilik: { ad: "Bankacılık Endeksi", icon: "account_balance", renk: "#60a8f0", key: "bist_bankacilik" },
@@ -105,7 +106,7 @@ function BorsaKart({
         {sonFiyat !== null && (
           <div className="text-right">
             <div className="font-data-lg text-data-lg text-primary">
-              ₺{Math.round(sonFiyat).toLocaleString("tr-TR")}
+              ₺{formatAssetPrice(sonFiyat).toLocaleString("tr-TR")}
             </div>
             {getiri !== null && (
               <div className={`font-data-sm text-data-sm uppercase mt-1 ${getiri >= 0 ? "text-[#34d399]" : "text-error"}`}>
@@ -126,7 +127,7 @@ function BorsaKart({
               <Tooltip
                 contentStyle={{ background: "#110e06", border: "1px solid #4e4634", borderRadius: 0, fontFamily: "JetBrains Mono", fontSize: 12 }}
                 itemStyle={{ color: renk }}
-                formatter={(v) => `₺${Math.round(v).toLocaleString("tr-TR")}`}
+                formatter={(v) => `₺${formatAssetPrice(v).toLocaleString("tr-TR")}`}
                 labelStyle={{ display: 'none' }}
               />
               <Line
@@ -156,8 +157,8 @@ function BorsaKart({
       <div className="flex flex-col gap-2 mb-4">
         {portfoyMiktar > 0 && (
           <>
-            <Satir label="PORTFÖY" value={`${Math.round(portfoyMiktar)} adet`} />
-            <Satir label="DEĞER" value={`₺${Math.round(portfoyDeger).toLocaleString("tr-TR")}`} color="#f5c842" />
+            <Satir label="PORTFÖY" value={`${formatAssetPrice(portfoyMiktar)} adet`} />
+            <Satir label="DEĞER" value={`₺${formatAssetPrice(portfoyDeger).toLocaleString("tr-TR")}`} color="#f5c842" />
           </>
         )}
         {portfoyMiktar === 0 && <Satir label="PORTFÖY" value="0.00" />}

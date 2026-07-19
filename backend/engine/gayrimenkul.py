@@ -4,10 +4,10 @@ from .utils import normal
 # Gayrimenkul, dolar bazında kendi bağımsız driftiyle ilerler (altın gibi
 # ayrı bir varlık sınıfı, ama boğa/ayı gibi sert rejimleri yok — tek,
 # düşük oynaklıklı bir dağılım yeterli).
-EMLAK_GETIRI_ORT = 0
-EMLAK_GETIRI_STD = 0.05
-EMLAK_GETIRI_MIN = -0.10
-EMLAK_GETIRI_MAX = 0.10
+EMLAK_GETIRI_ORT = 0.01
+EMLAK_GETIRI_STD = 0.03
+EMLAK_GETIRI_MIN = -0.05
+EMLAK_GETIRI_MAX = 0.08
 
 FIYAT_USD_ARALIKLARI = {
     "ucuz":   (10_000, 25_000),
@@ -53,8 +53,7 @@ def ev_fiyati_hesapla(fiyat_usd_taban, dolar_try, emlak_endeksi_usd):
 
 def kira_orani_uret(segment):
     """Bir evin kira getiri oranı — üretildiği anda sabitlenir, hep aynı kalır."""
-    min_o, max_o = KIRA_GETIRI_ARALIKLARI[segment]
-    oran = normal((min_o + max_o) / 2, (max_o - min_o) / 4, min_val=min_o, max_val=max_o)
+    oran = normal(0.04, 0.005, min_val=0.02, max_val=0.06)
     return round(oran, 4)
 
 

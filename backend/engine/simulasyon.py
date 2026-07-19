@@ -143,7 +143,7 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     if state.get("arac_vergi_zammi"):
         arac_vergi_carpani = vergi_zammi_uygula(arac_vergi_carpani)
         
-    arac_piyasasi = arac_piyasasi_uret(state.get("enflasyonEndeksi", 100.0), arac_vergi_carpani)
+    arac_piyasasi = arac_piyasasi_uret(kur, arac_vergi_carpani)
 
     # 7. Event
     secilen_event = event_sec(

@@ -9,9 +9,9 @@ ARAC_TABAN_FIYATLAR = {
 
 YILLIK_AMORTISMAN_ORANI = 0.94
 
-def arac_fiyati_uret(segment, enflasyon_endeksi, vergi_carpani):
+def arac_fiyati_uret(segment, kur, vergi_carpani):
     min_f, max_f = ARAC_TABAN_FIYATLAR[segment]
-    olcek = enflasyon_endeksi / 100
+    olcek = kur / 40.0
     return round(random.uniform(min_f, max_f) * olcek * vergi_carpani, -3)
 
 def arac_guncel_deger(alis_fiyati, sahiplik_yili):
@@ -21,7 +21,7 @@ def vergi_zammi_uygula(mevcut_carpan):
     zam_orani = random.uniform(1.30, 1.40)
     return round(mevcut_carpan * zam_orani, 2)
 
-def arac_piyasasi_uret(enflasyon_endeksi, vergi_carpani):
+def arac_piyasasi_uret(kur, vergi_carpani):
     market = []
     segmentler = ["kucuk", "kucuk", "orta", "orta", "spor", "spor"]
     isimler = {
@@ -35,6 +35,6 @@ def arac_piyasasi_uret(enflasyon_endeksi, vergi_carpani):
             "id": str(uuid.uuid4())[:8],
             "isim": random.choice(isimler[seg]),
             "tip": seg,
-            "fiyat": arac_fiyati_uret(seg, enflasyon_endeksi, vergi_carpani)
+            "fiyat": arac_fiyati_uret(seg, kur, vergi_carpani)
         })
     return market
