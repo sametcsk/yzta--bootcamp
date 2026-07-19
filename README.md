@@ -113,6 +113,8 @@ Daily Scrum toplantıları Slack üzerinden yapılmaya devam etmiştir. Ekip üy
 
 - **Sprint board update**: Sprint board screenshotları: 
 ![Sprint Board](docs/images/Sprint2-board.jpg)
+Sprint 2 Sprint Board: Sprint 2 kapsamında planlanan Story'lerin geliştirme süreci Miro Sprint Board üzerinden takip edilmiştir. Görevler geliştirme durumlarına göre Backlog, To Do, In Progress, Review, Done ve Rejected sütunlarında yönetilmiş, tamamlanan çalışmalar sprint sonunda Done sütununa taşınmıştır.
+
 
 - **Ürün Durumu**: Ekran görüntüleri:
   ![Screenshot 1](docs/images/urundurumu1.png)
