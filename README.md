@@ -101,12 +101,12 @@ Sprint 2'nin temel hedefi; Intro Testi ve Event Tetikleme Motoru'nun tamamlanmas
 
 Story'ler modüllerine göre aşağıdaki başlıklar altında organize edilmiştir:
 
--Sprint 1'den Devreden Story'ler
--Event Sistemi
--Backend Entegrasyonu
--Frontend Event Arayüzü
--Kullanıcı Deneyimi (UI)
--Finansal Görselleştirme
+- Sprint 1'den Devreden Story'ler
+- Event Sistemi
+- Backend Entegrasyonu
+- Frontend Event Arayüzü
+- Kullanıcı Deneyimi (UI)
+- Finansal Görselleştirme
 
 Her Story ekip üyeleri arasında görev dağılımı yapılarak Sprint Board üzerinde takip edilmiş ve tamamlanan görevler ilgili sütunlara taşınmıştır.
 
@@ -139,11 +139,11 @@ Sprint Review Katılımcıları:
 
 
 - **Sprint Retrospective:**
--Event sistemi geliştirmelerinde görev bağımlılıklarının daha erken planlanması.
--Daily Scrum toplantılarının düzenli ve planlı şekilde Slack üzerinden sürdürülmesi.
--GitHub üzerinde düzenli commit ve kod inceleme (Code Review) süreçlerinin devam ettirilmesi.
--Event sistemi ve finansal simülasyon mekaniklerinin Sprint 3'te daha da geliştirilmesi.
--Oyun deneyimini artıracak yeni özellikler ve iyileştirmelerin Sprint 3 kapsamında planlanması.
+- Event sistemi geliştirmelerinde görev bağımlılıklarının daha erken planlanması.
+- Daily Scrum toplantılarının düzenli ve planlı şekilde Slack üzerinden sürdürülmesi.
+- GitHub üzerinde düzenli commit ve kod inceleme (Code Review) süreçlerinin devam ettirilmesi.
+- Event sistemi ve finansal simülasyon mekaniklerinin Sprint 3'te daha da geliştirilmesi.
+- Oyun deneyimini artıracak yeni özellikler ve iyileştirmelerin Sprint 3 kapsamında planlanması.
 
   
 
