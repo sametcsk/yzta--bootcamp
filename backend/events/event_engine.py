@@ -11,7 +11,8 @@ with open(_EVENT_DOSYASI, "r", encoding="utf-8") as f:
 
 def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, 
               enf_rejim: int = 0, tetiklenenler: list = None, portfoy=None,
-              is_yeri: str = None, is_level: int = 1, makro_veriler: dict = None) -> dict:
+              is_yeri: str = None, is_level: int = 1, makro_veriler: dict = None,
+              nakit_usd: float = 0.0) -> dict:
     if tetiklenenler is None:
         tetiklenenler = []
     if portfoy is None:
@@ -81,6 +82,15 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
             continue
         if gerekli == "mevduat" and portfoy.get("mevduat_tl", 0) <= 0:
             continue
+        if gerekli == "kirada_ev_var" and not portfoy.get("kirada_ev_var", False):
+            continue
+
+        # Event Bazlı Nakit/Varlık Kilitleri (ör. Zenginlik eventi için)
+        event_kilidi = e.get("event_kilidi")
+        if event_kilidi:
+            if event_kilidi.get("tur") == "nakit_usd":
+                if nakit_usd < event_kilidi.get("min", 0):
+                    continue
 
         # Yan eventler ana event havuzunda değerlendirilemez
         if e.get("kategori") == "yan_event":

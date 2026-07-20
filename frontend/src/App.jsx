@@ -362,7 +362,10 @@ function AppInner() {
           yas: yas,
           event_gecmisi: eventGecmisi,
           tetiklenenler: tetiklenenler,
-          portfoy: portfoy,
+          portfoy: {
+            ...portfoy,
+            kirada_ev_var: sahipOlunanEvler.some(ev => ev.kirada)
+          },
           is_yeri: isYeri,
           is_level: isLevel,
           sektor_ekstra_getiri: bekleyenSektorEkstraGetiriRef.current,
@@ -794,10 +797,12 @@ function AppInner() {
     if (sonuc.nakit >= 200000) {
       setSahipOlunanAraclar([{
         id: "arac_" + Date.now(),
-        segment: "ucuz",
-        gorsel: "ucuz",
-        alinma_yili: 0,
+        tip: "kucuk",
+        isim: "İkinci El Ucuz Araç",
+        alisYili: 0,
+        alisFiyati: 8000 * (fiyatlar.dolar_try || 40),
         alis_fiyati_usd: 8000,
+        alinma_yili: 0,
         amortisman_orani: 0.15,
         bakim_masrafi_orani: 0.05
       }])

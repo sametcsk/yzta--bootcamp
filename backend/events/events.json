@@ -3191,7 +3191,8 @@
                 "mutluluk_etki": 15,
                 "sabir_etki": 10
             }
-        ]
+        ],
+        "min_yas": 65
     },
     {
         "id": "emeklilik_hobi",
@@ -3535,12 +3536,31 @@
             {
                 "id": "krip_2",
                 "metin": "Madem yükseliyor, beklemeye devam edeyim!",
-                "nakit_etki_usd": -500,
-                "mutluluk_etki": -5,
                 "sabir_etki": 5,
                 "bias_etki": {
                     "disposition_effect": -15
-                }
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "agirlik": 50,
+                        "sonuc_metin": "Coin aylar sonra 10 katına çıktı! 500 Doların tam 5.000 Dolar oldu, harika bir kazanç!",
+                        "nakit_etki_usd": 4500,
+                        "mutluluk_etki": 30,
+                        "bias_etki": {
+                            "disposition_effect": -15
+                        }
+                    },
+                    {
+                        "agirlik": 50,
+                        "sonuc_metin": "Kripto piyasası aniden çöktü! Coin %95 değer kaybetti. Tüm paran buhar oldu.",
+                        "nakit_etki_usd": -500,
+                        "mutluluk_etki": -20,
+                        "sabir_etki": -10,
+                        "bias_etki": {
+                            "disposition_effect": -10
+                        }
+                    }
+                ]
             }
         ]
     },
@@ -3822,6 +3842,379 @@
                 "bias_etki": {
                     "anchoring": -10
                 }
+            }
+        ]
+    },
+    {
+        "id": "ev_varlik_kiraci",
+        "kategori": "ana_event",
+        "cooldown_yil": 5,
+        "gerekli_varlik": "kirada_ev_var",
+        "baslik": "Kötü Kiracı Krizi",
+        "metin": "Kiracın 6 aydır kira ödemiyor ve evden çıkmıyor. Sinirlerin gerilmiş durumda.",
+        "bias_etiketi": "loss_aversion",
+        "secenekler": [
+            {
+                "id": "kir_1",
+                "metin": "Hemen Avukata veririm, sonuna kadar savaşırım!",
+                "nakit_etki_usd": -1000,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 1000
+                },
+                "mutluluk_etki": -5,
+                "sabir_etki": -15,
+                "bias_etki": {
+                    "loss_aversion": 15
+                }
+            },
+            {
+                "id": "kir_2",
+                "metin": "Ona 2.000 Dolar hava parası vereyim yeter ki çıkıp gitsin.",
+                "nakit_etki_usd": -2000,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 2000
+                },
+                "mutluluk_etki": 10,
+                "sabir_etki": 5,
+                "bias_etki": {
+                    "loss_aversion": 15
+                }
+            },
+            {
+                "id": "kir_3",
+                "metin": "Görmezden geleyim, elbet bir gün öder.",
+                "mutluluk_etki": -10,
+                "sabir_etki": -5,
+                "bias_etki": {
+                    "anchoring": 10
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_orta_tukenmislik",
+        "kategori": "ana_event",
+        "min_yas": 35,
+        "max_yas": 55,
+        "cooldown_yil": 10,
+        "baslik": "Tükenmişlik Sendromu",
+        "metin": "İş stresinden tamamen tükendin. Sabahları yataktan çıkmak istemiyorsun. Büyük bir kırılım noktasındasın.",
+        "bias_etiketi": "present_bias",
+        "secenekler": [
+            {
+                "id": "tuk_1",
+                "metin": "1 yıl ücretsiz izne ayrılıyorum! Dünya turuna çıkacağım.",
+                "nakit_etki_usd": -10000,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 10000
+                },
+                "mutluluk_etki": 30,
+                "sabir_etki": 30,
+                "bias_etki": {
+                    "present_bias": 15
+                }
+            },
+            {
+                "id": "tuk_2",
+                "metin": "İşi bırakamam ama iyi bir terapi ve kampa 2.000 Dolar harcayayım.",
+                "nakit_etki_usd": -2000,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 2000
+                },
+                "mutluluk_etki": 15,
+                "sabir_etki": 15,
+                "bias_etki": {
+                    "mental_accounting": -10
+                }
+            },
+            {
+                "id": "tuk_3",
+                "metin": "Dayanmak zorundayım, dişimi sıkıp aynen devam edeceğim.",
+                "mutluluk_etki": -20,
+                "sabir_etki": -10,
+                "bias_etki": {
+                    "loss_aversion": 20
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_orta_ahlaksiz_teklif",
+        "kategori": "ana_event",
+        "min_yas": 30,
+        "max_yas": 45,
+        "is_is_event": true,
+        "baslik": "Ahlaksız Teklif",
+        "metin": "Rakip bir firma mevcut maaşının TAM İKİ KATINI teklif ediyor! Ancak sektörde oranın kan emici ve günde 14 saat çalıştıran bir yer olduğu biliniyor.",
+        "bias_etiketi": "present_bias",
+        "secenekler": [
+            {
+                "id": "ahl_1",
+                "metin": "Para paradır, hemen kabul ediyorum!",
+                "aksiyon": {
+                    "tip": "maas_artir",
+                    "oran": 2.0
+                },
+                "mutluluk_etki": -25,
+                "sabir_etki": -25,
+                "bias_etki": {
+                    "present_bias": 20
+                }
+            },
+            {
+                "id": "ahl_2",
+                "metin": "Huzurum her şeyden değerli, mevcut işimde kalacağım.",
+                "mutluluk_etki": 10,
+                "sabir_etki": 10,
+                "bias_etki": {
+                    "loss_aversion": 10
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_tr_taksit_yasagi",
+        "kategori": "ana_event",
+        "makro_tetik": {
+            "enf_durum": 1
+        },
+        "cooldown_yil": 5,
+        "baslik": "Kredi Kartı Taksit Yasağı",
+        "metin": "Evi yenilemek veya acil büyük eşya almak için mağazadasın (3.000 USD). Ancak o sabah Resmi Gazete'de 'Kredi kartına tüm taksitler kaldırıldı' kararı çıktı!",
+        "bias_etiketi": "mental_accounting",
+        "secenekler": [
+            {
+                "id": "tak_1",
+                "metin": "Mecburum, 3.000 Doları nakit peşin vereceğim.",
+                "nakit_etki_usd": -3000,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 3000
+                },
+                "sabir_etki": -5,
+                "bias_etki": {
+                    "loss_aversion": 15
+                }
+            },
+            {
+                "id": "tak_2",
+                "metin": "Taksit yoksa ben de gidip Yüksek Faizli İhtiyaç Kredisi çekerim!",
+                "nakit_etki_usd": 3000,
+                "mutluluk_etki": 5,
+                "bias_etki": {
+                    "mental_accounting": 20
+                }
+            },
+            {
+                "id": "tak_3",
+                "metin": "Taksit yoksa eşya da yok, vazgeçtim.",
+                "mutluluk_etki": -10,
+                "sabir_etki": 10,
+                "bias_etki": {
+                    "anchoring": -15
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_siyah_ponzi",
+        "kategori": "ana_event",
+        "agirlik": 0.1,
+        "cooldown_yil": 10,
+        "baslik": "Kusursuz Saadet Zinciri",
+        "metin": "En yakın arkadaşın 'Aylık %15 Dolar garantili' harika bir sistemden bahsediyor. Kendi evini satıp basmış, sana da kârlarını gösteriyor. Sistem kusursuz görünüyor.",
+        "bias_etiketi": "present_bias",
+        "secenekler": [
+            {
+                "id": "pon_1",
+                "metin": "Bedava para! 5.000 Dolar atayım.",
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 5000
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "agirlik": 100,
+                        "sonuc_metin": "Sistem patladı, kurucu yurt dışına kaçtı! Paranın hepsi buhar oldu.",
+                        "nakit_etki_usd": -5000,
+                        "mutluluk_etki": -20,
+                        "bias_etki": {
+                            "present_bias": 30
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "pon_2",
+                "metin": "Böyle saçmalık olmaz, uzak dururum.",
+                "sabir_etki": 15,
+                "bias_etki": {
+                    "present_bias": -10
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_siyah_miras",
+        "kategori": "ana_event",
+        "min_yas": 40,
+        "cooldown_yil": 10,
+        "agirlik": 0.2,
+        "baslik": "Miras Kavgası",
+        "metin": "Sana uzak bir akrabadan büyük bir arsa kaldı. Ama üzerinde onlarca varis ve hukuki pürüz var. Dava için binlerce dolar avukat masrafı çıkacak ve yıllarca sürebilir.",
+        "bias_etiketi": "loss_aversion",
+        "secenekler": [
+            {
+                "id": "mir_1",
+                "metin": "O arsa benim hakkım, gerekirse 5.000 Dolar avukata dökerim!",
+                "nakit_etki_usd": -5000,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 5000
+                },
+                "sabir_etki": -10,
+                "bias_etki": {
+                    "loss_aversion": 25
+                }
+            },
+            {
+                "id": "mir_2",
+                "metin": "Lanet olsun öyle arsaya, haklarımdan feragat ediyorum.",
+                "mutluluk_etki": 10,
+                "sabir_etki": 15,
+                "bias_etki": {
+                    "loss_aversion": -15
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_zen_melek",
+        "kategori": "ana_event",
+        "event_kilidi": {
+            "tur": "nakit_usd",
+            "min": 100000
+        },
+        "baslik": "Melek Yatırımcı Hevesi",
+        "metin": "Zenginliğin duyulmaya başladı. Üniversiteden genç bir girişimci muazzam bir 'Yapay Zeka' fikriyle geldi. İşe yaramaz da olabilir, yeni Google da olabilir. Tohum yatırımı için 25.000 USD istiyor.",
+        "bias_etiketi": "present_bias",
+        "secenekler": [
+            {
+                "id": "zen_1",
+                "metin": "Vizyoner adamım ben! Al sana 25.000 Dolar!",
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 25000
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "agirlik": 30,
+                        "sonuc_metin": "Girişim muazzam başarılı oldu! Yatırımın ikiye katlandı.",
+                        "nakit_etki_usd": 25000,
+                        "mutluluk_etki": 20,
+                        "bias_etki": {
+                            "present_bias": 20
+                        }
+                    },
+                    {
+                        "agirlik": 70,
+                        "sonuc_metin": "Girişim battı, çocuklar parayı yaktı. Yatırımın yarısı buhar oldu (kalanı zor kurtardın).",
+                        "nakit_etki_usd": -12500,
+                        "mutluluk_etki": -10,
+                        "bias_etki": {
+                            "present_bias": 20
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "zen_2",
+                "metin": "Fikrini sevdim ama riskli, reddederim.",
+                "sabir_etki": 10,
+                "bias_etki": {
+                    "loss_aversion": 10
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_zen_muzayede",
+        "kategori": "ana_event",
+        "event_kilidi": {
+            "tur": "nakit_usd",
+            "min": 250000
+        },
+        "baslik": "Gösterişli Sanat Müzayedesi",
+        "metin": "Son derece elit bir kulübün gizli açık artırmasına davet edildin. Herkesin gözü önünde nadide bir tablo satılıyor. Orada olmak bir statü meselesi.",
+        "bias_etiketi": "anchoring",
+        "secenekler": [
+            {
+                "id": "muz_1",
+                "metin": "Statü her şeydir! Tabloyu 50.000 Dolara ben alıyorum!",
+                "nakit_etki_usd": -50000,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 50000
+                },
+                "mutluluk_etki": 40,
+                "sabir_etki": -10,
+                "bias_etki": {
+                    "anchoring": 20
+                }
+            },
+            {
+                "id": "muz_2",
+                "metin": "Ben buraya sadece şampanya içmeye geldim.",
+                "mutluluk_etki": -5,
+                "sabir_etki": 15,
+                "bias_etki": {
+                    "present_bias": -10
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_zen_maliye",
+        "kategori": "ana_event",
+        "event_kilidi": {
+            "tur": "nakit_usd",
+            "min": 500000
+        },
+        "baslik": "Acımasız Vergi Denetimi",
+        "metin": "Çok para çok dert... Maliyenin radarına takıldın ve çok kapsamlı, yorucu bir vergi denetimi geçiriyorsun. Ufak bir hata 100.000 Dolar cezaya patlayabilir.",
+        "bias_etiketi": "loss_aversion",
+        "secenekler": [
+            {
+                "id": "mal_1",
+                "metin": "Pahalı ama garantili kurumsal bir danışmanlık firması tutayım.",
+                "nakit_etki_usd": -15000,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 15000
+                },
+                "sabir_etki": 20,
+                "bias_etki": {
+                    "loss_aversion": 20
+                }
+            },
+            {
+                "id": "mal_2",
+                "metin": "Kendi muhasebecimle ve kendi bilgimle hallederim.",
+                "olasilik_sonuclari": [
+                    {
+                        "agirlik": 100,
+                        "sonuc_metin": "Ceza yemedin ama stresten ülser oldun!",
+                        "mutluluk_etki": -30,
+                        "sabir_etki": -30,
+                        "bias_etki": {
+                            "loss_aversion": -10
+                        }
+                    }
+                ]
             }
         ]
     }

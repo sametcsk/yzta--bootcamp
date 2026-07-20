@@ -152,6 +152,8 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
         "enf_durum": enf_durum
     }
 
+    nakit_usd = state.get("nakit", 0) / kur if kur > 0 else 0
+
     # 7. Event
     secilen_event = event_sec(
         mevcut_yil=mevcut_yil,
@@ -162,7 +164,8 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
         portfoy=state.get("portfoy", {}),
         is_yeri=is_yeri,
         is_level=is_level,
-        makro_veriler=makro_veriler
+        makro_veriler=makro_veriler,
+        nakit_usd=nakit_usd
     )
 
     # Fısıltı Mantığı (Gelecek Yıl Tahmini) ve Yan Eventler
