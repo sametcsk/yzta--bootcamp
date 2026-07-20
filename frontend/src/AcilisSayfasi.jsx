@@ -40,7 +40,7 @@ export default function AcilisSayfasi({ onBaslat, fiyatlar }) {
 
             <div className="text-on-surface text-body-lg flex flex-col gap-3">
               <p>
-                Bu simülasyonda 25 yaşından başlayarak 60 yıllık bir finansal yolculuğa çıkacaksın. Karşına çıkan fırsatlara, krizlere ve rastgele olaylara vereceğin cevaplar; finansal gücünü, meslek hayatını ve psikolojik durumunu (sabır ve mutluluk) şekillendirecek.
+                Bu simülasyonda 18 yaşından başlayarak 60 yıllık bir finansal yolculuğa çıkacaksın. Karşına çıkan fırsatlara, krizlere ve rastgele olaylara vereceğin cevaplar; finansal gücünü, meslek hayatını ve psikolojik durumunu (sabır ve mutluluk) şekillendirecek.
               </p>
               <p>
                 Amacın hayatta kalmak ve servetini büyütmek. Ancak en büyük düşmanın <strong className="text-error uppercase">Enflasyon</strong>!
@@ -100,7 +100,7 @@ export default function AcilisSayfasi({ onBaslat, fiyatlar }) {
           </div>
 
           <p className="text-on-surface-variant text-body-lg mt-2">
-            25 yaşında başla. 60 yıllık bir ömür boyunca gerçekçi Türkiye ekonomisinde
+            18 yaşında başla. 60 yıllık bir ömür boyunca gerçekçi Türkiye ekonomisinde
             finansal kararlar al. Her seçim karakterini şekillendirir — oyun sonunda
             kararlarının davranışsal izini gör.
           </p>

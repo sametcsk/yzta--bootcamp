@@ -1,20 +1,23 @@
 import IntroEkrani from "./IntroEkrani"
 import VarlikSayfasi from "./VarlikSayfasi"
 import YasamStandartlari from "./YasamStandartlari"
-import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalitesiEtkisi } from "./data/standartlar"
+import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalitesiEtkisi, luksPuaniHesapla } from "./data/standartlar"
 import PortfoySayfasi from "./PortfoySayfasi"
 import AcilisSayfasi from "./AcilisSayfasi"
+import HikayeEkrani from "./HikayeEkrani"
+import KariyerSayfasi from "./KariyerSayfasi"
+import BankaSekmesi from "./BankaSekmesi"
 import TutorialModal from "./TutorialModal"
 import { TutorialProvider, useTutorial } from "./TutorialContext"
 import { TUTORIAL_ADIMLARI } from "./TutorialAdimlari"
 import { TutorialOdak, TutorialKutusu } from "./TutorialComponents"
+import { MESLEKLER, pozisyonAdiGetir, levelCarpaniGetir, yeniIlanlarUret } from "./data/meslekler"
 import erkekImg from "./assets/erkek.png"
 import kadinImg from "./assets/kadin.png"
 import { useEffect, useRef, useState } from "react"
 import BitisSayfasi from "./BitisSayfasi"
 import GirisSayfasi from "./GirisSayfasi"
 import { supabase, supabaseAktif } from "./supabaseClient"
-import { pozisyonAdiGetir, levelCarpaniGetir } from "./data/meslekler"
 import BorsaSayfasi from "./BorsaSayfasi"
 import { formatAssetPrice } from "./utils"
 
@@ -58,13 +61,59 @@ function AppInner() {
 
   const [gameState, setGameState] = useState(INITIAL_STATE)
   const [yil, setYil] = useState(2025)
-  const [yas, setYas] = useState(25)
+  const [yas, setYas] = useState(18)
   const [sonuc, setSonuc] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [gecmis, setGecmis] = useState([])
+  const [isLevel, setIsLevel] = useState(1)
+  
+  // Kariyer ve Eğitim State'leri
+  const [sinavPuani, setSinavPuani] = useState(null)
+  const [okunanBolum, setOkunanBolum] = useState(null)
+  const [universiteYili, setUniversiteYili] = useState(0)
+  const [mezunOlunanBolum, setMezunOlunanBolum] = useState(null)
+  const [calismaBari, setCalismaBari] = useState(0)
+  const [isIlanlari, setIsIlanlari] = useState([])
+  const [mezunaKalmaSayisi, setMezunaKalmaSayisi] = useState(0)
+  const [buYilSinavaGirdiMi, setBuYilSinavaGirdiMi] = useState(false)
+  const [zorluk, setZorluk] = useState("Orta")
+  const [sikiCalisAktif, setSikiCalisAktif] = useState(false)
+  const [cvGecmisi, setCvGecmisi] = useState([])
+  const [maasEndeksi, setMaasEndeksi] = useState(1.0)
+
+  // Banka State'leri
+  const [kredi, setKredi] = useState(null)
+  const [krediNotu, setKrediNotu] = useState(500)
+  const [iflasSayisi, setIflasSayisi] = useState(0)
+  const [hacizUyarisiAcik, setHacizUyarisiAcik] = useState(false)
+  
+  // Bias Heuristics Metrikleri
+  const [biasMetrics, setBiasMetrics] = useState({
+    luksYasamPuani: 0,
+    ihtiyacDisiKrediSayisi: 0,
+    panikSatisSayisi: 0,
+    dusenBicakAlimSayisi: 0,
+    borcluykenYatirimSayisi: 0,
+    erkenKarSatisSayisi: 0,
+    toplamYil: 0,
+    eventSkorlari: {
+      present_bias: 0,
+      loss_aversion: 0,
+      anchoring: 0,
+      mental_accounting: 0,
+      disposition_effect: 0
+    },
+    eventSayilari: {
+      present_bias: 0,
+      loss_aversion: 0,
+      anchoring: 0,
+      mental_accounting: 0,
+      disposition_effect: 0
+    }
+  })
   const [bars, setBars] = useState({ sabir: 50, mutluluk: 50 })
   const [nakit, setNakit] = useState(25000)
   const [introTamamlandi, setIntroTamamlandi] = useState(false)
+  const [hikayeGoruldu, setHikayeGoruldu] = useState(false)
   const [acilisGecildi, setAcilisGecildi] = useState(false)
   const [karakterProfili, setKarakterProfili] = useState(null)
   const [aktifSayfa, setAktifSayfa] = useState("ana")
@@ -97,7 +146,6 @@ function AppInner() {
   const [standartlar, setStandartlar] = useState(VARSAYILAN_STANDARTLAR)
   const [finalRaporHata, setFinalRaporHata] = useState(false)
   const [isYeri, setIsYeri] = useState(null)
-  const [isLevel, setIsLevel] = useState(1)
   const [cinsiyet, setCinsiyet] = useState(null)
   const [temelMaas, setTemelMaas] = useState(0)
   const [emlakPiyasasi, setEmlakPiyasasi] = useState([])
@@ -119,6 +167,7 @@ function AppInner() {
   const [mevcutEvent, setMevcutEvent] = useState(null)
   const [eventGecmisi, setEventGecmisi] = useState({})
   const [tetiklenenler, setTetiklenenler] = useState([])
+  const [eventKuyrugu, setEventKuyrugu] = useState([])
   const [eventKayitlari, setEventKayitlari] = useState([])
   const [coachYorumu, setCoachYorumu] = useState(null)
   const [coachLoading, setCoachLoading] = useState(false)
@@ -228,7 +277,21 @@ function AppInner() {
   }, [])
 
 
+  const handleYilAtlaTikla = () => {
+    // Gelecek yılı kestirmeye çalış
+    const beklenenKira = sahipOlunanEvler.filter(ev => ev.kirada).reduce((acc, ev) => acc + (ev.fiyat_usd_taban * (fiyatlar.dolar_try || 40) * ev.kira_orani), 0)
+    const beklenenTaksit = kredi ? kredi.yillikTaksit : 0
+    const beklenenNakit = nakit + yillikGelir - yasamGideri + beklenenKira - beklenenTaksit
+
+    if (beklenenNakit < 0) {
+      setHacizUyarisiAcik(true)
+    } else {
+      yilAtla()
+    }
+  }
+
   async function yilAtla() {
+    setHacizUyarisiAcik(false)
     setAktifSayfa("ana")
     setLoading(true)
 
@@ -245,7 +308,49 @@ function AppInner() {
     const emlakTL0 = sahipOlunanEvler.reduce((t, ev) => t + evGuncelDegerHesapla(ev), 0)
     const toplam0 = nakit0 + mevduat0 + altinTL0 + bistTL0 + bistBankacilikTL0 + bistTeknolojiTL0 + bistInsaatTL0 + bistSaglikTL0 + bistPerakendeTL0 + dolarTL0 + emlakTL0
 
+    // Eğitim ve Kariyer İlerletme Mantığı
+    let yeniUniversiteYili = universiteYili
+    let yeniMezunOlunanBolum = mezunOlunanBolum
+    let yeniOkunanBolum = okunanBolum
+    
+    if (universiteYili > 0 && universiteYili < 4) {
+      yeniUniversiteYili += 1
+      if (yeniUniversiteYili === 4) {
+        // Mezuniyeti hemen ver ki aynı yıl iş ilanlarına başvurabilsin
+        yeniMezunOlunanBolum = okunanBolum
+        yeniOkunanBolum = null
+        yeniUniversiteYili = 0
+      }
+    }
+    
+    // Çalışma Barı Artışı
+    let yeniCalismaBari = calismaBari
+    if (isYeri && isYeri !== "lise_mezunu") {
+       const isVasifsiz = MESLEKLER[isYeri] && !MESLEKLER[isYeri].gereksinim;
+       if (isVasifsiz) {
+         yeniCalismaBari += sikiCalisAktif ? 3 : 2
+       } else {
+         yeniCalismaBari += sikiCalisAktif ? 2 : 1
+       }
+    }
+    
+    // Otomatik Mezuna Kalma ve Sınav Hakkı Yenileme
+    if (sinavPuani !== null && !yeniOkunanBolum) {
+      setMezunaKalmaSayisi(prev => prev + 1)
+      setSinavPuani(null)
+    }
+    setBuYilSinavaGirdiMi(false)
 
+    setUniversiteYili(yeniUniversiteYili)
+    setMezunOlunanBolum(yeniMezunOlunanBolum)
+    setOkunanBolum(yeniOkunanBolum)
+    setCalismaBari(yeniCalismaBari)
+
+    setBiasMetrics(prev => ({
+      ...prev,
+      luksYasamPuani: prev.luksYasamPuani + luksPuaniHesapla(standartlar, sahipOlunanEvler),
+      toplamYil: prev.toplamYil + 1
+    }));
 
     try {
       const res = await fetch(`${API_BASE_URL}/yil-atla`, {
@@ -261,6 +366,7 @@ function AppInner() {
           is_yeri: isYeri,
           is_level: isLevel,
           sektor_ekstra_getiri: bekleyenSektorEkstraGetiriRef.current,
+          universite_yili: yeniUniversiteYili,
         }),
       })
       bekleyenSektorEkstraGetiriRef.current = null;
@@ -296,7 +402,13 @@ function AppInner() {
       const yeniGelir = Math.round(yeniTemelMaas * levelCarpaniGetir(isYeri, isLevel))
       const yeniGider = Math.round(yasamGideri * (1 + data.yil_sonucu.enflasyon / 100))
       setTemelMaas(yeniTemelMaas)
-      setYillikGelir(yeniGelir)
+      setYasamGideri(yeniGider)
+      
+      const yeniMaasEndeksi = maasEndeksi * (1 + data.yil_sonucu.enflasyon / 100)
+      setMaasEndeksi(yeniMaasEndeksi)
+      
+      // İş ilanlarını yenile
+      setIsIlanlari(yeniIlanlarUret(yeniMaasEndeksi))
 
       const yeniDolarKuru = data.yil_sonucu.fiyatlar.dolar_try
       setYasamGideri(Math.round(toplamAylikUsd(standartlar, YASAM_STANDARTLARI) * yeniDolarKuru * 12))
@@ -350,11 +462,97 @@ function AppInner() {
       setKiraGeliriYillik(kiraGeliriToplam)
 
       let yeniNakit = nakitRef.current + yeniGelir - yeniGider + kiraGeliriToplam
+      if (kredi) {
+        yeniNakit -= kredi.yillikTaksit
+      }
+
+      // HACİZ VE İFLAS LİGİĞİ
+      if (yeniNakit < 0) {
+        // Sırasıyla tasfiye
+        // 1. Mevduat
+        if (yeniNakit < 0 && portfoy.mevduat_tl > 0) {
+          yeniNakit += portfoy.mevduat_tl
+          setPortfoy(p => ({ ...p, mevduat_tl: 0 }))
+        }
+        // 2. Altın ve Döviz
+        if (yeniNakit < 0 && portfoy.altin_gram > 0) {
+          yeniNakit += Math.round(portfoy.altin_gram * data.yil_sonucu.fiyatlar.altin_try_gram)
+          setPortfoy(p => ({ ...p, altin_gram: 0 }))
+        }
+        if (yeniNakit < 0 && portfoy.dolar > 0) {
+          yeniNakit += Math.round(portfoy.dolar * data.yil_sonucu.fiyatlar.dolar_try)
+          setPortfoy(p => ({ ...p, dolar: 0 }))
+        }
+        // 3. Hisseler
+        const hisseler = ["bist_adet", "bist_bankacilik_adet", "bist_teknoloji_adet", "bist_insaat_adet", "bist_saglik_adet", "bist_perakende_adet"]
+        const hisseFiyat = ["bist_endeks", "bist_bankacilik", "bist_teknoloji", "bist_insaat", "bist_saglik", "bist_perakende"]
+        for (let i = 0; i < hisseler.length; i++) {
+          if (yeniNakit < 0 && portfoy[hisseler[i]] > 0) {
+            yeniNakit += Math.round(portfoy[hisseler[i]] * data.yil_sonucu.fiyatlar[hisseFiyat[i]])
+            setPortfoy(p => ({ ...p, [hisseler[i]]: 0 }))
+          }
+        }
+        // 4. Araçlar
+        if (yeniNakit < 0 && sahipOlunanAraclar.length > 0) {
+          sahipOlunanAraclar.forEach(arac => {
+            if (yeniNakit < 0) {
+              const deg = Math.round(arac.alis_fiyati_usd * Math.pow(1 - arac.amortisman_orani, yeniYil - arac.alinma_yili) * data.yil_sonucu.fiyatlar.dolar_try)
+              yeniNakit += deg
+              setSahipOlunanAraclar(prev => prev.filter(a => a.id !== arac.id))
+            }
+          })
+        }
+        // 5. Evler
+        if (yeniNakit < 0 && sahipOlunanEvler.length > 0) {
+          sahipOlunanEvler.forEach(ev => {
+            if (yeniNakit < 0) {
+              const deg = Math.round(ev.fiyat_usd_taban * (data.emlak_endeksi_usd / 100) * data.yil_sonucu.fiyatlar.dolar_try)
+              yeniNakit += deg
+              setSahipOlunanEvler(prev => prev.filter(e => e.id !== ev.id))
+              if (ev.id === oturulanEvId) setOturulanEvId(null)
+            }
+          })
+        }
+
+        // 6. Hala negatifse: İFLAS
+        if (yeniNakit < 0) {
+          yeniNakit = 0
+          setIflasSayisi(prev => prev + 1)
+          setKredi(null)
+          setKrediNotu(0)
+          setBars({ sabir: 0, mutluluk: 0 })
+          setMevcutEvent({
+            baslik: "İFLAS ETTİNİZ!",
+            metin: "Borçlarınızı karşılayacak hiçbir varlığınız kalmadı. Kredi borcunuz sıfırlandı ancak kredi notunuz dibi gördü ve tüm birikiminizi kaybettiniz. Ağır bir depresyon yaşıyorsunuz...",
+            secenekler: [{ metin: "Her şeye sıfırdan başla.", nakit_etki_usd: 0, sabir_etki: 0, mutluluk_etki: 0 }]
+          })
+        }
+      }
+
+      if (kredi && yeniNakit >= 0) {
+        if (kredi.kalanVade <= 1) {
+          setKredi(null)
+          setKrediNotu(prev => Math.min(1000, prev + 25))
+        } else {
+          setKredi(prev => ({ ...prev, kalanVade: prev.kalanVade - 1, borc: prev.borc - prev.yillikTaksit }))
+        }
+      }
+
       if (data.yil_sonucu.redenominasyon) {
         yeniNakit = Math.round(yeniNakit / 1000)
         setYillikGelir(Math.round(yeniGelir / 1000))
         setYasamGideri(Math.round(yeniGider / 1000))
         setTemelMaas(Math.round(yeniTemelMaas / 1000))
+        if (kredi) {
+           setKredi(prev => prev ? ({
+             ...prev,
+             anapara: Math.round(prev.anapara / 1000),
+             borc: Math.round(prev.borc / 1000),
+             yillikTaksit: Math.round(prev.yillikTaksit / 1000)
+           }) : null)
+        }
+      } else {
+        setYillikGelir(yeniGelir)
       }
       nakitiGuncelle(yeniNakit)
 
@@ -411,10 +609,16 @@ function AppInner() {
         finansalDebuff = { mutluluk: -3, sabir: -2 }
       }
 
+      // Sıkı Çalış Debuff
+      let sikiCalisDebuff = { mutluluk: 0, sabir: 0 }
+      if (sikiCalisAktif && isYeri && isYeri !== "lise_mezunu") {
+        sikiCalisDebuff = { mutluluk: -7, sabir: 3 }
+      }
+
       // Barları güncelle
       setBars(prev => ({
-        sabir: Math.min(100, Math.max(20, prev.sabir + kalite.sabir + finansalDebuff.sabir)),
-        mutluluk: Math.min(100, Math.max(20, prev.mutluluk + kalite.mutluluk + finansalDebuff.mutluluk)),
+        sabir: Math.min(100, Math.max(20, prev.sabir + kalite.sabir + finansalDebuff.sabir + sikiCalisDebuff.sabir)),
+        mutluluk: Math.min(100, Math.max(20, prev.mutluluk + kalite.mutluluk + finansalDebuff.mutluluk + sikiCalisDebuff.mutluluk)),
       }))
 
       setSonuc(data.yil_sonucu)
@@ -451,16 +655,51 @@ function AppInner() {
       })
 
 
+      // Event Kuyruğu
+      const yeniEventler = [];
       if (data.yil_sonucu.event) {
+        yeniEventler.push(data.yil_sonucu.event);
+      }
+      if (data.yil_sonucu.yan_eventler && data.yil_sonucu.yan_eventler.length > 0) {
+        yeniEventler.push(...data.yil_sonucu.yan_eventler);
+      }
+      // Terfi Eventi Intercept (Side Event Olarak Kuyruğa Ekle)
+      if (yeniCalismaBari >= 10 && isYeri && isYeri !== "lise_mezunu" && isLevel < 5) {
+        // %70 başarı şansı arka planda hesaplanacak
+        const basariliMi = Math.random() < 0.70;
+        yeniEventler.push({
+          id: "ev_terfi_sinavi",
+          tek_seferlik: false,
+          tip: "kariyer",
+          baslik: "Kariyer Sınavı",
+          metin: "Uzun süredir aynı pozisyonda çalışıyorsun. Tecrübe barın doldu ve artık terfi etme zamanın geldi. Üst yönetim yeteneklerini değerlendiriyor...",
+          secenekler: [
+            {
+               id: "degerlendirmeye_gir",
+               metin: "Terfi Değerlendirmesine Gir",
+               olasilik_sonuclari: [
+                 {
+                   agirlik: 100,
+                   sonuc_metin: basariliMi ? "Harika! Yönetim performansından çok memnun, terfi aldın ve maaş katsayın arttı." : "Maalesef terfi alamadın. Yönetim daha fazlasını bekliyor. Bar 6'ya düştü.",
+                   terfi_sonucu: basariliMi ? "kabul" : "red",
+                   mutluluk_etki: basariliMi ? 5 : -5,
+                   sabir_etki: basariliMi ? 5 : 0
+                 }
+               ]
+            }
+          ]
+        })
+      }
+
+      if (yeniEventler.length > 0) {
+        setMevcutEvent(yeniEventler[0])
+        setEventKuyrugu(yeniEventler.slice(1))
+        
+        yeniEventler.forEach(ev => {
+           setEventGecmisi(prev => ({ ...prev, [ev.id]: yil + 1 }))
+           if (ev.tek_seferlik) setTetiklenenler(prev => [...prev, ev.id])
+        })
         setCoachYorumu(null)
-        setMevcutEvent(data.yil_sonucu.event)
-        setEventGecmisi(prev => ({
-          ...prev,
-          [data.yil_sonucu.event.id]: yil + 1
-        }))
-        if (data.yil_sonucu.event.tek_seferlik) {
-          setTetiklenenler(prev => [...prev, data.yil_sonucu.event.id])
-        }
       }
       
       if (data.yil_sonucu.oyun_bitti) {
@@ -472,7 +711,6 @@ function AppInner() {
         })
       }
 
-      setGecmis(prev => [...prev, { yil: yeniYil, yas: yeniYas, ...data.yil_sonucu }])
       // Enflasyon endeksi güncelle
       const yeniEnflasyonEndeksi = enflasyonEndeksi * (1 + data.yil_sonucu.enflasyon / 100)
       setEnflasyonEndeksi(yeniEnflasyonEndeksi)
@@ -553,6 +791,24 @@ function AppInner() {
     setTutorialAktif(!!sonuc.tutorialGoster)
     if (sonuc.cinsiyet) setCinsiyet(sonuc.cinsiyet)
 
+    if (sonuc.nakit >= 200000) {
+      setSahipOlunanAraclar([{
+        id: "arac_" + Date.now(),
+        segment: "ucuz",
+        gorsel: "ucuz",
+        alinma_yili: 0,
+        alis_fiyati_usd: 8000,
+        amortisman_orani: 0.15,
+        bakim_masrafi_orani: 0.05
+      }])
+    }
+
+    setIntroTamamlandi(true) // Render HikayeEkrani with loading state immediately
+    
+    if (sonuc.nakit === 5000) setZorluk("Zor")
+    else if (sonuc.nakit === 200000) setZorluk("Kolay")
+    else setZorluk("Orta")
+    
     try {
       const res = await fetch(`${API_BASE_URL}/ajanlar/profil`, {
         method: "POST",
@@ -576,8 +832,6 @@ function AppInner() {
       console.error(error)
       setKarakterProfili(null)
     }
-
-    setIntroTamamlandi(true)
   }
 
   function tekrarOyna() {
@@ -625,7 +879,11 @@ function AppInner() {
 
   function sonucKartiniKapat() {
     setSonucKarti(null)
-    if (bekleyenEventKaydiRef.current) {
+    
+    if (eventKuyrugu.length > 0) {
+      setMevcutEvent(eventKuyrugu[0])
+      setEventKuyrugu(prev => prev.slice(1))
+    } else if (bekleyenEventKaydiRef.current) {
       kocYorumunuGetir(bekleyenEventKaydiRef.current)
       bekleyenEventKaydiRef.current = null
     }
@@ -645,6 +903,24 @@ function AppInner() {
       sabir: Math.min(100, Math.max(20, prev.sabir + (secenek.sabir_etki || 0))),
       mutluluk: Math.min(100, Math.max(20, prev.mutluluk + (secenek.mutluluk_etki || 0))),
     }))
+
+    if (secenek.bias_etki) {
+      setBiasMetrics(prev => {
+        let yeniSkorlari = { ...prev.eventSkorlari }
+        let yeniSayilari = { ...prev.eventSayilari }
+        for (const [key, value] of Object.entries(secenek.bias_etki)) {
+          if (yeniSkorlari[key] !== undefined) {
+             yeniSkorlari[key] += value
+             yeniSayilari[key] += 1
+          }
+        }
+        return {
+          ...prev,
+          eventSkorlari: yeniSkorlari,
+          eventSayilari: yeniSayilari
+        }
+      })
+    }
 
     if (secenek.nakit_etki_usd && secenek.nakit_etki_usd !== 0) {
       const guncelDolarKuru = fiyatlar?.dolar_try || 40;
@@ -673,14 +949,20 @@ function AppInner() {
     }
 
     if (secenek.aksiyon) {
-      const { tip, sektor, oran } = secenek.aksiyon
-      const adetKey = `bist_${sektor}_adet`
-      const fiyatKey = `bist_${sektor}`
-      const mevcutPay = portfoy[adetKey] || 0
-      const guncelFiyat = fiyatlar[fiyatKey] || 100
-      const mevcutDeger = mevcutPay * guncelFiyat
+      const { tip, sektor, oran, yeni_is } = secenek.aksiyon
+      
+      if (tip === "is_degistir" && yeni_is) {
+        setIsYeri(yeni_is)
+        setIsLevel(1)
+        setCalismaBari(0)
+      } else {
+        const adetKey = `bist_${sektor}_adet`
+        const fiyatKey = `bist_${sektor}`
+        const mevcutPay = portfoy[adetKey] || 0
+        const guncelFiyat = fiyatlar[fiyatKey] || 100
+        const mevcutDeger = mevcutPay * guncelFiyat
 
-      if (tip === "sektor_al") {
+        if (tip === "sektor_al") {
         const alinacakTutar = mevcutDeger * oran
         if (nakitRef.current >= alinacakTutar) {
           const alinacakPay = alinacakTutar / guncelFiyat
@@ -710,6 +992,7 @@ function AppInner() {
         }))
       }
     }
+  }
 
     const eventKaydi = {
       year: yil,
@@ -739,11 +1022,50 @@ function AppInner() {
           getiri: cikanDal.sektor_ekstra_getiri
         }
       }
+      
+      if (cikanDal.portfoy_etki && cikanDal.portfoy_etki.dinamik_hisse_adet) {
+        const adet = cikanDal.portfoy_etki.dinamik_hisse_adet
+        let sektorKey = "bist_perakende_adet"
+        if (isYeri === "muhendis") sektorKey = "bist_teknoloji_adet"
+        else if (isYeri === "doktor") sektorKey = "bist_saglik_adet"
+        else if (isYeri === "ekonomist") sektorKey = "bist_bankacilik_adet"
+        else if (isYeri === "insaat_iscisi") sektorKey = "bist_insaat_adet"
+        
+        setPortfoy(prev => ({
+          ...prev,
+          [sektorKey]: (prev[sektorKey] || 0) + adet
+        }))
+      }
+      
+      if (cikanDal.terfi_sonucu) {
+        if (cikanDal.terfi_sonucu === "kabul") {
+          setIsLevel(prev => {
+            const newLevel = Math.min(prev + 1, 5)
+            setCvGecmisi(oldCv => [{ yil: yil+1, yas: yas+1, unvan: pozisyonAdiGetir(isYeri, newLevel), isYeri: MESLEKLER[isYeri]?.ad }, ...oldCv])
+            return newLevel
+          })
+          setCalismaBari(0)
+        } else {
+          setCalismaBari(6) // 10 üzerinden 6'ya düşüyor
+        }
+      }
+
+      if (cikanDal.mutluluk_etki || cikanDal.sabir_etki) {
+         setBars(prev => ({
+            sabir: Math.min(100, Math.max(20, prev.sabir + (cikanDal.sabir_etki || 0))),
+            mutluluk: Math.min(100, Math.max(20, prev.mutluluk + (cikanDal.mutluluk_etki || 0))),
+         }))
+      }
 
       bekleyenEventKaydiRef.current = eventKaydi
       setSonucKarti({ baslik: secilenEvent.baslik, metin: cikanDal.sonuc_metin })
     } else {
-      kocYorumunuGetir(eventKaydi)
+      if (eventKuyrugu.length > 0) {
+        setMevcutEvent(eventKuyrugu[0])
+        setEventKuyrugu(prev => prev.slice(1))
+      } else {
+        kocYorumunuGetir(eventKaydi)
+      }
     }
   }
 
@@ -757,7 +1079,14 @@ function AppInner() {
         body: JSON.stringify({
           profile: karakterProfili,
           event_history: eventKayitlari,
-          final_state: { year: yil, age: yas, cash: nakit, net_worth: toplamDeger },
+          final_state: { 
+            year: yil, 
+            age: yas, 
+            cash: nakit, 
+            net_worth: toplamDeger, 
+            bankruptcy_count: iflasSayisi,
+            bias_metrics: biasMetrics
+          },
         }),
       })
       if (!res.ok) throw new Error("Final raporu oluşturulamadı.")
@@ -771,19 +1100,19 @@ function AppInner() {
   }
 
   function varlikAl(varlik, miktar) {
-    const miktarSayi = parseFloat(miktar)
-    if (!miktarSayi || miktarSayi <= 0) return
+    const mSayi = parseFloat(miktar)
+    if (!mSayi || mSayi <= 0) return
 
     let maliyet = 0
-    if (varlik === "altin") maliyet = miktarSayi * fiyatlar.altin_try_gram
-    if (varlik === "bist") maliyet = miktarSayi * fiyatlar.bist_endeks
-    if (varlik === "bist_bankacilik") maliyet = miktarSayi * fiyatlar.bist_bankacilik
-    if (varlik === "bist_teknoloji") maliyet = miktarSayi * fiyatlar.bist_teknoloji
-    if (varlik === "bist_insaat") maliyet = miktarSayi * fiyatlar.bist_insaat
-    if (varlik === "bist_saglik") maliyet = miktarSayi * fiyatlar.bist_saglik
-    if (varlik === "bist_perakende") maliyet = miktarSayi * fiyatlar.bist_perakende
-    if (varlik === "dolar") maliyet = miktarSayi * fiyatlar.dolar_try
-    if (varlik === "mevduat") maliyet = miktarSayi
+    if (varlik === "altin") maliyet = mSayi * fiyatlar.altin_try_gram
+    if (varlik === "bist") maliyet = mSayi * fiyatlar.bist_endeks
+    if (varlik === "bist_bankacilik") maliyet = mSayi * fiyatlar.bist_bankacilik
+    if (varlik === "bist_teknoloji") maliyet = mSayi * fiyatlar.bist_teknoloji
+    if (varlik === "bist_insaat") maliyet = mSayi * fiyatlar.bist_insaat
+    if (varlik === "bist_saglik") maliyet = mSayi * fiyatlar.bist_saglik
+    if (varlik === "bist_perakende") maliyet = mSayi * fiyatlar.bist_perakende
+    if (varlik === "dolar") maliyet = mSayi * fiyatlar.dolar_try
+    if (varlik === "mevduat") maliyet = mSayi
 
     if (maliyet > nakitRef.current) {
       alert("Yeterli nakit yok!")
@@ -791,6 +1120,16 @@ function AppInner() {
     }
 
     nakitiGuncelle(Math.round(nakitRef.current - maliyet))
+    // Bias Metrik: Borçluyken yatırım yapmak (Mental Accounting)
+    if (kredi !== null && varlik !== "mevduat" && varlik !== "dolar") {
+      setBiasMetrics(prev => ({ ...prev, borcluykenYatirimSayisi: prev.borcluykenYatirimSayisi + 1 }))
+    }
+
+    // Bias Metrik: Düşen Bıçağı Tutmak (Anchoring) - krizdeyken hisse vs. almak
+    if (varlik.startsWith("bist") && gameState.enf_kriz_mevcut) {
+      setBiasMetrics(prev => ({ ...prev, dusenBicakAlimSayisi: prev.dusenBicakAlimSayisi + 1 }))
+    }
+
     // Katsayıyı başlat — null ise 1.0'dan başla, değilse devam et
     setVarlikKatsayilari(prev => ({
       ...prev,
@@ -798,50 +1137,60 @@ function AppInner() {
     }))
     setPortfoy(prev => ({
       ...prev,
-      altin_gram: varlik === "altin" ? prev.altin_gram + miktarSayi : prev.altin_gram,
-      bist_adet: varlik === "bist" ? prev.bist_adet + miktarSayi : prev.bist_adet,
-      bist_bankacilik_adet: varlik === "bist_bankacilik" ? (prev.bist_bankacilik_adet || 0) + miktarSayi : (prev.bist_bankacilik_adet || 0),
-      bist_teknoloji_adet: varlik === "bist_teknoloji" ? (prev.bist_teknoloji_adet || 0) + miktarSayi : (prev.bist_teknoloji_adet || 0),
-      bist_insaat_adet: varlik === "bist_insaat" ? (prev.bist_insaat_adet || 0) + miktarSayi : (prev.bist_insaat_adet || 0),
-      bist_saglik_adet: varlik === "bist_saglik" ? (prev.bist_saglik_adet || 0) + miktarSayi : (prev.bist_saglik_adet || 0),
-      bist_perakende_adet: varlik === "bist_perakende" ? (prev.bist_perakende_adet || 0) + miktarSayi : (prev.bist_perakende_adet || 0),
-      dolar: varlik === "dolar" ? prev.dolar + miktarSayi : prev.dolar,
-      mevduat_tl: varlik === "mevduat" ? prev.mevduat_tl + miktarSayi : prev.mevduat_tl,
+      altin_gram: varlik === "altin" ? prev.altin_gram + mSayi : prev.altin_gram,
+      bist_adet: varlik === "bist" ? prev.bist_adet + mSayi : prev.bist_adet,
+      bist_bankacilik_adet: varlik === "bist_bankacilik" ? (prev.bist_bankacilik_adet || 0) + mSayi : (prev.bist_bankacilik_adet || 0),
+      bist_teknoloji_adet: varlik === "bist_teknoloji" ? (prev.bist_teknoloji_adet || 0) + mSayi : (prev.bist_teknoloji_adet || 0),
+      bist_insaat_adet: varlik === "bist_insaat" ? (prev.bist_insaat_adet || 0) + mSayi : (prev.bist_insaat_adet || 0),
+      bist_saglik_adet: varlik === "bist_saglik" ? (prev.bist_saglik_adet || 0) + mSayi : (prev.bist_saglik_adet || 0),
+      bist_perakende_adet: varlik === "bist_perakende" ? (prev.bist_perakende_adet || 0) + mSayi : (prev.bist_perakende_adet || 0),
+      dolar: varlik === "dolar" ? prev.dolar + mSayi : prev.dolar,
+      mevduat_tl: varlik === "mevduat" ? prev.mevduat_tl + mSayi : prev.mevduat_tl,
     }))
   }
 
   function varlikSat(varlik, miktar) {
-    const miktarSayi = parseFloat(miktar)
-    if (!miktarSayi || miktarSayi <= 0) return
+    const mSayi = parseFloat(miktar)
+    if (!mSayi || mSayi <= 0) return
 
     let gelir = 0
-    if (varlik === "altin" && portfoy.altin_gram >= miktarSayi) gelir = miktarSayi * fiyatlar.altin_try_gram
-    if (varlik === "bist" && portfoy.bist_adet >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_endeks
-    if (varlik === "bist_bankacilik" && (portfoy.bist_bankacilik_adet || 0) >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_bankacilik
-    if (varlik === "bist_teknoloji" && (portfoy.bist_teknoloji_adet || 0) >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_teknoloji
-    if (varlik === "bist_insaat" && (portfoy.bist_insaat_adet || 0) >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_insaat
-    if (varlik === "bist_saglik" && (portfoy.bist_saglik_adet || 0) >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_saglik
-    if (varlik === "bist_perakende" && (portfoy.bist_perakende_adet || 0) >= miktarSayi) gelir = miktarSayi * fiyatlar.bist_perakende
-    if (varlik === "dolar" && portfoy.dolar >= miktarSayi) gelir = miktarSayi * fiyatlar.dolar_try
-    if (varlik === "mevduat" && portfoy.mevduat_tl >= miktarSayi) gelir = miktarSayi
+    if (varlik === "altin" && portfoy.altin_gram >= mSayi) gelir = mSayi * fiyatlar.altin_try_gram
+    if (varlik === "bist" && portfoy.bist_adet >= mSayi) gelir = mSayi * fiyatlar.bist_endeks
+    if (varlik === "bist_bankacilik" && (portfoy.bist_bankacilik_adet || 0) >= mSayi) gelir = mSayi * fiyatlar.bist_bankacilik
+    if (varlik === "bist_teknoloji" && (portfoy.bist_teknoloji_adet || 0) >= mSayi) gelir = mSayi * fiyatlar.bist_teknoloji
+    if (varlik === "bist_insaat" && (portfoy.bist_insaat_adet || 0) >= mSayi) gelir = mSayi * fiyatlar.bist_insaat
+    if (varlik === "bist_saglik" && (portfoy.bist_saglik_adet || 0) >= mSayi) gelir = mSayi * fiyatlar.bist_saglik
+    if (varlik === "bist_perakende" && (portfoy.bist_perakende_adet || 0) >= mSayi) gelir = mSayi * fiyatlar.bist_perakende
+    if (varlik === "dolar" && portfoy.dolar >= mSayi) gelir = mSayi * fiyatlar.dolar_try
+    if (varlik === "mevduat" && portfoy.mevduat_tl >= mSayi) gelir = mSayi
 
     if (gelir === 0) {
       alert("Yeterli varlık yok!")
       return
     }
 
+    // Bias Metrik: Panik Satışı (Kriz zamanı satmak)
+    if (varlik.startsWith("bist") && gameState.enf_kriz_mevcut) {
+      setBiasMetrics(prev => ({ ...prev, panikSatisSayisi: prev.panikSatisSayisi + 1 }))
+    }
+    
+    // Bias Metrik: Kârı Erken Kesme (Boğa piyasasında satmak)
+    if (varlik.startsWith("bist") && gameState.bist > 200 && !gameState.enf_kriz_mevcut) {
+      setBiasMetrics(prev => ({ ...prev, erkenKarSatisSayisi: prev.erkenKarSatisSayisi + 1 }))
+    }
+
     nakitiGuncelle(Math.round(nakitRef.current + gelir))
     setPortfoy(prev => ({
       ...prev,
-      altin_gram: varlik === "altin" ? prev.altin_gram - miktarSayi : prev.altin_gram,
-      bist_adet: varlik === "bist" ? prev.bist_adet - miktarSayi : prev.bist_adet,
-      bist_bankacilik_adet: varlik === "bist_bankacilik" ? (prev.bist_bankacilik_adet || 0) - miktarSayi : (prev.bist_bankacilik_adet || 0),
-      bist_teknoloji_adet: varlik === "bist_teknoloji" ? (prev.bist_teknoloji_adet || 0) - miktarSayi : (prev.bist_teknoloji_adet || 0),
-      bist_insaat_adet: varlik === "bist_insaat" ? (prev.bist_insaat_adet || 0) - miktarSayi : (prev.bist_insaat_adet || 0),
-      bist_saglik_adet: varlik === "bist_saglik" ? (prev.bist_saglik_adet || 0) - miktarSayi : (prev.bist_saglik_adet || 0),
-      bist_perakende_adet: varlik === "bist_perakende" ? (prev.bist_perakende_adet || 0) - miktarSayi : (prev.bist_perakende_adet || 0),
-      dolar: varlik === "dolar" ? prev.dolar - miktarSayi : prev.dolar,
-      mevduat_tl: varlik === "mevduat" ? prev.mevduat_tl - miktarSayi : prev.mevduat_tl,
+      altin_gram: varlik === "altin" ? prev.altin_gram - mSayi : prev.altin_gram,
+      bist_adet: varlik === "bist" ? prev.bist_adet - mSayi : prev.bist_adet,
+      bist_bankacilik_adet: varlik === "bist_bankacilik" ? (prev.bist_bankacilik_adet || 0) - mSayi : (prev.bist_bankacilik_adet || 0),
+      bist_teknoloji_adet: varlik === "bist_teknoloji" ? (prev.bist_teknoloji_adet || 0) - mSayi : (prev.bist_teknoloji_adet || 0),
+      bist_insaat_adet: varlik === "bist_insaat" ? (prev.bist_insaat_adet || 0) - mSayi : (prev.bist_insaat_adet || 0),
+      bist_saglik_adet: varlik === "bist_saglik" ? (prev.bist_saglik_adet || 0) - mSayi : (prev.bist_saglik_adet || 0),
+      bist_perakende_adet: varlik === "bist_perakende" ? (prev.bist_perakende_adet || 0) - mSayi : (prev.bist_perakende_adet || 0),
+      dolar: varlik === "dolar" ? prev.dolar - mSayi : prev.dolar,
+      mevduat_tl: varlik === "mevduat" ? prev.mevduat_tl - mSayi : prev.mevduat_tl,
     }))
   }
 
@@ -958,7 +1307,8 @@ function AppInner() {
   )
   const emlakToplamDeger = sahipOlunanEvler.reduce((toplam, ev) => toplam + evGuncelDegerHesapla(ev), 0)
   const toplamDeger = nakit + portfoyDegeri + emlakToplamDeger
-  const netAkis = yillikGelir + kiraGeliriYillik - yasamGideri
+  const krediTaksitYillik = kredi ? kredi.yillikTaksit : 0
+  const netAkis = yillikGelir + kiraGeliriYillik - yasamGideri - krediTaksitYillik
   const krizMi = gameState.enf_rejim === 1
   const riskProfili = karakterProfili?.risk_level
     ? riskEtiketi(karakterProfili.risk_level)
@@ -994,6 +1344,8 @@ function AppInner() {
     <div className="text-xs flex flex-col gap-1 text-on-surface-variant font-bold">
       <div>Maaş Geliri: <span className="text-[#34d399]">{money(yillikGelir)}</span> / yıl</div>
       {kiraGeliriYillik > 0 && <div>Kira Geliri: <span className="text-[#34d399]">{money(kiraGeliriYillik)}</span> / yıl</div>}
+      <div>Yaşam Gideri: <span className="text-error">-{money(yasamGideri)}</span> / yıl</div>
+      {krediTaksitYillik > 0 && <div>Kredi Ödemesi: <span className="text-error">-{money(krediTaksitYillik)}</span> / yıl</div>}
     </div>
   )
 
@@ -1006,6 +1358,9 @@ function AppInner() {
   }
   if (!introTamamlandi) {
     return <IntroEkrani onBitis={introyuBitir} />
+  }
+  if (!hikayeGoruldu) {
+    return <HikayeEkrani profil={karakterProfili} onDevam={() => setHikayeGoruldu(true)} />
   }
   if (oyunBitti) {
     return (
@@ -1024,6 +1379,7 @@ function AppInner() {
         firsatMaliyetiGecmisi={firsatMaliyetiGecmisi}
         nakitGerekenEventSayisi={oyunBitti.nakitGerekenEventSayisi}
         nakitYetersizKalanEventSayisi={oyunBitti.nakitYetersizKalanEventSayisi}
+        iflasSayisi={iflasSayisi}
       />
     )
   }
@@ -1037,6 +1393,9 @@ function AppInner() {
         <div className="flex gap-4">
           <button onClick={() => setAktifSayfa("ana")}>
             <span className={`material-symbols-outlined ${aktifSayfa === "ana" ? "text-primary" : "text-on-surface-variant"}`}>terminal</span>
+          </button>
+          <button onClick={() => setAktifSayfa("kariyer")}>
+            <span className={`material-symbols-outlined ${aktifSayfa === "kariyer" ? "text-primary" : "text-on-surface-variant"}`}>work</span>
           </button>
           <button onClick={() => setAktifSayfa("varliklar")}>
             <span className={`material-symbols-outlined ${aktifSayfa === "varliklar" ? "text-primary" : "text-on-surface-variant"}`}>trending_up</span>
@@ -1075,7 +1434,9 @@ function AppInner() {
           {[
             { id: "ana", label: "Ana Defter", icon: "terminal" },
             { id: "varliklar", label: "Piyasa Verileri", icon: "trending_up" },
-            { id: "portfoy", label: "Varlık Portföyü", icon: "account_balance" },
+            { id: "banka", label: "Banka & Krediler", icon: "account_balance" },
+            { id: "kariyer", label: "Kariyer & Eğitim", icon: "work" },
+            { id: "portfoy", label: "Varlık Portföyü", icon: "pie_chart" },
             { id: "standartlar", label: "Psikolojik Profil", icon: "psychology" },
           ].map((item) => (
             <TutorialOdak key={item.id} hedefId={"sidebar-" + item.id} disablePadding>
@@ -1099,7 +1460,7 @@ function AppInner() {
           <TutorialOdak hedefId="yil-calistir-butonu">
             <button
               className="w-full bg-primary-container text-background font-data-lg text-data-lg uppercase py-3 btn-shadow border border-outline transition-transform font-bold mb-6 disabled:opacity-50"
-              onClick={yilAtla}
+              onClick={handleYilAtlaTikla}
               disabled={loading || coachLoading || finalRaporLoading || !!mevcutEvent || !!sonucKarti || !!redenominasyonKarti || oyunBitti}
             >
               {loading ? "SİSTEM_MEŞGUL" : `YIL_${yil + 1} ÇALIŞTIR`}
@@ -1124,14 +1485,45 @@ function AppInner() {
             </button>
           </div>
         )}
+        
+        {hacizUyarisiAcik && (
+          <div className="bg-error-container border border-error card-shadow p-stack-md text-on-error-container mb-stack-lg">
+            <div className="font-headline-md text-headline-md font-black uppercase flex items-center gap-2">
+              <span className="material-symbols-outlined text-4xl">warning</span>
+              KRİTİK UYARI: HACİZ RİSKİ
+            </div>
+            <p className="font-data-sm text-data-sm mt-4 mb-2 opacity-90 leading-relaxed">
+              Mevcut nakitiniz, önümüzdeki yılın tahmini giderleri ve kredi taksitlerinizi karşılamaya yetmiyor (Eksi bakiye). Eğer yılı ilerletirseniz <strong>HACİZ</strong> memurları kapınıza dayanacak.
+            </p>
+            <ul className="list-disc ml-6 text-sm mb-4 opacity-90 space-y-1">
+              <li><strong>Haciz Nedir?</strong> Banka borçlarınızı karşılamak için elinizdeki Mevduat, Altın, Borsa, Araç ve Evlerinizi sırasıyla zorla satar.</li>
+              <li><strong>İflas Nedir?</strong> Tüm mal varlığınız satılmasına rağmen borcunuz kapanmazsa iflas edersiniz. Borcunuz silinir ancak her şeyinizi kaybeder ve ağır psikolojik bunalıma girersiniz.</li>
+            </ul>
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={() => setHacizUyarisiAcik(false)}
+                className="bg-background text-error px-6 py-3 font-bold uppercase border border-error btn-shadow transition-transform hover:bg-surface-container"
+              >
+                İPTAL ET (VARLIK SATACAĞIM)
+              </button>
+              <button
+                onClick={yilAtla}
+                className="bg-error text-on-error px-6 py-3 font-bold uppercase border border-outline btn-shadow transition-transform hover:bg-opacity-80"
+              >
+                YİNE DE YIL ATLA (RİSKİ ALIYORUM)
+              </button>
+            </div>
+          </div>
+        )}
+
         {aktifSayfa === "ana" && (
           <div className="flex flex-col gap-stack-lg">
             {/* TEST BUTONU - GEÇİCİ */}
             <button
-              onClick={() => { setYas(54); setYil(2056); }}
-              className="bg-error text-on-error p-2 text-xs font-bold w-fit border border-outline btn-shadow"
+              onClick={() => { setYas(60); setYil(2062); nakitiGuncelle(nakitRef.current + 5000000); }}
+              className="mt-4 bg-error-container text-on-error-container font-data-sm text-data-sm py-1 px-3 uppercase border border-error btn-shadow"
             >
-              [DEV TEST] 54 YAŞINA ATLA
+              [DEV TEST] 60 YAŞINA ATLA VE PARA EKLE
             </button>
 
             {/* Header Section */}
@@ -1378,7 +1770,6 @@ function AppInner() {
             )}
           </div>
         )}
-
         {aktifSayfa === "varliklar" && (
           <VarlikSayfasi
             fiyatGecmisi={fiyatGecmisi}
@@ -1412,6 +1803,23 @@ function AppInner() {
           />
         )}
 
+        {aktifSayfa === "banka" && (
+          <BankaSekmesi
+            fiyatlar={fiyatlar}
+            nakit={nakit}
+            yillikGelir={yillikGelir}
+            sahipOlunanEvler={sahipOlunanEvler}
+            kredi={kredi}
+            setKredi={setKredi}
+            krediNotu={krediNotu}
+            setKrediNotu={setKrediNotu}
+            nakitiGuncelle={nakitiGuncelle}
+            universiteYili={universiteYili}
+            zorluk={zorluk}
+            setBiasMetrics={setBiasMetrics}
+          />
+        )}
+
         {aktifSayfa === "borsa" && (
           <BorsaSayfasi
             fiyatGecmisi={fiyatGecmisi}
@@ -1437,6 +1845,43 @@ function AppInner() {
             yasamGideri={yasamGideri}
             yillikGelir={yillikGelir}
             oturulanEvVarMi={!!oturulanEvId}
+          />
+        )}
+        
+        {aktifSayfa === "kariyer" && (
+          <KariyerSayfasi
+            nakit={nakit}
+            setNakit={setNakit}
+            isYeri={isYeri}
+            setIsYeri={setIsYeri}
+            sinavPuani={sinavPuani}
+            setSinavPuani={setSinavPuani}
+            okunanBolum={okunanBolum}
+            setOkunanBolum={setOkunanBolum}
+            universiteYili={universiteYili}
+            setUniversiteYili={setUniversiteYili}
+            mezunOlunanBolum={mezunOlunanBolum}
+            calismaBari={calismaBari}
+            setCalismaBari={setCalismaBari}
+            isIlanlari={isIlanlari}
+            setIsIlanlari={setIsIlanlari}
+            bars={bars}
+            setBars={setBars}
+            mezunaKalmaSayisi={mezunaKalmaSayisi}
+            setMezunaKalmaSayisi={setMezunaKalmaSayisi}
+            buYilSinavaGirdiMi={buYilSinavaGirdiMi}
+            setBuYilSinavaGirdiMi={setBuYilSinavaGirdiMi}
+            sikiCalisAktif={sikiCalisAktif}
+            setSikiCalisAktif={setSikiCalisAktif}
+            setTemelMaas={setTemelMaas}
+            setYillikGelir={setYillikGelir}
+            setIsLevel={setIsLevel}
+            yil={yil}
+            yas={yas}
+            cvGecmisi={cvGecmisi}
+            setCvGecmisi={setCvGecmisi}
+            maasEndeksi={maasEndeksi}
+            isLevel={isLevel}
           />
         )}
 

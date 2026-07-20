@@ -1,142 +1,69 @@
+export const BASLANGIC = {
+  nakit: 0,
+  sabir: 50,
+  mutluluk: 50
+};
+
 export const SORULAR = [
   {
     id: 1,
-    kategori: "Aile",
-    soru: "Çocukluğunda maddi durumunuz nasıldı?",
+    kategori: "Zorluk",
+    soru: "Hayata atıldığın o ilk günlerde, ailenden sana kalan maddi destek nasıldı?",
+    info_mesaji: "Dikkat: Buradaki seçiminiz, oyuna başlayacağınız nakit miktarını ve oyunun genel zorluk seviyesini doğrudan belirleyecektir.",
     secenekler: [
-      { metin: "Rahattık, ihtiyacımız yoktu", nakit: 80000, sabir: 0, mutluluk: 10, risk: 1, kilit: null },
-      { metin: "Orta halli, idare ettik", nakit: 0, sabir: 5, mutluluk: 5, risk: 1, kilit: null },
-      { metin: "Zorlandık, kısıtlıydık", nakit: -30000, sabir: 15, mutluluk: -5, risk: 1, kilit: null },
+      { metin: "Güvence sağlayan bir yatırım hesabı, araba ve bolca nakit.", nakit: 200000, sabir: -5, mutluluk: 15, risk: 1, kilit: null, bias_skor: { zorluk: "Kolay" } },
+      { metin: "Standart bir harçlık, kendi başımın çaresine bakabileceğim kadar ufak bir destek.", nakit: 50000, sabir: 5, mutluluk: 5, risk: 1, kilit: null, bias_skor: { zorluk: "Orta" } },
+      { metin: "Sıfır. Cebimde sadece büyük hayallerim ve devasa öğrenim kredisi borcum var.", nakit: 5000, sabir: 15, mutluluk: -5, risk: 1, kilit: null, bias_skor: { zorluk: "Zor" } },
     ]
   },
   {
     id: 2,
-    kategori: "Okul",
-    soru: "Lise hayatın nasıldı?",
+    kategori: "Loss Aversion",
+    soru: "Bir yarışmadasın. Kesin olarak 50.000 TL kazanma şansın var. Ama istersen yazı-tura atabilirsin; bilirsen 120.000 TL kazanacaksın, bilemezsen hiçbir şey alamayacaksın. Ne yaparsın?",
     secenekler: [
-      { metin: "Çok çalıştım, başarılıydım", nakit: 0, sabir: 15, mutluluk: 0, risk: 1, kilit: null },
-      { metin: "Dengeli bir öğrenciydim", nakit: 0, sabir: 5, mutluluk: 10, risk: 1, kilit: null },
-      { metin: "Okula pek önem vermedim", nakit: 0, sabir: -5, mutluluk: 10, risk: 1, kilit: null },
+      { metin: "Asla riske girmem, kesin olan 50.000 TL'yi alır çıkarım.", nakit: 0, sabir: 5, mutluluk: -5, risk: 1, kilit: null, bias_skor: { loss_aversion: 100 } },
+      { metin: "Çok kararsız kalsam da sanırım 50.000 TL ile yetinirim.", nakit: 0, sabir: 0, mutluluk: 0, risk: 1, kilit: null, bias_skor: { loss_aversion: 50 } },
+      { metin: "Yazı-tura atarım! 120.000 TL için o riske değer.", nakit: 0, sabir: -5, mutluluk: 5, risk: 1, kilit: null, bias_skor: { loss_aversion: 0 } },
     ]
   },
   {
     id: 3,
-    kategori: "İlk Para",
-    soru: "İlk kez para kazandığında ne yaptın?",
+    kategori: "Mental Accounting",
+    soru: "Uzun zamandır almak istediğin o pahalı telefon var ama bütçen sıkışık. Yolda yürürken içinde tam da o telefonun parası kadar nakit olan sahipsiz bir zarf buldun (ve sahibini bulman imkansız). Parayı nasıl harcarsın?",
     secenekler: [
-      { metin: "Biriktirdim", nakit: 20000, sabir: 10, mutluluk: 0, risk: 0, kilit: null },
-      { metin: "Bir şeyler aldım, harcadım", nakit: -10000, sabir: -5, mutluluk: 10, risk: 2, kilit: null },
-      { metin: "Aileye verdim", nakit: -8000, sabir: 5, mutluluk: 15, risk: 1, kilit: { tur: "mutluluk", min: 10 } },
+      { metin: "Havadan geldi! Hiç düşünmeden o parayla o telefonu alırım.", nakit: 0, sabir: -5, mutluluk: 10, risk: 1, kilit: null, bias_skor: { mental_accounting: 100 } },
+      { metin: "Yarısıyla bir hevesimi alır, kalanını acil duruma veya birikime ayırırım.", nakit: 0, sabir: 0, mutluluk: 5, risk: 1, kilit: null, bias_skor: { mental_accounting: 50 } },
+      { metin: "Bu parayı kendi alın terimmiş gibi düşünürüm. Lükse harcamaz, kenara atarım.", nakit: 0, sabir: 10, mutluluk: -5, risk: 1, kilit: null, bias_skor: { mental_accounting: 0 } },
     ]
   },
   {
     id: 4,
-    kategori: "Üniversite",
-    soru: "Üniversiteye gittin mi?",
+    kategori: "Anchoring",
+    soru: "İki yıl önce büyük heveslerle 20.000 TL'ye aldığın bir eşya şu an ikinci elde sadece 4.000 TL ediyor. Ve senin acil 4.000 TL nakde ihtiyacın var. Eşyayı satar mısın?",
     secenekler: [
-      { metin: "Gittim, burslu", nakit: 0, sabir: 15, mutluluk: 10, risk: 0, kilit: null },
-      { metin: "Gittim, borçla", nakit: -60000, sabir: 10, mutluluk: 5, risk: 2, kilit: { tur: "nakit", min: 60000 } },
-      { metin: "Gitmedim, erken çalıştım", nakit: 40000, sabir: -5, mutluluk: -5, risk: 1, kilit: null },
+      { metin: "Hayatta satmam! Ben ona 20.000 TL verdim, 4 bine vereceğime evde çürüsün daha iyi.", nakit: 0, sabir: 10, mutluluk: -5, risk: 1, kilit: null, bias_skor: { anchoring: 100 } },
+      { metin: "Çok üzülerek satarım ama aklım hep o 20.000 TL'de kalır, içim içimi yer.", nakit: 0, sabir: 0, mutluluk: -5, risk: 1, kilit: null, bias_skor: { anchoring: 50 } },
+      { metin: "Geçmiş geçmişte kaldı. Şu anki piyasa değeri 4 bin TL ise ve paraya ihtiyacım varsa hemen satarım.", nakit: 0, sabir: -5, mutluluk: 5, risk: 1, kilit: null, bias_skor: { anchoring: 0 } },
     ]
   },
   {
     id: 5,
-    kategori: "Askerlik",
-    soru: "Askerliğini nasıl yaptın?",
+    kategori: "Disposition Effect",
+    soru: "Bir yatırım yaptın ve sadece 1 ay içinde %50 kâr ettin! Herkes trendin daha da yükseleceğini konuşuyor ama sen çoktan büyük bir kazanç sağladın. Ne yaparsın?",
     secenekler: [
-      { metin: "Bedelli yaptım", nakit: -100000, sabir: 5, mutluluk: 15, risk: 1, kilit: { tur: "nakit", min: 100000 } },
-      { metin: "Normal yaptım", nakit: 0, sabir: 10, mutluluk: -10, risk: 1, kilit: null },
-      { metin: "Tecil ettirdim / muaf oldum", nakit: 0, sabir: 0, mutluluk: 0, risk: 1, kilit: null },
+      { metin: "Kâr cebe yakışır! Yükselecek bile olsa, düşme ihtimaline karşı hemen hepsini satıp kârı kilitlerim.", nakit: 0, sabir: -5, mutluluk: 10, risk: 1, kilit: null, bias_skor: { disposition_effect: 100 } },
+      { metin: "Anaparayı veya kârın yarısını garantiye alır, kalanını içeride bırakırım.", nakit: 0, sabir: 5, mutluluk: 5, risk: 1, kilit: null, bias_skor: { disposition_effect: 50 } },
+      { metin: "Trendin yönü yukarı! Potansiyeli bitene kadar dokunmam, kârın kendi kendini büyütmesine izin veririm.", nakit: 0, sabir: 15, mutluluk: -5, risk: 1, kilit: null, bias_skor: { disposition_effect: 0 } },
     ]
   },
   {
     id: 6,
-    kategori: "İlk İş",
-    soru: "İlk işini nasıl buldun?",
+    kategori: "Present Bias",
+    soru: "Karşında sihirli bir buton var. Basarsan şu an anında hesabına 100.000 TL yatacak. Ama basmazsan tam 3 yıl sonra hesabına 300.000 TL yatacak. Hangisini seçersin?",
     secenekler: [
-      {
-        metin: "Alanımda iyi bir iş buldum",
-        meslek: "beyaz_yaka",
-        nakit: 30000, sabir: 10, mutluluk: 10, risk: 0,
-        gelir: 300000,
-        gelir_aciklama: "Aylık ~25.000 ₺",
-        kilit: { tur: "sabir", min: 20 }
-      },
-      {
-        metin: "İstediğim değil ama çalıştım",
-        meslek: "memur",
-        nakit: 20000, sabir: 5, mutluluk: -5, risk: 1,
-        gelir: 216000,
-        gelir_aciklama: "Aylık ~18.000 ₺",
-        kilit: null
-      },
-      {
-        metin: "Uzun süre aradım, zor oldu",
-        meslek: "mavi_yaka",
-        nakit: -15000, sabir: 15, mutluluk: -10, risk: 1,
-        gelir: 144000,
-        gelir_aciklama: "Aylık ~12.000 ₺",
-        kilit: null
-      },
-      {
-        metin: "Emlakçılığa başladım",
-        meslek: "emlakci",
-        nakit: 0, sabir: 0, mutluluk: 0, risk: 1,
-        gelir: 180000,
-        gelir_aciklama: null,
-        kilit: { tur: "gelistirilmemis", mesaj: "Gayrimenkul sistemi eklendiğinde açılacak" }
-      },
-      {
-        metin: "Kendi işimi kurdum",
-        meslek: "girisimci",
-        nakit: 0, sabir: 0, mutluluk: 0, risk: 2,
-        gelir: 180000,
-        gelir_aciklama: null,
-        kilit: { tur: "gelistirilmemis", mesaj: "Girişimcilik sistemi eklendiğinde açılacak" }
-      },
+      { metin: "Hemen basarım! 3 yıl kim bekleyecek, bugün o 100.000 TL ile hayatımı yaşarım.", nakit: 0, sabir: -10, mutluluk: 15, risk: 1, kilit: null, bias_skor: { present_bias: 100 } },
+      { metin: "Biraz düşünürüm ama gelecek belirsiz olduğu için muhtemelen hemen almayı seçerim.", nakit: 0, sabir: -5, mutluluk: 5, risk: 1, kilit: null, bias_skor: { present_bias: 50 } },
+      { metin: "Kesinlikle beklerim. 3 yılda %200 net getiri harika bir oran, bugünkü haz için geleceğimi satmam.", nakit: 0, sabir: 15, mutluluk: -5, risk: 1, kilit: null, bias_skor: { present_bias: 0 } },
     ]
-  },
-  {
-    id: 7,
-    kategori: "İlk Maaş",
-    soru: "İlk maaşını ne yaptın?",
-    secenekler: [
-      { metin: "Kira + birikim planı yaptım", nakit: 15000, sabir: 10, mutluluk: 0, risk: 0, kilit: null },
-      { metin: "Kendime bir şey aldım", nakit: -20000, sabir: -5, mutluluk: 15, risk: 1, kilit: { tur: "nakit", min: 20000 } },
-      { metin: "Hepsini harcadım", nakit: -30000, sabir: -10, mutluluk: 10, risk: 2, kilit: { tur: "nakit", min: 30000 } },
-    ]
-  },
-  {
-    id: 8,
-    kategori: "Aile Desteği",
-    soru: "Hayata başlarken aileden destek var mıydı?",
-    secenekler: [
-      { metin: "Hem maddi hem manevi destek aldım", nakit: 60000, sabir: 0, mutluluk: 15, risk: 0, kilit: null },
-      { metin: "Sadece manevi destek vardı", nakit: 0, sabir: 10, mutluluk: 10, risk: 1, kilit: null },
-      { metin: "Kendi başımaydım", nakit: -20000, sabir: 20, mutluluk: -5, risk: 2, kilit: null },
-    ]
-  },
-  {
-    id: 9,
-    kategori: "Risk",
-    soru: "Hayatında büyük bir risk aldın mı?",
-    secenekler: [
-      { metin: "Evet, aldım ve işe yaradı", nakit: 80000, sabir: 5, mutluluk: 15, risk: 2, kilit: { tur: "sabir", min: 30 } },
-      { metin: "Evet, aldım ama olmadı", nakit: -60000, sabir: 15, mutluluk: -10, risk: 2, kilit: { tur: "nakit", min: 60000 } },
-      { metin: "Hayır, temkinli davrandım", nakit: 10000, sabir: 5, mutluluk: 5, risk: 0, kilit: null },
-    ]
-  },
-  {
-    id: 10,
-    kategori: "Para Alışkanlığı",
-    soru: "Parana genel olarak nasıl yaklaşırsın?",
-    secenekler: [
-      { metin: "Her ay birikim yaparım", nakit: 20000, sabir: 15, mutluluk: 0, risk: 0, kilit: null },
-      { metin: "Gelirim yetiyorsa biriktiririm", nakit: 8000, sabir: 5, mutluluk: 5, risk: 1, kilit: null },
-      { metin: "Anı yaşarım, birikim ikinci planda", nakit: -20000, sabir: -10, mutluluk: 15, risk: 2, kilit: { tur: "nakit", min: 20000 } },
-    ]
-  },
-]
-
-export const BASLANGIC = { nakit: 150000, sabir: 50, mutluluk: 50 }
-export const YASAM_GIDERI = 120000  // yıllık, enflasyonla artacak
+  }
+];

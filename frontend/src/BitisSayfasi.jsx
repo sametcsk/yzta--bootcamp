@@ -81,6 +81,7 @@ export default function BitisSayfasi({
   firsatMaliyetiGecmisi,
   nakitGerekenEventSayisi = 0,
   nakitYetersizKalanEventSayisi = 0,
+  iflasSayisi = 0,
 }) {
   const [kaydedildi, setKaydedildi] = useState(false)
   const [kayitHatasi, setKayitHatasi] = useState(null)
@@ -177,7 +178,7 @@ export default function BitisSayfasi({
           </div>
 
           {/* Final durum özeti */}
-          <div className="grid grid-cols-3 gap-gutter">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-gutter">
             <div className="bg-surface-container border border-outline card-shadow p-stack-sm">
               <div className="font-data-sm text-data-sm uppercase text-on-surface-variant">Net Servet</div>
               <div className="font-data-lg text-data-lg text-primary">{money(toplamDeger)}</div>
@@ -189,6 +190,10 @@ export default function BitisSayfasi({
             <div className="bg-surface-container border border-outline card-shadow p-stack-sm">
               <div className="font-data-sm text-data-sm uppercase text-on-surface-variant">Kaçırılan Fırsatlar</div>
               <div className="font-data-lg text-data-lg text-primary">{nakitYetersizKalanEventSayisi} <span className="text-data-sm text-on-surface-variant">/ {nakitGerekenEventSayisi}</span></div>
+            </div>
+            <div className="bg-error-container border border-error card-shadow p-stack-sm">
+              <div className="font-data-sm text-data-sm uppercase text-on-error-container opacity-80">İflas Sayısı</div>
+              <div className="font-data-lg text-data-lg text-on-error-container">{iflasSayisi}</div>
             </div>
           </div>
 
@@ -230,6 +235,38 @@ export default function BitisSayfasi({
                 {finalRapor.profile_name} · {finalRapor.decision_count} KARAR
               </div>
 
+              {/* Psikolojik Profil Barları */}
+              {finalRapor.bias_scores && (
+                <div className="mt-4 mb-2 bg-surface-variant p-4 border border-outline">
+                  <div className="font-data-sm text-data-sm uppercase text-on-surface mb-3 font-bold border-b border-outline-variant pb-2">Davranışsal Finans Eğilimleri (0-100)</div>
+                  <div className="flex flex-col gap-3">
+                    {[
+                      { key: 'loss_aversion', label: 'Kayıptan Kaçınma' },
+                      { key: 'anchoring', label: 'Çıpalama (Fiyata Bağlılık)' },
+                      { key: 'disposition_effect', label: 'Elden Çıkarma (Kârı Erken Kesme)' },
+                      { key: 'mental_accounting', label: 'Zihinsel Muhasebe (Havadan Gelen Parayı Harcama)' },
+                      { key: 'present_bias', label: 'Anlık Haz Eğilimi (Borçla Lüks)' }
+                    ].map(bias => {
+                      const score = finalRapor.bias_scores[bias.key] || 0;
+                      return (
+                        <div key={bias.key} className="flex flex-col gap-1">
+                          <div className="flex justify-between text-[10px] uppercase font-bold text-on-surface-variant">
+                            <span>{bias.label}</span>
+                            <span className={score > 70 ? 'text-error' : score > 40 ? 'text-[#f5c842]' : 'text-[#34d399]'}>{score}/100</span>
+                          </div>
+                          <div className="w-full bg-surface-container-highest h-2 overflow-hidden border border-outline-variant">
+                            <div 
+                              className={`h-full ${score > 70 ? 'bg-error' : score > 40 ? 'bg-[#f5c842]' : 'bg-[#34d399]'}`}
+                              style={{ width: `${score}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               {finalRapor.dominant_bias_name_tr && (
                 <div className="bg-surface-container-high p-2 border-l-2 border-primary font-data-sm text-primary">
                   BASKIN EĞİLİM: {finalRapor.dominant_bias_name_tr}
@@ -266,7 +303,16 @@ export default function BitisSayfasi({
                 </blockquote>
               )}
 
-              <p className="font-data-sm text-data-sm uppercase text-on-surface-variant opacity-50 mt-2">
+              {finalRapor.llm_prompt_payload && (
+                <div className="mt-4">
+                  <div className="font-data-sm text-data-sm uppercase text-on-surface mb-2">LLM'e Gönderilecek Teşhis Promptu (Simüle Edilmiş)</div>
+                  <pre className="bg-[#110e06] p-4 text-[#8a8168] text-xs whitespace-pre-wrap overflow-x-auto border border-[#4e4634] font-mono">
+                    {finalRapor.llm_prompt_payload}
+                  </pre>
+                </div>
+              )}
+
+              <p className="font-data-sm text-data-sm uppercase text-on-surface-variant opacity-50 mt-4">
                 {finalRapor.disclaimer}
               </p>
             </div>

@@ -11,7 +11,7 @@ with open(_EVENT_DOSYASI, "r", encoding="utf-8") as f:
 
 def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, 
               enf_rejim: int = 0, tetiklenenler: list = None, portfoy=None,
-              is_yeri: str = None, is_level: int = 1) -> dict:
+              is_yeri: str = None, is_level: int = 1, makro_veriler: dict = None) -> dict:
     if tetiklenenler is None:
         tetiklenenler = []
     if portfoy is None:
@@ -56,6 +56,17 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
             continue
         if tetik == "sakin" and enf_rejim != 0:
             continue
+            
+        # Makro tetik kontrolü
+        makro_tetik = e.get("makro_tetik")
+        if makro_tetik and makro_veriler:
+            if "bist_pct_max" in makro_tetik and makro_veriler.get("bist_pct", 0) > makro_tetik["bist_pct_max"]:
+                continue
+            if "bist_pct_min" in makro_tetik and makro_veriler.get("bist_pct", 0) < makro_tetik["bist_pct_min"]:
+                continue
+            if "doviz_degisim_min" in makro_tetik and makro_veriler.get("doviz_degisim", 0) < makro_tetik["doviz_degisim_min"]:
+                continue
+                
         # Varlık kontrolü — en sona, tek kez
         gerekli = e.get("gerekli_varlik")
         if gerekli == "bist" and portfoy.get("bist_adet", 0) <= 0:
@@ -90,7 +101,7 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
     return random.choices(uygun, weights=agirliklar, k=1)[0]
 
 
-def yan_event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, tetiklenenler: list = None) -> list:
+def yan_event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, tetiklenenler: list = None, is_yeri: str = None, universite_yili: int = 0) -> list:
     """
     Belirli ihtimallerle (ve cooldown kurallarıyla) ana event haricinde tetiklenen
     ekstra (side) eventleri döndürür.
@@ -101,6 +112,10 @@ def yan_event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, tetikle
     secilen_yan_eventler = []
     yan_event_havuzu = [e for e in EVENT_HAVUZU if e.get("kategori") == "yan_event"]
     
+    uni_adaylari = []
+    is_adaylari = []
+    diger_yan_eventler = []
+
     for e in yan_event_havuzu:
         # Tek seferlik kontrolü
         if e.get("tek_seferlik", False) and e["id"] in tetiklenenler:
@@ -110,14 +125,29 @@ def yan_event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, tetikle
         if mevcut_yil - son_tetik < e.get("cooldown_yil", 0):
             continue
             
-        # OTV Zammı eventi için özel ihtimal (%7 şans)
+        if e.get("is_uni_event"):
+            uni_adaylari.append(e)
+        elif e.get("is_is_event"):
+            is_adaylari.append(e)
+        else:
+            diger_yan_eventler.append(e)
+
+    # OTV Zammı gibi diğer yan eventleri ekle
+    for e in diger_yan_eventler:
         if e["id"] == "ev_otv_zammi":
             if random.random() < 0.07:
                 secilen_yan_eventler.append(e)
-                
-        # Diğer yan eventler için varsayılan bir şans mekanizması eklenebilir
-        # if random.random() < 0.05: ...
-                
+
+    # Üniversite Eventleri (Yılda en fazla 1 adet)
+    if universite_yili > 0 and uni_adaylari:
+        if random.random() < 0.35: # %35 ihtimalle üniversite eventi
+            secilen_yan_eventler.append(random.choice(uni_adaylari))
+
+    # İş Eventleri (Yılda en fazla 1 adet)
+    if is_yeri and is_yeri not in ["lise_mezunu", "emekli"] and is_adaylari:
+        if random.random() < 0.25: # %25 ihtimalle o yıla meslek eventi düşer
+            secilen_yan_eventler.append(random.choice(is_adaylari))
+
     return secilen_yan_eventler
 
 

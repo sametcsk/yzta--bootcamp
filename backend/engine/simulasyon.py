@@ -65,6 +65,7 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     mevcut_yas = state.get("yas", 25)
     is_yeri = state.get("is_yeri")
     is_level = state.get("is_level", 1)
+    universite_yili = state.get("universite_yili", 0)
     reden_sayaci = state.get("reden_sayaci", 0)
 
     # Makroekonomik Zarlar (Eğer bir önceki yıldan fısıltı olarak hesaplanmışsa onu kullan)
@@ -145,6 +146,12 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
         
     arac_piyasasi = arac_piyasasi_uret(kur, arac_vergi_carpani)
 
+    makro_veriler = {
+        "bist_pct": bist_pct,
+        "doviz_degisim": doviz_degisim,
+        "enf_durum": enf_durum
+    }
+
     # 7. Event
     secilen_event = event_sec(
         mevcut_yil=mevcut_yil,
@@ -154,15 +161,18 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
         tetiklenenler=tetiklenenler,
         portfoy=state.get("portfoy", {}),
         is_yeri=is_yeri,
-        is_level=is_level
+        is_level=is_level,
+        makro_veriler=makro_veriler
     )
 
-    # Fısıltı Mantığı (Gelecek Yıl Tahmini)
+    # Fısıltı Mantığı (Gelecek Yıl Tahmini) ve Yan Eventler
     secilen_yan_eventler = yan_event_sec(
         mevcut_yil=mevcut_yil,
         mevcut_yas=mevcut_yas,
         event_gecmisi=event_gecmisi,
-        tetiklenenler=tetiklenenler
+        tetiklenenler=tetiklenenler,
+        is_yeri=is_yeri,
+        universite_yili=universite_yili
     )
 
     fisilti_sayaci = state.get("fisilti_sayaci", 0)

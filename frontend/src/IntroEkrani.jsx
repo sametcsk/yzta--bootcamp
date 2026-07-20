@@ -30,6 +30,7 @@ export default function IntroEkrani({ onBitis }) {
   const [tutorialGoster, setTutorialGoster] = useState(
     !localStorage.getItem("finsim_tutorial_tamamlandi")
   )
+  const [gecisEkraniGoster, setGecisEkraniGoster] = useState(false)
 
   const soru = SORULAR[soruIndex]
   const seciliSecenek = secim !== null ? soru.secenekler[secim] : null
@@ -43,11 +44,12 @@ export default function IntroEkrani({ onBitis }) {
     ilerlemeKilitliRef.current = true
     const s = soru.secenekler[secim]
 
-    if (soru.id === 4 && secim === 2) {
-      setUniversiteGitti(false)
-    }
-    if (soru.id === 6 && s.meslek) {
-      meslekRef.current = s.meslek
+    // Zorluk seçimi (Soru 1) bittiyse gelir ve meslek belirle
+    if (soru.id === 1) {
+      if (s.bias_skor?.zorluk === "Kolay") setGelir(120000)
+      else if (s.bias_skor?.zorluk === "Orta") setGelir(60000)
+      else setGelir(0)
+      meslekRef.current = "lise_mezunu"
     }
 
     const yeniNakit = Math.max(20000, nakit + s.nakit)
@@ -63,6 +65,7 @@ export default function IntroEkrani({ onBitis }) {
         mutluluk: s.mutluluk,
         risk: s.risk ?? 1,
       },
+      bias_skor: s.bias_skor || {},
     }
     const yeniCevaplar = [...cevaplarRef.current, yeniCevap]
     cevaplarRef.current = yeniCevaplar
@@ -78,22 +81,25 @@ export default function IntroEkrani({ onBitis }) {
         nakit: yeniNakit,
         sabir: yeniSabir,
         mutluluk: yeniMutluluk,
-        yillikGelir: s.gelir || gelir || 216000,
+        yillikGelir: gelir || 0,
         answers: yeniCevaplar,
         meslek: meslekRef.current,
         cinsiyet: cinsiyet,
         tutorialGoster: tutorialGoster
       })
     } else {
-      setSoruIndex((oncekiIndex) => {
-        let sonraki = oncekiIndex + 1
-        if (sonraki < SORULAR.length && SORULAR[sonraki].id === 5 && cinsiyet === "kadin") {
-          sonraki++
-        }
-        return sonraki
-      })
+      if (soruIndex === 0) {
+        setGecisEkraniGoster(true)
+      } else {
+        setSoruIndex((prev) => prev + 1)
+      }
       setSecim(null)
     }
+  }
+
+  function gecisiAtla() {
+    setGecisEkraniGoster(false)
+    setSoruIndex(1)
   }
 
   if (!cinsiyet) {
@@ -118,6 +124,30 @@ export default function IntroEkrani({ onBitis }) {
           >
             <img src={kadinImg} alt="Kadın" className="w-48 h-48 object-cover border border-outline-variant bg-surface" />
             <span className="font-data-md uppercase text-primary">KADIN</span>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (gecisEkraniGoster) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-background p-6">
+        <div className="max-w-md w-full bg-surface-container border border-outline rounded-3xl p-8 text-center card-shadow">
+          <span className="material-symbols-outlined text-6xl text-primary mb-4 block">
+            psychology
+          </span>
+          <h2 className="font-headline-md text-headline-md text-on-surface mb-4">
+            Yatırımcı Kimliğiniz
+          </h2>
+          <p className="text-on-surface-variant text-body-lg mb-8 leading-relaxed">
+            Şimdi sorulacak sorular, senin gizli yatırımcı kimliğini (Bilişsel Önyargılarını) belirlemeye yardımcı olacak. Oyun içinde yaptığın her finansal hamle bu kimliği şekillendirecek ve oyun sonu raporunda nasıl bir yatırımcı olduğunu detaylı olarak görebileceksin.
+          </p>
+          <button
+            onClick={gecisiAtla}
+            className="w-full bg-primary text-on-primary font-data-lg text-data-lg py-4 px-6 rounded-2xl hover:opacity-90 active:scale-95 transition-all shadow-md"
+          >
+            Devam Et
           </button>
         </div>
       </div>
@@ -195,13 +225,20 @@ export default function IntroEkrani({ onBitis }) {
           <div className="font-data-sm text-data-sm text-primary uppercase mb-2">
             GİRDİ_BEKLENİYOR
           </div>
-          <h2 className="font-headline-md text-headline-md text-on-surface mb-6">
+          <h2 className="font-headline-lg text-headline-lg md:text-[2rem] text-on-surface mb-8 leading-tight">
             {soru.soru}
           </h2>
 
+          {soru.info_mesaji && (
+            <div className="mb-6 bg-secondary-container text-on-secondary-container p-4 rounded-xl border border-outline-variant flex gap-3 items-start">
+              <span className="material-symbols-outlined text-secondary">info</span>
+              <p className="text-body-md font-medium">{soru.info_mesaji}</p>
+            </div>
+          )}
+
           <div className="flex flex-col gap-3 flex-grow mb-stack-lg">
             {soru.secenekler.map((s, i) => {
-              const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk) || (soru.id === 6 && i === 0 && !universiteGitti)
+              const kilitli = kilitliMi(s.kilit, nakit, sabir, mutluluk)
               const secili = secim === i
 
               return (
@@ -236,12 +273,7 @@ export default function IntroEkrani({ onBitis }) {
                   {s.gelir_aciklama && !kilitli && (
                     <div className="text-sm opacity-80 mt-1 font-data-sm uppercase">GELİR: {s.gelir_aciklama}</div>
                   )}
-                  {kilitli && soru.id === 6 && i === 0 && !universiteGitti && (
-                    <div className="text-error font-data-sm text-data-sm mt-2 uppercase">
-                      GEREKSİNİM: ÜNİVERSİTE EĞİTİMİ
-                    </div>
-                  )}
-                  {kilitli && s.kilit && !(soru.id === 6 && i === 0 && !universiteGitti) && (
+                  {kilitli && s.kilit && (
                     <div className="text-error font-data-sm text-data-sm mt-2 uppercase">
                       GEREKSİNİM: {kilitMetni(s.kilit)}
                     </div>
@@ -252,9 +284,9 @@ export default function IntroEkrani({ onBitis }) {
           </div>
 
           <div className="flex justify-between items-center border-t border-outline-variant pt-4 mt-auto">
-            <div className="text-on-surface-variant text-sm flex-1 mr-4">
+            <p className="text-on-surface-variant font-body-lg text-body-lg mt-4 max-w-lg mx-auto leading-relaxed">
               {seciliSecenek ? "Onay bekleniyor..." : "Devam etmek için bir seçenek belirleyin."}
-            </div>
+            </p>
             <button
               className={`bg-primary text-background font-data-lg text-data-lg uppercase py-3 px-8 font-bold border border-outline transition-transform ${secim === null ? "opacity-50 cursor-not-allowed" : "btn-shadow hover:bg-primary-fixed"
                 }`}
