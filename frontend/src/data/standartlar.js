@@ -40,7 +40,7 @@ export const YASAM_STANDARTLARI = {
 export const VARSAYILAN_STANDARTLAR = {
   yemek: "dusuk",
   ulasim: "dusuk",
-  konut: "orta",
+  konut: "dusuk",
   saglik: "dusuk",
 }
 

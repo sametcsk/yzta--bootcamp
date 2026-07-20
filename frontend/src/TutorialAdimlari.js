@@ -2,82 +2,85 @@ export const TUTORIAL_ADIMLARI = [
   {
     hedef: "info-kartlari",
     ilerlemeTipi: "buton",
-    metin: "Burada anlık durumunu görüyorsun: Yıllık Gelir, Sabır ve Mutluluk. Kararların doğrudan bu değerlere yansıyacak."
+    metin: "Burada anlık durumunu görüyorsun: Sabır, Mutluluk ve Yıllık Gelirin. Kararların doğrudan bu değerlere yansıyacak."
   },
   {
-    hedef: "event-kutusu",
+    hedef: "sidebar-kariyer",
+    ilerlemeTipi: "eylem",
+    beklenenEylem: "sayfa:kariyer",
+    metin: "Ailen sana ilk 2 yıl destek olacak olsa da, uzun vadede hayatta kalmak için bir gelire ihtiyacın var. Sol menüden 'Kariyer & Eğitim' sayfasına tıkla."
+  },
+  {
+    hedef: "kariyer-sayfasi",
+    ilerlemeTipi: "eylem",
+    beklenenEylem: "is_secildi",
+    metin: "Buradan liseden sonra hemen bir işe girebilir veya üniversite okuyabilirsin. Şimdi bir tercih yap ve 'Başvur' butonuna tıkla!"
+  },
+  {
+    hedef: "kariyer-sayfasi",
     ilerlemeTipi: "buton",
-    metin: "Her yıl karşına bir olay çıkacak. Bazen kriz, bazen fırsat! Seçtiğin seçeneklerin etkisini ve riskini dikkatlice incele."
+    metin: "Tebrikler! Kariyerinde ilerleyip terfi ederek maaşını enflasyona karşı koruyabilirsin. Ayrıca kariyerin sana yeni fırsat kapıları (Eventler) açacaktır."
+  },
+  {
+    hedef: "sidebar-banka",
+    ilerlemeTipi: "eylem",
+    beklenenEylem: "sayfa:banka",
+    metin: "Bazen paran yetmeyebilir veya paranı güvenle değerlendirmek isteyebilirsin. Sol menüden 'Banka & Krediler' sayfasına tıkla."
+  },
+  {
+    hedef: "banka-sayfasi",
+    ilerlemeTipi: "buton",
+    metin: "Nakit paranı mevduat faizinde değerlendirebilir veya sıkışınca kredi çekebilirsin. Unutma, krediler gelecekteki nakit akışını zorlar!"
   },
   {
     hedef: "sidebar-varliklar",
     ilerlemeTipi: "eylem",
     beklenenEylem: "sayfa:varliklar",
-    metin: "Şimdi yatırımlarını yapacağın alana bakalım. Sol menüden 'Piyasa Verileri' (Varlıklar) sayfasına tıkla."
+    metin: "Sıra geldi parayı büyütmeye... 'Piyasa Verileri' sekmesine tıkla."
   },
   {
     hedef: "varlik-sekmeleri",
     ilerlemeTipi: "buton",
-    metin: "Paranı 3 farklı piyasada değerlendirebilirsin. Bunlar Finansal Piyasalar, Gayrimenkul ve Otomotiv'dir."
-  },
-  {
-    hedef: "varlik-finansal",
-    ilerlemeTipi: "buton",
-    metin: "Finansal piyasalarda Altın, Borsa ve Döviz gibi likit varlıklar alıp satabilirsin. (Not: Grafikler yeterli veri oluşması için 3. yıldan itibaren çizilmeye başlar.)"
-  },
-  {
-    hedef: "varlik-gayrimenkul",
-    ilerlemeTipi: "buton",
-    metin: "Gayrimenkul sekmesinden ev alıp yüksek kira geliri elde edebilirsin, ancak peşinat için büyük bir nakite ihtiyacın olacak."
-  },
-  {
-    hedef: "varlik-otomotiv",
-    ilerlemeTipi: "buton",
-    metin: "Otomotiv piyasasından araç alarak statünü koruyabilirsin. Ancak araçlar her yıl değer kaybeder (amortisman), vergisini de unutma!"
+    metin: "Borsa, Döviz, Altın, Emlak veya Araç... Simülasyonda acımasız bir enflasyon var, paranı sadece nakitte tutmak erimesine yol açar!"
   },
   {
     hedef: "sidebar-portfoy",
     ilerlemeTipi: "eylem",
     beklenenEylem: "sayfa:portfoy",
-    metin: "Harika! Şimdi sol menüden 'Varlık Portföyü' sayfasına tıkla ve genel durumunu görelim."
+    metin: "Tüm birikimlerini tek ekranda görmek için 'Varlık Portföyü' sayfasına tıkla."
   },
   {
     hedef: "portfoy-grafik",
     ilerlemeTipi: "buton",
-    metin: "Aldığın tüm varlıkların toplam değerini ve portföyündeki dağılım ağırlığını buradan anbean takip edeceksin."
+    metin: "Toplam Servetini (Net Worth) ve varlık dağılımını buradan anbean takip edeceksin."
   },
   {
     hedef: "sidebar-standartlar",
     ilerlemeTipi: "eylem",
     beklenenEylem: "sayfa:standartlar",
-    metin: "Son olarak, giderlerini yöneteceğin 'Psikolojik Profil' (Yaşam Standartları) sayfasına tıkla."
+    metin: "Peki ya harcamalar? Giderlerini görmek için 'Psikolojik Profil' sayfasına tıkla."
   },
   {
     hedef: "standartlar-kategoriler",
     ilerlemeTipi: "buton",
-    metin: "Buradan yaşam kaliteni seçersin. Unutma; lüks yaşamak mutluluğunu artırır ama nakit akışını zorlar. Dengeyi iyi kur!"
+    metin: "Şu an her şey en düşük seviyede. İleride maaşın arttıkça lüks yaşamak seni mutlu eder ama eksiye düşüp iflas etmemek için harcamalarına dikkat et!"
   },
   {
     hedef: "sidebar-ana",
     ilerlemeTipi: "eylem",
     beklenenEylem: "sayfa:ana",
-    metin: "Artık hazırsın. İlk yılımızı yaşamak için Ana Defter'e dönelim."
+    metin: "Artık hazırsın. İlk yılımızı yaşamak için 'Ana Defter'e dönelim."
   },
   {
     hedef: "yil-calistir-butonu",
     ilerlemeTipi: "eylem",
     beklenenEylem: "yil_atla_tiklandi",
-    metin: "Hadi başlayalım! Yıl Çalıştır butonuna bas ve ilk yılı devir."
+    metin: "Oyun boyunca verdiğin tüm kararlar Yapay Zeka tarafından analiz edilip finansal psikolojini (Bias) ölçecek. Hadi 'Yıl Çalıştır' butonuna bas!"
   },
   {
     hedef: "event-kutusu",
     ilerlemeTipi: "eylem",
     beklenenEylem: "event_secildi",
-    metin: "İlk olayın geldi! İyice düşün, risk ve getiri beklentini tartıp sana en uygun seçeneği işaretle."
-  },
-  {
-    hedef: "sonuc-enflasyon",
-    ilerlemeTipi: "buton",
-    metin: "Tebrikler, ilk yılın bitti! Enflasyon ve piyasa sonuçları işte burada. Bundan sonra direksiyon sende, iyi şanslar!"
+    metin: "İlk olayın geldi! İyice düşün, risk ve getiri beklentini tartıp sana en uygun seçeneği işaretle. Seçiminden sonra macera tamamen senin, bol şans!"
   }
 ]

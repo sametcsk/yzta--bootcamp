@@ -2336,12 +2336,12 @@
             },
             {
                 "id": "is1_2",
-                "metin": "[+50 Hisse] Bekletirim, nasıl olsa bedavaya geldi.",
+                "metin": "[+$500 Değerinde Hisse] Bekletirim, nasıl olsa bedavaya geldi.",
                 "sabir_etki": 5,
                 "mutluluk_etki": 0,
                 "nakit_etki_usd": 0,
                 "portfoy_etki": {
-                    "dinamik_hisse_adet": 50
+                    "dinamik_hisse_usd": 500
                 },
                 "bias_etki": {
                     "mental_accounting": 15
@@ -2349,20 +2349,20 @@
             },
             {
                 "id": "is1_3",
-                "metin": "[+150 Hisse, -20.000 TL Nakit] Düştüyse alım fırsatıdır, cebimden ekleme yaparım!",
+                "metin": "[-$1.000 Nakit, +$1.500 Değerinde Hisse] Düştüyse alım fırsatıdır, cebimden ekleme yaparım!",
                 "sabir_etki": 10,
                 "mutluluk_etki": 0,
-                "nakit_etki_try": -20000,
                 "kilit": {
-                    "tur": "nakit",
-                    "min": 20000
+                    "tur": "nakit_usd",
+                    "min": 1000
                 },
                 "portfoy_etki": {
-                    "dinamik_hisse_adet": 150
+                    "dinamik_hisse_usd": 1500
                 },
                 "bias_etki": {
                     "disposition_effect": -15
-                }
+                },
+                "nakit_etki_usd": -1000
             }
         ]
     },
@@ -2830,12 +2830,12 @@
             },
             {
                 "id": "is1_2",
-                "metin": "[+50 Hisse] Bekletirim, nasıl olsa bedavaya geldi.",
+                "metin": "[+$500 Değerinde Hisse] Bekletirim, nasıl olsa bedavaya geldi.",
                 "sabir_etki": 5,
                 "mutluluk_etki": 0,
                 "nakit_etki_usd": 0,
                 "portfoy_etki": {
-                    "dinamik_hisse_adet": 50
+                    "dinamik_hisse_usd": 500
                 },
                 "bias_etki": {
                     "mental_accounting": 15
@@ -2843,20 +2843,20 @@
             },
             {
                 "id": "is1_3",
-                "metin": "[+150 Hisse, -20.000 TL Nakit] Düştüyse alım fırsatıdır, cebimden ekleme yaparım!",
+                "metin": "[-$1.000 Nakit, +$1.500 Değerinde Hisse] Düştüyse alım fırsatıdır, cebimden ekleme yaparım!",
                 "sabir_etki": 10,
                 "mutluluk_etki": 0,
-                "nakit_etki_try": -20000,
                 "kilit": {
-                    "tur": "nakit",
-                    "min": 20000
+                    "tur": "nakit_usd",
+                    "min": 1000
                 },
                 "portfoy_etki": {
-                    "dinamik_hisse_adet": 150
+                    "dinamik_hisse_usd": 1500
                 },
                 "bias_etki": {
                     "disposition_effect": -15
-                }
+                },
+                "nakit_etki_usd": -1000
             }
         ]
     },

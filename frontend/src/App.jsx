@@ -219,9 +219,12 @@ function AppInner() {
     if (adim.beklenenEylem === "sayfa:portfoy" && aktifSayfa === "portfoy") tutorialIleriGit()
     if (adim.beklenenEylem === "sayfa:standartlar" && aktifSayfa === "standartlar") tutorialIleriGit()
     if (adim.beklenenEylem === "sayfa:ana" && aktifSayfa === "ana") tutorialIleriGit()
+    if (adim.beklenenEylem === "sayfa:kariyer" && aktifSayfa === "kariyer") tutorialIleriGit()
+    if (adim.beklenenEylem === "sayfa:banka" && aktifSayfa === "banka") tutorialIleriGit()
     if (adim.beklenenEylem === "yil_atla_tiklandi" && loading) tutorialIleriGit()
     if (adim.beklenenEylem === "event_secildi" && mevcutEvent === null && !!sonucKarti) tutorialIleriGit()
-  }, [tutorialAktif, tutorialAdimi, aktifSayfa, loading, mevcutEvent, sonucKarti])
+    if (adim.beklenenEylem === "is_secildi" && (isYeri !== null || universiteYili > 0)) tutorialIleriGit()
+  }, [tutorialAktif, tutorialAdimi, aktifSayfa, loading, mevcutEvent, sonucKarti, isYeri, universiteYili])
 
 
   useEffect(() => {
@@ -464,7 +467,15 @@ function AppInner() {
         }, 0)
       setKiraGeliriYillik(kiraGeliriToplam)
 
-      let yeniNakit = nakitRef.current + yeniGelir - yeniGider + kiraGeliriToplam
+      // Aile Desteği (İlk 2 Yıl)
+      let aileDestegiTl = 0
+      if (yil - 2026 < 2) {
+        if (zorluk === "Kolay") aileDestegiTl = 15000 * yeniDolarKuru;
+        else if (zorluk === "Orta") aileDestegiTl = 7000 * yeniDolarKuru;
+        else if (zorluk === "Zor") aileDestegiTl = 3600 * yeniDolarKuru;
+      }
+
+      let yeniNakit = nakitRef.current + yeniGelir - yeniGider + kiraGeliriToplam + aileDestegiTl
       if (kredi) {
         yeniNakit -= kredi.yillikTaksit
       }
@@ -999,6 +1010,26 @@ function AppInner() {
     }
   }
 
+    if (secenek.portfoy_etki && secenek.portfoy_etki.dinamik_hisse_usd) {
+        const degerUsd = secenek.portfoy_etki.dinamik_hisse_usd
+        const degerTl = degerUsd * (fiyatlar?.dolar_try || 40)
+        
+        let sektorKey = "bist_perakende_adet"
+        let fiyatKey = "bist_perakende"
+        if (isYeri === "muhendis") { sektorKey = "bist_teknoloji_adet"; fiyatKey = "bist_teknoloji"; }
+        else if (isYeri === "doktor") { sektorKey = "bist_saglik_adet"; fiyatKey = "bist_saglik"; }
+        else if (isYeri === "ekonomist") { sektorKey = "bist_bankacilik_adet"; fiyatKey = "bist_bankacilik"; }
+        else if (isYeri === "insaat_iscisi") { sektorKey = "bist_insaat_adet"; fiyatKey = "bist_insaat"; }
+        
+        const guncelFiyat = fiyatlar?.[fiyatKey] || 100
+        const alinacakPay = degerTl / guncelFiyat
+        
+        setPortfoy(prev => ({
+          ...prev,
+          [sektorKey]: (prev[sektorKey] || 0) + alinacakPay
+        }))
+    }
+
     const eventKaydi = {
       year: yil,
       event_id: secilenEvent.id,
@@ -1028,17 +1059,26 @@ function AppInner() {
         }
       }
       
-      if (cikanDal.portfoy_etki && cikanDal.portfoy_etki.dinamik_hisse_adet) {
-        const adet = cikanDal.portfoy_etki.dinamik_hisse_adet
+      if (cikanDal.portfoy_etki && (cikanDal.portfoy_etki.dinamik_hisse_adet || cikanDal.portfoy_etki.dinamik_hisse_usd)) {
         let sektorKey = "bist_perakende_adet"
-        if (isYeri === "muhendis") sektorKey = "bist_teknoloji_adet"
-        else if (isYeri === "doktor") sektorKey = "bist_saglik_adet"
-        else if (isYeri === "ekonomist") sektorKey = "bist_bankacilik_adet"
-        else if (isYeri === "insaat_iscisi") sektorKey = "bist_insaat_adet"
+        let fiyatKey = "bist_perakende"
+        if (isYeri === "muhendis") { sektorKey = "bist_teknoloji_adet"; fiyatKey = "bist_teknoloji"; }
+        else if (isYeri === "doktor") { sektorKey = "bist_saglik_adet"; fiyatKey = "bist_saglik"; }
+        else if (isYeri === "ekonomist") { sektorKey = "bist_bankacilik_adet"; fiyatKey = "bist_bankacilik"; }
+        else if (isYeri === "insaat_iscisi") { sektorKey = "bist_insaat_adet"; fiyatKey = "bist_insaat"; }
         
+        let alinacakPay = 0
+        if (cikanDal.portfoy_etki.dinamik_hisse_adet) {
+          alinacakPay = cikanDal.portfoy_etki.dinamik_hisse_adet
+        } else if (cikanDal.portfoy_etki.dinamik_hisse_usd) {
+          const degerTl = cikanDal.portfoy_etki.dinamik_hisse_usd * (fiyatlar?.dolar_try || 40)
+          const guncelFiyat = fiyatlar?.[fiyatKey] || 100
+          alinacakPay = degerTl / guncelFiyat
+        }
+
         setPortfoy(prev => ({
           ...prev,
-          [sektorKey]: (prev[sektorKey] || 0) + adet
+          [sektorKey]: (prev[sektorKey] || 0) + alinacakPay
         }))
       }
       
@@ -1809,6 +1849,7 @@ function AppInner() {
         )}
 
         {aktifSayfa === "banka" && (
+          <div id="banka-sayfasi" className="flex-1 overflow-y-auto">
           <BankaSekmesi
             fiyatlar={fiyatlar}
             nakit={nakit}
@@ -1823,6 +1864,7 @@ function AppInner() {
             zorluk={zorluk}
             setBiasMetrics={setBiasMetrics}
           />
+          </div>
         )}
 
         {aktifSayfa === "borsa" && (
@@ -1854,7 +1896,8 @@ function AppInner() {
         )}
         
         {aktifSayfa === "kariyer" && (
-          <KariyerSayfasi
+          <div id="kariyer-sayfasi" className="flex-1 overflow-y-auto flex flex-col">
+            <KariyerSayfasi
             nakit={nakit}
             setNakit={setNakit}
             isYeri={isYeri}
@@ -1888,6 +1931,7 @@ function AppInner() {
             maasEndeksi={maasEndeksi}
             isLevel={isLevel}
           />
+          </div>
         )}
 
         {aktifSayfa === "portfoy" && (
