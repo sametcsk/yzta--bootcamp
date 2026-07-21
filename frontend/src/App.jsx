@@ -64,7 +64,6 @@ function AppInner() {
   const [yas, setYas] = useState(18)
   const [sonuc, setSonuc] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [isLevel, setIsLevel] = useState(1)
   
   // Kariyer ve Eğitim State'leri
   const [sinavPuani, setSinavPuani] = useState(null)
@@ -148,12 +147,24 @@ function AppInner() {
   const [isYeri, setIsYeri] = useState(null)
   const [cinsiyet, setCinsiyet] = useState(null)
   const [temelMaas, setTemelMaas] = useState(0)
+  const [isLevel, setIsLevel] = useState(1)
   const [emlakPiyasasi, setEmlakPiyasasi] = useState([])
   const [sahipOlunanEvler, setSahipOlunanEvler] = useState([])
   const [aracPiyasasi, setAracPiyasasi] = useState([])
   const [sahipOlunanAraclar, setSahipOlunanAraclar] = useState([])
   const [oturulanEvId, setOturulanEvId] = useState(null)
   const [kiraGeliriYillik, setKiraGeliriYillik] = useState(0)
+
+  // Add this effect to calculate Yıllık Gelir including Aile Desteği
+  useEffect(() => {
+    let gelir = Math.round(temelMaas * levelCarpaniGetir(isYeri, isLevel))
+    
+    if (yil - 2026 < 2) {
+      gelir += yasamGideri
+    }
+    
+    setYillikGelir(gelir)
+  }, [temelMaas, isYeri, isLevel, yil, yasamGideri])
 
   const nakitRef = useRef(nakit)
   const bekleyenSektorEkstraGetiriRef = useRef(null)
@@ -222,8 +233,8 @@ function AppInner() {
     if (adim.beklenenEylem === "sayfa:kariyer" && aktifSayfa === "kariyer") tutorialIleriGit()
     if (adim.beklenenEylem === "sayfa:banka" && aktifSayfa === "banka") tutorialIleriGit()
     if (adim.beklenenEylem === "yil_atla_tiklandi" && loading) tutorialIleriGit()
-    if (adim.beklenenEylem === "event_secildi" && mevcutEvent === null && !!sonucKarti) tutorialIleriGit()
-    if (adim.beklenenEylem === "is_secildi" && (isYeri !== null || universiteYili > 0)) tutorialIleriGit()
+    if (adim.beklenenEylem === "event_secildi" && mevcutEvent === null) tutorialIleriGit()
+    if (adim.beklenenEylem === "is_secildi" && (isYeri !== "lise_mezunu" || universiteYili > 0)) tutorialIleriGit()
   }, [tutorialAktif, tutorialAdimi, aktifSayfa, loading, mevcutEvent, sonucKarti, isYeri, universiteYili])
 
 
@@ -289,6 +300,9 @@ function AppInner() {
     if (beklenenNakit < 0) {
       setHacizUyarisiAcik(true)
     } else {
+      if (tutorialAktif && TUTORIAL_ADIMLARI[tutorialAdimi]?.beklenenEylem === "yil_atla_tiklandi") {
+        tutorialIleriGit()
+      }
       yilAtla()
     }
   }
@@ -405,7 +419,7 @@ function AppInner() {
       })
 
       const yeniTemelMaas = Math.round(temelMaas * (1 + data.yil_sonucu.enflasyon / 100))
-      const yeniGelir = Math.round(yeniTemelMaas * levelCarpaniGetir(isYeri, isLevel))
+      let yeniGelir = Math.round(yeniTemelMaas * levelCarpaniGetir(isYeri, isLevel))
       const yeniGider = Math.round(yasamGideri * (1 + data.yil_sonucu.enflasyon / 100))
       setTemelMaas(yeniTemelMaas)
       setYasamGideri(yeniGider)
@@ -467,15 +481,12 @@ function AppInner() {
         }, 0)
       setKiraGeliriYillik(kiraGeliriToplam)
 
-      // Aile Desteği (İlk 2 Yıl)
-      let aileDestegiTl = 0
-      if (yil - 2026 < 2) {
-        if (zorluk === "Kolay") aileDestegiTl = 15000 * yeniDolarKuru;
-        else if (zorluk === "Orta") aileDestegiTl = 7000 * yeniDolarKuru;
-        else if (zorluk === "Zor") aileDestegiTl = 3600 * yeniDolarKuru;
+      // Aile Desteği (İlk 2 Yıl) - Gelire Eklenir
+      if ((yil + 1) - 2026 < 2) {
+        yeniGelir += yeniGider;
       }
 
-      let yeniNakit = nakitRef.current + yeniGelir - yeniGider + kiraGeliriToplam + aileDestegiTl
+      let yeniNakit = nakitRef.current + yeniGelir - yeniGider + kiraGeliriToplam
       if (kredi) {
         yeniNakit -= kredi.yillikTaksit
       }
