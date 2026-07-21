@@ -3,7 +3,7 @@ export const YASAM_STANDARTLARI = {
     label: "Yemek",
     icon: "🍽",
     secenekler: [
-      { id: "dusuk", label: "Ev yemeği / ekonomik", aylik_usd: 100, mutluluk_etki: -1, sabir_etki: 0 },
+      { id: "dusuk", label: "Ev yemeği / ekonomik", aylik_usd: 100, mutluluk_etki: -2, sabir_etki: -1 },
       { id: "orta", label: "Karma, ara sıra dışarıda", aylik_usd: 200, mutluluk_etki: 1, sabir_etki: 1 },
       { id: "yuksek", label: "Sağlıklı / sık dışarıda", aylik_usd: 400, mutluluk_etki: 3, sabir_etki: 2 },
     ]
@@ -12,7 +12,7 @@ export const YASAM_STANDARTLARI = {
     label: "Ulaşım",
     icon: "🚌",
     secenekler: [
-      { id: "dusuk", label: "Toplu taşıma", aylik_usd: 30, mutluluk_etki: -1, sabir_etki: -1 },
+      { id: "dusuk", label: "Toplu taşıma", aylik_usd: 30, mutluluk_etki: -2, sabir_etki: -2 },
       { id: "kendi_araci", label: "Kendi Aracın", aylik_usd: 80, mutluluk_etki: 3, sabir_etki: 2, kilit: "arac" },
     ]
   },
@@ -20,7 +20,7 @@ export const YASAM_STANDARTLARI = {
     label: "Konut",
     icon: "🏠",
     secenekler: [
-      { id: "dusuk", label: "Paylaşım / küçük kira", aylik_usd: 150, mutluluk_etki: -2, sabir_etki: -1 },
+      { id: "dusuk", label: "Paylaşım / küçük kira", aylik_usd: 150, mutluluk_etki: -3, sabir_etki: -2 },
       { id: "orta", label: "Tek kira", aylik_usd: 300, mutluluk_etki: 1, sabir_etki: 1 },
       { id: "yuksek", label: "Büyük kira", aylik_usd: 600, mutluluk_etki: 3, sabir_etki: 2 },
       { id: "kendi_ev", label: "Kendi evin", aylik_usd: 50, mutluluk_etki: 5, sabir_etki: 3, kilit: "ev" },
@@ -30,7 +30,7 @@ export const YASAM_STANDARTLARI = {
     label: "Sağlık",
     icon: "🏥",
     secenekler: [
-      { id: "dusuk", label: "Devlet hastanesi", aylik_usd: 10, mutluluk_etki: -1, sabir_etki: -1 },
+      { id: "dusuk", label: "Devlet hastanesi", aylik_usd: 10, mutluluk_etki: -2, sabir_etki: -2 },
       { id: "orta", label: "Özel + devlet karma", aylik_usd: 40, mutluluk_etki: 1, sabir_etki: 1 },
       { id: "yuksek", label: "Tam özel", aylik_usd: 100, mutluluk_etki: 3, sabir_etki: 2 },
     ]

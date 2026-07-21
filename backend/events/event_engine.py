@@ -10,19 +10,25 @@ with open(_EVENT_DOSYASI, "r", encoding="utf-8") as f:
 
 
 def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, 
-              enf_rejim: int = 0, tetiklenenler: list = None, portfoy=None,
-              is_yeri: str = None, is_level: int = 1, makro_veriler: dict = None,
-              nakit_usd: float = 0.0) -> dict:
+              enf_rejim: str, tetiklenenler: list = None, portfoy: dict = None, 
+              is_yeri: str = None, is_level: int = 1, makro_veriler: dict = None, 
+              nakit_usd: float = 0, cinsiyet: str = "erkek") -> dict:
     if tetiklenenler is None:
         tetiklenenler = []
     if portfoy is None:
         portfoy = {}
 
     # Zorunlu emeklilik — 60'a kadar hiç tetiklenmediyse kesin tetikle
-    if mevcut_yas >= 65 and "ev_emeklilik" not in tetiklenenler:
+    if mevcut_yas >= 60 and "ev_emeklilik" not in tetiklenenler:
         emeklilik_event = next((e for e in EVENT_HAVUZU if e["id"] == "ev_emeklilik"), None)
         if emeklilik_event:
             return emeklilik_event
+
+    # Askerlik - Erkeklerde 24 veya 25 yasinda kesin tetikle (üniversite sonrası)
+    if cinsiyet == "erkek" and mevcut_yas in [24, 25] and "ev_askerlik" not in tetiklenenler and is_yeri not in ["lise_ogrencisi", "universite_ogrencisi"]:
+        askerlik_event = next((e for e in EVENT_HAVUZU if e["id"] == "ev_askerlik"), None)
+        if askerlik_event:
+            return askerlik_event
 
     uygun = []
     for e in EVENT_HAVUZU:
@@ -111,7 +117,7 @@ def event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict,
     return random.choices(uygun, weights=agirliklar, k=1)[0]
 
 
-def yan_event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, tetiklenenler: list = None, is_yeri: str = None, universite_yili: int = 0) -> list:
+def yan_event_sec(mevcut_yil: int, mevcut_yas: int, event_gecmisi: dict, tetiklenenler: list = None, is_yeri: str = None, universite_yili: int = 0, cinsiyet: str = "erkek") -> list:
     """
     Belirli ihtimallerle (ve cooldown kurallarıyla) ana event haricinde tetiklenen
     ekstra (side) eventleri döndürür.

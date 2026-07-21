@@ -377,6 +377,7 @@ function AppInner() {
           ...gameState,
           yil: yil,
           yas: yas,
+          cinsiyet: cinsiyet,
           event_gecmisi: eventGecmisi,
           tetiklenenler: tetiklenenler,
           portfoy: {
@@ -637,7 +638,7 @@ function AppInner() {
       // Sıkı Çalış Debuff
       let sikiCalisDebuff = { mutluluk: 0, sabir: 0 }
       if (sikiCalisAktif && isYeri && isYeri !== "lise_mezunu") {
-        sikiCalisDebuff = { mutluluk: -7, sabir: 3 }
+        sikiCalisDebuff = { mutluluk: -7, sabir: -7 }
       }
 
       // Barları güncelle
@@ -821,10 +822,10 @@ function AppInner() {
         id: "arac_" + Date.now(),
         tip: "kucuk",
         isim: "İkinci El Ucuz Araç",
-        alisYili: 0,
+        alisYili: 2025,
         alisFiyati: 8000 * (fiyatlar.dolar_try || 40),
         alis_fiyati_usd: 8000,
-        alinma_yili: 0,
+        alinma_yili: 2025,
         amortisman_orani: 0.15,
         bakim_masrafi_orani: 0.05
       }])
@@ -954,8 +955,8 @@ function AppInner() {
       const tlEtkisi = Math.round(secenek.nakit_etki_usd * guncelDolarKuru)
       
       setNakit(prevNakit => {
-        const currentNakit = isNaN(prevNakit) ? 20000 : prevNakit;
-        const yeniNakit = Math.max(20000, currentNakit + tlEtkisi);
+        const currentNakit = isNaN(prevNakit) ? 0 : prevNakit;
+        const yeniNakit = Math.round(currentNakit + tlEtkisi);
         nakitRef.current = yeniNakit;
         return yeniNakit;
       })
@@ -1039,6 +1040,27 @@ function AppInner() {
           ...prev,
           [sektorKey]: (prev[sektorKey] || 0) + alinacakPay
         }))
+    }
+
+    if (secenek.aksiyon) {
+      if (secenek.aksiyon.tip === "kredi_cek") {
+        const tutar = secenek.aksiyon.miktar_usd * (fiyatlar.dolar_try || 40);
+        const faiz = 4.0; // Aylık %4 civarı, basit bir faiz diyelim
+        const r = faiz / 100;
+        const vade = 3;
+        const yillikTaksitHesabi = (tutar * r * Math.pow(1 + r, vade)) / (Math.pow(1 + r, vade) - 1);
+        const yillikTaksit = Math.round(yillikTaksitHesabi);
+        
+        setKredi({
+          anapara: tutar,
+          borc: yillikTaksit * vade,
+          yillikTaksit: yillikTaksit,
+          kalanVade: vade,
+          faizOrani: faiz
+        });
+        // Nakite ekle
+        nakitiGuncelle(nakitRef.current + tutar);
+      }
     }
 
     const eventKaydi = {
@@ -1574,6 +1596,7 @@ function AppInner() {
 
         {aktifSayfa === "ana" && (
           <div className="flex flex-col gap-stack-lg">
+            
             {/* TEST BUTONU - GEÇİCİ */}
             <button
               onClick={() => { setYas(60); setYil(2062); nakitiGuncelle(nakitRef.current + 5000000); }}
@@ -1805,25 +1828,140 @@ function AppInner() {
               </TutorialOdak>
             </div>
 
-            {/* Year Summary */}
-            {sonuc && (
-              <div className={`border card-shadow p-stack-md flex flex-col ${krizMi ? "bg-error-container border-error" : "bg-surface-container border-outline"}`}>
-                <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-2">
-                  <h2 className={`font-headline-md text-headline-md uppercase ${krizMi ? "text-on-error-container" : "text-on-surface"}`}>Yıl Özeti</h2>
-                  <span className="font-data-sm text-data-sm uppercase">{sonuc.enf_durum}</span>
-                </div>
-                <p className={krizMi ? "text-on-error-container" : "text-on-surface-variant"}>
-                  Enflasyon: <strong>%{sonuc.enflasyon}</strong>.
-                  Borsa reel getiri: <strong className={sonuc.reel_bist >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_bist)}</strong>,
-                  Altın reel getiri: <strong className={sonuc.reel_altin >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_altin)}</strong>.
-                </p>
-                {sonuc.redenominasyon && (
-                  <div className="mt-2 text-primary font-bold uppercase text-sm border border-primary p-2 inline-block">
-                    {sonuc.redenominasyon}: Para birimi yenilendi.
+            {/* Alt Bölüm: Yıl Özeti ve Hızlı İşlemler */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-4">
+              
+              {/* Yıl Özeti (Sol Taraf) */}
+              <div className="xl:col-span-2">
+                {sonuc && (
+                  <div className={`h-full border card-shadow p-stack-md flex flex-col ${krizMi ? "bg-error-container border-error" : "bg-surface-container border-outline"}`}>
+                    <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-2">
+                      <h2 className={`font-headline-md text-headline-md uppercase ${krizMi ? "text-on-error-container" : "text-on-surface"}`}>Yıl Özeti</h2>
+                      <span className="font-data-sm text-data-sm uppercase">{sonuc.enf_durum}</span>
+                    </div>
+                    <p className={krizMi ? "text-on-error-container" : "text-on-surface-variant"}>
+                      Enflasyon: <strong>%{sonuc.enflasyon}</strong>.
+                      Borsa reel getiri: <strong className={sonuc.reel_bist >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_bist)}</strong>,
+                      Altın reel getiri: <strong className={sonuc.reel_altin >= 0 ? "text-primary" : "text-error"}>{formatPct(sonuc.reel_altin)}</strong>.
+                    </p>
+                    {sonuc.redenominasyon && (
+                      <div className="mt-2 text-primary font-bold uppercase text-sm border border-primary p-2 inline-block">
+                        {sonuc.redenominasyon}: Para birimi yenilendi.
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
+
+              {/* Hızlı İşlem Barı (Sağ Taraf) */}
+              <div className="xl:col-span-1 flex flex-col gap-2">
+                <h2 className="font-headline-md text-headline-sm uppercase text-on-surface mb-1">AL-SAT Kısayolu</h2>
+                {(() => {
+                  const oncekiAltin = fiyatGecmisi.altin.length > 1 ? fiyatGecmisi.altin[fiyatGecmisi.altin.length - 2].fiyat : fiyatlar.altin_try_gram;
+                  const altinDegisimPct = oncekiAltin > 0 ? (((fiyatlar.altin_try_gram - oncekiAltin) / oncekiAltin) * 100).toFixed(1) : 0;
+                  
+                  const oncekiDolar = fiyatGecmisi.dolar.length > 1 ? fiyatGecmisi.dolar[fiyatGecmisi.dolar.length - 2].fiyat : fiyatlar.dolar_try;
+                  const dolarDegisimPct = oncekiDolar > 0 ? (((fiyatlar.dolar_try - oncekiDolar) / oncekiDolar) * 100).toFixed(1) : 0;
+
+                  const oncekiBorsa = fiyatGecmisi.bist.length > 1 ? fiyatGecmisi.bist[fiyatGecmisi.bist.length - 2].fiyat : fiyatlar.bist_endeks;
+                  const borsaDegisimPct = oncekiBorsa > 0 ? (((fiyatlar.bist_endeks - oncekiBorsa) / oncekiBorsa) * 100).toFixed(1) : 0;
+                  
+                  return (
+                    <>
+                      <div className="bg-surface border border-outline flex items-center justify-between p-2 rounded w-full text-sm font-data-sm card-shadow">
+                        <div className="flex flex-col flex-1">
+                          <span className="font-bold text-on-surface uppercase text-yellow-500">ALTIN</span>
+                          <span className="text-on-surface-variant text-[10px]">Sahip: {portfoy.altin_gram} gr</span>
+                        </div>
+                        <div className="flex flex-col items-end px-2 border-r border-outline mr-2 w-20">
+                          <span className="font-bold text-on-surface text-xs">{money(fiyatlar.altin_try_gram)}</span>
+                          <span className={`text-[10px] ${altinDegisimPct >= 0 ? "text-[#34d399]" : "text-error"}`}>{altinDegisimPct > 0 ? "+" : ""}{altinDegisimPct}%</span>
+                        </div>
+                        <div className="flex gap-1 items-center shrink-0">
+                          <input id="hizli_altin_miktar" type="number" className="w-10 bg-background border border-outline px-1 rounded text-on-surface text-center text-xs" placeholder="gr" min="1" />
+                          <button onClick={() => { 
+                            const val = Number(document.getElementById("hizli_altin_miktar").value); 
+                            if(val > 0 && nakit >= val * fiyatlar.altin_try_gram) { 
+                              nakitiGuncelle(-(val * fiyatlar.altin_try_gram), "altin_al"); 
+                              setPortfoy(p => ({...p, altin_gram: p.altin_gram + val})); 
+                              document.getElementById("hizli_altin_miktar").value = ""; 
+                            } else if (val > 0) alert("Yetersiz nakit!");
+                          }} className="bg-primary text-background px-1.5 py-0.5 rounded font-bold hover:bg-opacity-80 text-[10px]">AL</button>
+                          <button onClick={() => { 
+                            const val = Number(document.getElementById("hizli_altin_miktar").value); 
+                            if(val > 0 && portfoy.altin_gram >= val) { 
+                              nakitiGuncelle(val * fiyatlar.altin_try_gram, "altin_sat"); 
+                              setPortfoy(p => ({...p, altin_gram: p.altin_gram - val})); 
+                              document.getElementById("hizli_altin_miktar").value = ""; 
+                            } else if (val > 0) alert("Yetersiz altın!");
+                          }} className="bg-error text-on-error px-1.5 py-0.5 rounded font-bold hover:bg-opacity-80 text-[10px]">SAT</button>
+                        </div>
+                      </div>
+
+                      <div className="bg-surface border border-outline flex items-center justify-between p-2 rounded w-full text-sm font-data-sm card-shadow">
+                        <div className="flex flex-col flex-1">
+                          <span className="font-bold text-on-surface uppercase text-green-500">DOLAR</span>
+                          <span className="text-on-surface-variant text-[10px]">Sahip: {portfoy.dolar} $</span>
+                        </div>
+                        <div className="flex flex-col items-end px-2 border-r border-outline mr-2 w-20">
+                          <span className="font-bold text-on-surface text-xs">{money(fiyatlar.dolar_try)}</span>
+                          <span className={`text-[10px] ${dolarDegisimPct >= 0 ? "text-[#34d399]" : "text-error"}`}>{dolarDegisimPct > 0 ? "+" : ""}{dolarDegisimPct}%</span>
+                        </div>
+                        <div className="flex gap-1 items-center shrink-0">
+                          <input id="hizli_dolar_miktar" type="number" className="w-10 bg-background border border-outline px-1 rounded text-on-surface text-center text-xs" placeholder="$" min="1" />
+                          <button onClick={() => { 
+                            const val = Number(document.getElementById("hizli_dolar_miktar").value); 
+                            if(val > 0 && nakit >= val * fiyatlar.dolar_try) { 
+                              nakitiGuncelle(-(val * fiyatlar.dolar_try), "dolar_al"); 
+                              setPortfoy(p => ({...p, dolar: p.dolar + val})); 
+                              document.getElementById("hizli_dolar_miktar").value = ""; 
+                            } else if (val > 0) alert("Yetersiz nakit!");
+                          }} className="bg-primary text-background px-1.5 py-0.5 rounded font-bold hover:bg-opacity-80 text-[10px]">AL</button>
+                          <button onClick={() => { 
+                            const val = Number(document.getElementById("hizli_dolar_miktar").value); 
+                            if(val > 0 && portfoy.dolar >= val) { 
+                              nakitiGuncelle(val * fiyatlar.dolar_try, "dolar_sat"); 
+                              setPortfoy(p => ({...p, dolar: p.dolar - val})); 
+                              document.getElementById("hizli_dolar_miktar").value = ""; 
+                            } else if (val > 0) alert("Yetersiz dolar!");
+                          }} className="bg-error text-on-error px-1.5 py-0.5 rounded font-bold hover:bg-opacity-80 text-[10px]">SAT</button>
+                        </div>
+                      </div>
+
+                      <div className="bg-surface border border-outline flex items-center justify-between p-2 rounded w-full text-sm font-data-sm card-shadow">
+                        <div className="flex flex-col flex-1">
+                          <span className="font-bold text-on-surface uppercase text-blue-500">BİST100</span>
+                          <span className="text-on-surface-variant text-[10px]">Sahip: {portfoy.bist_adet} Lot</span>
+                        </div>
+                        <div className="flex flex-col items-end px-2 border-r border-outline mr-2 w-20">
+                          <span className="font-bold text-on-surface text-xs">{money(fiyatlar.bist_endeks)}</span>
+                          <span className={`text-[10px] ${borsaDegisimPct >= 0 ? "text-[#34d399]" : "text-error"}`}>{borsaDegisimPct > 0 ? "+" : ""}{borsaDegisimPct}%</span>
+                        </div>
+                        <div className="flex gap-1 items-center shrink-0">
+                          <input id="hizli_borsa_miktar" type="number" className="w-10 bg-background border border-outline px-1 rounded text-on-surface text-center text-xs" placeholder="Lot" min="1" />
+                          <button onClick={() => { 
+                            const val = Number(document.getElementById("hizli_borsa_miktar").value); 
+                            if(val > 0 && nakit >= val * fiyatlar.bist_endeks) { 
+                              nakitiGuncelle(-(val * fiyatlar.bist_endeks), "bist_al"); 
+                              setPortfoy(p => ({...p, bist_adet: p.bist_adet + val})); 
+                              document.getElementById("hizli_borsa_miktar").value = ""; 
+                            } else if (val > 0) alert("Yetersiz nakit!");
+                          }} className="bg-primary text-background px-1.5 py-0.5 rounded font-bold hover:bg-opacity-80 text-[10px]">AL</button>
+                          <button onClick={() => { 
+                            const val = Number(document.getElementById("hizli_borsa_miktar").value); 
+                            if(val > 0 && portfoy.bist_adet >= val) { 
+                              nakitiGuncelle(val * fiyatlar.bist_endeks, "bist_sat"); 
+                              setPortfoy(p => ({...p, bist_adet: p.bist_adet - val})); 
+                              document.getElementById("hizli_borsa_miktar").value = ""; 
+                            } else if (val > 0) alert("Yetersiz Lot!");
+                          }} className="bg-error text-on-error px-1.5 py-0.5 rounded font-bold hover:bg-opacity-80 text-[10px]">SAT</button>
+                        </div>
+                      </div>
+                    </>
+                  )
+                })()}
+              </div>
+            </div>
           </div>
         )}
         {aktifSayfa === "varliklar" && (

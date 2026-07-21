@@ -18,13 +18,23 @@ function veriDilimle(gecmis, aralik) {
 const VARLIK_RENK = {
   altin: "#f5c842",
   bist: "#34d399",
+  bist_bankacilik: "#fbbf24",
+  bist_teknoloji: "#3b82f6",
+  bist_insaat: "#f97316",
+  bist_saglik: "#ef4444",
+  bist_perakende: "#a855f7",
   dolar: "#60a8f0",
   mevduat: "#a78bfa",
 }
 
 const VARLIK_AD = {
   altin: "Altın",
-  bist: "Borsa",
+  bist: "BİST100",
+  bist_bankacilik: "Banka",
+  bist_teknoloji: "Teknoloji",
+  bist_insaat: "İnşaat",
+  bist_saglik: "Sağlık",
+  bist_perakende: "Perakende",
   dolar: "Dolar",
   mevduat: "Mevduat",
 }

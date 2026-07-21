@@ -2340,12 +2340,18 @@
                 "sabir_etki": 5,
                 "mutluluk_etki": 0,
                 "nakit_etki_usd": 0,
-                "portfoy_etki": {
-                    "dinamik_hisse_usd": 500
-                },
                 "bias_etki": {
                     "mental_accounting": 15
-                }
+                },
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 1,
+                        "level_etki": 0,
+                        "portfoy_etki": {
+                            "dinamik_hisse_usd": 500
+                        }
+                    }
+                ]
             },
             {
                 "id": "is1_3",
@@ -2356,13 +2362,19 @@
                     "tur": "nakit_usd",
                     "min": 1000
                 },
-                "portfoy_etki": {
-                    "dinamik_hisse_usd": 1500
-                },
                 "bias_etki": {
                     "disposition_effect": -15
                 },
-                "nakit_etki_usd": -1000
+                "nakit_etki_usd": -1000,
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 1,
+                        "level_etki": 0,
+                        "portfoy_etki": {
+                            "dinamik_hisse_usd": 1500
+                        }
+                    }
+                ]
             }
         ]
     },
@@ -2807,60 +2819,6 @@
         ]
     },
     {
-        "id": "yan_is_001",
-        "kategori": "yan_event",
-        "is_is_event": true,
-        "bias_etiketi": "loss_aversion",
-        "baslik": "Şirket Hissesi Dağıtımı",
-        "metin": "Çalıştığın şirket, prim olarak sana kendi sektöründen hisseler verdi. Ancak bu hisseler geçen ay %30 düşmüştü, yönetim uzun vadede çok umutlu.",
-        "agirlik": 5,
-        "cooldown_yil": 5,
-        "tek_seferlik": false,
-        "tetik": "yas_aralik",
-        "secenekler": [
-            {
-                "id": "is1_1",
-                "metin": "[+Nakit] Daha da düşmeden hemen sat!",
-                "sabir_etki": 0,
-                "mutluluk_etki": 5,
-                "nakit_etki_usd": 500,
-                "bias_etki": {
-                    "loss_aversion": 15
-                }
-            },
-            {
-                "id": "is1_2",
-                "metin": "[+$500 Değerinde Hisse] Bekletirim, nasıl olsa bedavaya geldi.",
-                "sabir_etki": 5,
-                "mutluluk_etki": 0,
-                "nakit_etki_usd": 0,
-                "portfoy_etki": {
-                    "dinamik_hisse_usd": 500
-                },
-                "bias_etki": {
-                    "mental_accounting": 15
-                }
-            },
-            {
-                "id": "is1_3",
-                "metin": "[-$1.000 Nakit, +$1.500 Değerinde Hisse] Düştüyse alım fırsatıdır, cebimden ekleme yaparım!",
-                "sabir_etki": 10,
-                "mutluluk_etki": 0,
-                "kilit": {
-                    "tur": "nakit_usd",
-                    "min": 1000
-                },
-                "portfoy_etki": {
-                    "dinamik_hisse_usd": 1500
-                },
-                "bias_etki": {
-                    "disposition_effect": -15
-                },
-                "nakit_etki_usd": -1000
-            }
-        ]
-    },
-    {
         "id": "yan_is_002",
         "kategori": "yan_event",
         "is_is_event": true,
@@ -3192,12 +3150,12 @@
                 "sabir_etki": 10
             }
         ],
-        "min_yas": 65
+        "min_yas": 60
     },
     {
         "id": "emeklilik_hobi",
         "kategori": "ana_event",
-        "min_yas": 65,
+        "min_yas": 60,
         "tek_seferlik": true,
         "baslik": "Pahalı Yeni Hobi",
         "metin": "Emeklilikte boş vakitlerin arttı. Arkadaşların lüks bir yelken kulübüne üye oldu ve seni de ısrarla çağırıyorlar. Yıllık aidatı oldukça yüksek.",
@@ -3242,7 +3200,7 @@
     {
         "id": "emeklilik_dolandirici",
         "kategori": "ana_event",
-        "min_yas": 65,
+        "min_yas": 60,
         "tek_seferlik": true,
         "baslik": "Gizemli Telefon",
         "metin": "Kendisini siber suçlar polisi olarak tanıtan biri aradı. 'Hesabınız çalındı, inceleme bitene kadar acil şu hesaba 3.000 Dolar atın' diyor. Arka planda telsiz sesleri var ve çok panikledin.",
@@ -3291,7 +3249,7 @@
     {
         "id": "emeklilik_dost_isi",
         "kategori": "ana_event",
-        "min_yas": 65,
+        "min_yas": 60,
         "tek_seferlik": true,
         "baslik": "Eski Dostun İş Teklifi",
         "metin": "40 yıllık dostun bir kafe açtı ama işler kötü. Senden 10.000 Dolar borç istiyor, 'Birkaç aya toparlayacağım, kesin kurtaracağız' diyor.",
@@ -4007,6 +3965,10 @@
                 "mutluluk_etki": 5,
                 "bias_etki": {
                     "mental_accounting": 20
+                },
+                "aksiyon": {
+                    "tip": "kredi_cek",
+                    "miktar_usd": 3000
                 }
             },
             {
@@ -4215,6 +4177,416 @@
                         }
                     }
                 ]
+            }
+        ]
+    },
+    {
+        "id": "fill_dugun_001",
+        "kategori": "her_zaman",
+        "is_is_event": false,
+        "bias_etiketi": "mental_accounting",
+        "baslik": "Beklenmedik Düğün Davetiyesi",
+        "metin": "Çok yakın bir arkadaşın evleniyor ve seni düğününe çağırıyor. Ancak bu aralar bütçen biraz sıkışık.",
+        "agirlik": 8,
+        "cooldown_yil": 3,
+        "tek_seferlik": false,
+        "secenekler": [
+            {
+                "id": "dug_1",
+                "metin": "[-$100] Ayıp olmasın, çeyrek takalım.",
+                "sabir_etki": 2,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": -100
+            },
+            {
+                "id": "dug_2",
+                "metin": "[-$50] Bütçeme uygun olanı gram, anlar herhalde.",
+                "sabir_etki": 0,
+                "mutluluk_etki": 2,
+                "nakit_etki_usd": -50
+            },
+            {
+                "id": "dug_3",
+                "metin": "Gitme: Maalesef bahanem var, gidemeyeceğim.",
+                "sabir_etki": 5,
+                "mutluluk_etki": -5,
+                "bias_etki": {
+                    "mental_accounting": -10
+                }
+            }
+        ]
+    },
+    {
+        "id": "fill_buzdolabi_001",
+        "kategori": "her_zaman",
+        "is_is_event": false,
+        "bias_etiketi": "loss_aversion",
+        "baslik": "Bozulan Beyaz Eşya",
+        "metin": "Sabah uyandığında buzdolabının motorunun yandığını ve içindeki her şeyin eridiğini fark ettin.",
+        "agirlik": 6,
+        "cooldown_yil": 5,
+        "tek_seferlik": false,
+        "secenekler": [
+            {
+                "id": "buz_1",
+                "metin": "[-$600] Tamirle uğraşamam, yenisi en iyisi.",
+                "sabir_etki": -2,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": -600
+            },
+            {
+                "id": "buz_2",
+                "metin": "[-$150] Biraz sesli çalışıyor ama birkaç yıl daha götürür.",
+                "sabir_etki": 5,
+                "mutluluk_etki": -2,
+                "nakit_etki_usd": -150
+            }
+        ]
+    },
+    {
+        "id": "fill_telefon_001",
+        "kategori": "her_zaman",
+        "is_is_event": false,
+        "bias_etiketi": "present_bias",
+        "baslik": "Akıllı Telefon Tuzağı",
+        "metin": "Mevcut telefonun hala çalışıyor ama yeni çıkan X modeli harika görünüyor ve herkes ondan bahsediyor.",
+        "agirlik": 7,
+        "cooldown_yil": 3,
+        "tek_seferlik": false,
+        "secenekler": [
+            {
+                "id": "tel_1",
+                "metin": "[-$1200] Hemen Al! Teknolojiye yatırım şart!",
+                "sabir_etki": -5,
+                "mutluluk_etki": 10,
+                "nakit_etki_usd": -1200,
+                "bias_etki": {
+                    "present_bias": 15
+                }
+            },
+            {
+                "id": "tel_2",
+                "metin": "[Taksitli] Aylık aylık öderim, hissetmem bile.",
+                "sabir_etki": -2,
+                "mutluluk_etki": 5,
+                "aksiyon": {
+                    "tip": "kredi_cek",
+                    "miktar_usd": 1200
+                },
+                "bias_etki": {
+                    "present_bias": 10
+                }
+            },
+            {
+                "id": "tel_3",
+                "metin": "Telefonum bana yeter. Gereksiz masraf.",
+                "sabir_etki": 10,
+                "mutluluk_etki": -5,
+                "bias_etki": {
+                    "present_bias": -15
+                }
+            }
+        ]
+    },
+    {
+        "id": "fill_radar_001",
+        "kategori": "her_zaman",
+        "is_is_event": false,
+        "bias_etiketi": "loss_aversion",
+        "baslik": "Trafik Radarı",
+        "metin": "Geçen haftaki dalgınlığın sana pahalıya patladı; hız sınırını aştığın için ceza yemişsin.",
+        "agirlik": 8,
+        "cooldown_yil": 2,
+        "tek_seferlik": false,
+        "tetik": "arac_sahibi",
+        "secenekler": [
+            {
+                "id": "rad_1",
+                "metin": "[-$100] Erken ödeyip %25 indirimden yararlan.",
+                "sabir_etki": 5,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": -100
+            },
+            {
+                "id": "rad_2",
+                "metin": "[-$200] Unuttun ve faiziyle ödemek zorunda kaldın...",
+                "sabir_etki": -5,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": -200
+            }
+        ]
+    },
+    {
+        "id": "fill_gym_001",
+        "kategori": "her_zaman",
+        "is_is_event": false,
+        "bias_etiketi": "present_bias",
+        "baslik": "Spor Salonu Üyeliği",
+        "metin": "Yeni yıl hevesiyle spora başlama kararı aldın. Yıllık peşin üyelik çok daha uyguna geliyor.",
+        "agirlik": 6,
+        "cooldown_yil": 4,
+        "tek_seferlik": false,
+        "secenekler": [
+            {
+                "id": "gym_1",
+                "metin": "[-$300] Yıllık peşin al, motivasyon olsun.",
+                "sabir_etki": 10,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": -300
+            },
+            {
+                "id": "gym_2",
+                "metin": "[-$40] Aylık yazıl, önce bir deneyelim.",
+                "sabir_etki": 2,
+                "mutluluk_etki": 2,
+                "nakit_etki_usd": -40
+            },
+            {
+                "id": "gym_3",
+                "metin": "Evde yaparım. (1 hafta sonra bıraktın)",
+                "sabir_etki": -5,
+                "mutluluk_etki": -2
+            }
+        ]
+    },
+    {
+        "id": "fill_miras_001",
+        "kategori": "her_zaman",
+        "is_is_event": false,
+        "bias_etiketi": "mental_accounting",
+        "baslik": "Uzak Akrabadan Harçlık",
+        "metin": "Yıllardır görmediğin uzak bir akrabandan hesabına sürpriz bir şekilde 500 Dolar yatırıldı!",
+        "agirlik": 4,
+        "cooldown_yil": 10,
+        "tek_seferlik": false,
+        "secenekler": [
+            {
+                "id": "mir_1",
+                "metin": "[+$500 Nakit] Havadan gelen havaya gider, harca!",
+                "sabir_etki": -5,
+                "mutluluk_etki": 10,
+                "nakit_etki_usd": 500,
+                "bias_etki": {
+                    "mental_accounting": 15
+                }
+            },
+            {
+                "id": "mir_2",
+                "metin": "[+$500 Borsa Alımı] Bari hisse senedi alayım.",
+                "sabir_etki": 5,
+                "mutluluk_etki": 0,
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 1,
+                        "level_etki": 0,
+                        "portfoy_etki": {
+                            "dinamik_hisse_usd": 500
+                        }
+                    }
+                ],
+                "bias_etki": {
+                    "mental_accounting": -10
+                }
+            },
+            {
+                "id": "mir_3",
+                "metin": "[+$500 Nakit] Bu parayı kenara atacağım.",
+                "sabir_etki": 10,
+                "mutluluk_etki": -5,
+                "nakit_etki_usd": 500,
+                "bias_etki": {
+                    "mental_accounting": -20
+                }
+            }
+        ]
+    },
+    {
+        "id": "fill_vergi_001",
+        "kategori": "her_zaman",
+        "is_is_event": false,
+        "bias_etiketi": "moral_hazard",
+        "baslik": "Vergi Affı Paketi",
+        "metin": "Hükümet sürpriz bir 'Vergi Barışı' paketi açıkladı. Birikmiş ufak tefek borçlarını indirimli ödeme şansın var.",
+        "agirlik": 7,
+        "cooldown_yil": 5,
+        "tek_seferlik": false,
+        "secenekler": [
+            {
+                "id": "ver_1",
+                "metin": "[-$250] Hemen kapat, kafam rahat olsun.",
+                "sabir_etki": 10,
+                "mutluluk_etki": 2,
+                "nakit_etki_usd": -250
+            },
+            {
+                "id": "ver_2",
+                "metin": "Boşver, nasıl olsa 2 seneye yine af çıkar.",
+                "sabir_etki": -10,
+                "mutluluk_etki": -2,
+                "bias_etki": {
+                    "moral_hazard": 10
+                }
+            }
+        ]
+    },
+    {
+        "id": "fill_kripto_001",
+        "kategori": "her_zaman",
+        "is_is_event": false,
+        "bias_etiketi": "herding",
+        "baslik": "Kripto Fısıltısı",
+        "metin": "İş yerindeki herkes DogeCoin'in uçacağını konuşuyor. Yakın bir arkadaşın evini satıp girdiğini söyledi.",
+        "agirlik": 6,
+        "cooldown_yil": 3,
+        "tek_seferlik": false,
+        "secenekler": [
+            {
+                "id": "krip_1",
+                "metin": "[-$1000] Fırsatı kaçıramam, ben de giriyorum!",
+                "sabir_etki": -10,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": -1000,
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 0,
+                        "nakit_etki_usd": 3000,
+                        "sonuc_metin": "Coin uçtu! 3000$ kâr ettin!"
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 0,
+                        "nakit_etki_usd": 0,
+                        "sonuc_metin": "Coin çakıldı, tüm para sıfırlandı."
+                    }
+                ],
+                "bias_etki": {
+                    "herding": 15
+                }
+            },
+            {
+                "id": "krip_2",
+                "metin": "[-$200] İçimde kalmasın ufak atayım.",
+                "sabir_etki": -2,
+                "mutluluk_etki": 0,
+                "nakit_etki_usd": -200,
+                "olasilik_sonuclari": [
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 0,
+                        "nakit_etki_usd": 400,
+                        "sonuc_metin": "Şanslısın, paranı ikiye katladın."
+                    },
+                    {
+                        "ihtimal": 0.5,
+                        "level_etki": 0,
+                        "nakit_etki_usd": 0,
+                        "sonuc_metin": "Söylenti yalan çıktı, battı."
+                    }
+                ]
+            },
+            {
+                "id": "krip_3",
+                "metin": "Bana göre değil, bildiğimden şaşmam.",
+                "sabir_etki": 10,
+                "mutluluk_etki": -5,
+                "bias_etki": {
+                    "herding": -15
+                }
+            }
+        ]
+    },
+    {
+        "id": "fill_kiraci_001",
+        "kategori": "her_zaman",
+        "is_is_event": false,
+        "bias_etiketi": "loss_aversion",
+        "baslik": "Ev Sahibi ile Zam Pazarlığı",
+        "metin": "Ev sahibin yasal sınırın çok üzerinde bir ara zam talep ediyor. Kabul etmezsen çıkmanı istiyor.",
+        "agirlik": 7,
+        "cooldown_yil": 4,
+        "tek_seferlik": false,
+        "tetik": "kiraci",
+        "secenekler": [
+            {
+                "id": "kir_1",
+                "metin": "Kabul Et (Taşınmak daha masraflı).",
+                "sabir_etki": -5,
+                "mutluluk_etki": -5
+            },
+            {
+                "id": "kir_2",
+                "metin": "Mahkemelik Ol. (Büyük stres)",
+                "sabir_etki": -10,
+                "mutluluk_etki": -10
+            },
+            {
+                "id": "kir_3",
+                "metin": "[-$800] Uğraşamam, taşınıyorum.",
+                "sabir_etki": 5,
+                "mutluluk_etki": 5,
+                "nakit_etki_usd": -800
+            }
+        ]
+    },
+    {
+        "id": "fill_abonelik_001",
+        "kategori": "her_zaman",
+        "is_is_event": false,
+        "bias_etiketi": "status_quo",
+        "baslik": "Abonelik Tuzağı",
+        "metin": "Kredi kartı ekstremde aylardır kullanmadığın dijital platformlara 30 Dolar civarı ödeme yaptığını fark ettin.",
+        "agirlik": 9,
+        "cooldown_yil": 2,
+        "tek_seferlik": false,
+        "secenekler": [
+            {
+                "id": "abo_1",
+                "metin": "Üşenme, hepsini tek tek iptal et.",
+                "sabir_etki": 10,
+                "mutluluk_etki": 0
+            },
+            {
+                "id": "abo_2",
+                "metin": "[-$30] Kalsın, belki bu ay izlerim...",
+                "sabir_etki": -5,
+                "mutluluk_etki": 2,
+                "nakit_etki_usd": -30,
+                "bias_etki": {
+                    "status_quo": 15
+                }
+            }
+        ]
+    },
+    {
+        "id": "ev_askerlik",
+        "baslik": "Askerlik Vakti!",
+        "metin": "Vatani görevini yerine getirme zamanı geldi. Bedelli askerlik yaparak süreci kısaltabilirsin, aksi takdirde 6 ay boyunca birliğinde olacaksın ve bu süreçte iş hayatından uzak kalacaksın.",
+        "bias_etiketi": "loss_aversion",
+        "kategori": "ana_event",
+        "tetik": "her_zaman",
+        "tek_seferlik": true,
+        "secenekler": [
+            {
+                "id": "ask_1",
+                "metin": "[-$8.000] Bedelli Askerlik Yap. (Kısa sürede dönersin)",
+                "nakit_etki_usd": -8000,
+                "sabir_etki": -5,
+                "mutluluk_etki": 0,
+                "kilit": {
+                    "tur": "nakit_usd",
+                    "min": 8000
+                }
+            },
+            {
+                "id": "ask_2",
+                "metin": "6 Ay Normal Askerlik Yap. (Zorlu ama gururlu)",
+                "nakit_etki_usd": 0,
+                "sabir_etki": -20,
+                "mutluluk_etki": -15,
+                "bias_etki": {
+                    "loss_aversion": -10
+                }
             }
         ]
     }
