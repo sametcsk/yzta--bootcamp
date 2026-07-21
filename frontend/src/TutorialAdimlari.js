@@ -72,6 +72,14 @@ export const TUTORIAL_ADIMLARI = [
     metin: "Artık hazırsın. İlk yılımızı yaşamak için 'Ana Defter'e dönelim."
   },
   {
+    hedefId: "nav-opsiyon",
+    pozisyon: "right",
+    baslik: "Türev Piyasalar (Yüksek Risk)",
+    icerik: "En büyük kaldıraç fırsatları ve batış hikayeleri buradadır. Zaman erimesi (Time Decay) konsepti geçerlidir ve oldukça karmaşıktır. NOT: Sadece 'Finans' mezunları erişebilir!",
+    beklenenEylem: "menu_tiklama",
+    beklenenSayfa: "opsiyon"
+  },
+  {
     hedef: "yil-calistir-butonu",
     ilerlemeTipi: "eylem",
     beklenenEylem: "yil_atla_tiklandi",

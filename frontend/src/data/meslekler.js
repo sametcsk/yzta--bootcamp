@@ -51,7 +51,7 @@ export const MESLEKLER = {
   ekonomist: {
     ad: "Ekonomist / Bankacı",
     temelMaas: 220000,
-    gereksinim: "iktisat",
+    gereksinim: "finans",
     pozisyonAdi: {
       1: "Uzman Yardımcısı",
       2: "Uzman",

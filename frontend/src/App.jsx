@@ -19,7 +19,8 @@ import BitisSayfasi from "./BitisSayfasi"
 import GirisSayfasi from "./GirisSayfasi"
 import { supabase, supabaseAktif } from "./supabaseClient"
 import BorsaSayfasi from "./BorsaSayfasi"
-import { formatAssetPrice } from "./utils"
+import OpsiyonSayfasi from "./OpsiyonSayfasi"
+import { formatAssetPrice, money } from "./utils"
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
 
@@ -130,7 +131,12 @@ function AppInner() {
     bist_perakende_adet: 0,
     dolar: 0,
     mevduat_tl: 0,
+    opsiyonlar: []
   })
+  const [opsiyonGecmisi, setOpsiyonGecmisi] = useState([])
+  const [opsiyonZinciri, setOpsiyonZinciri] = useState(null)
+  const [opsiyonMetrikleri, setOpsiyonMetrikleri] = useState({ toplam_yatirim: 0, toplam_net_kar: 0 })
+
   const [fiyatlar, setFiyatlar] = useState({
     altin_try_gram: (2600 * 40) / 31.1,
     bist_endeks: 100,
@@ -154,6 +160,28 @@ function AppInner() {
   const [sahipOlunanAraclar, setSahipOlunanAraclar] = useState([])
   const [oturulanEvId, setOturulanEvId] = useState(null)
   const [kiraGeliriYillik, setKiraGeliriYillik] = useState(0)
+
+  useEffect(() => {
+    async function fetchInitialChain() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/opsiyon-zinciri`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fiyatlar, mevduat_faizi: fiyatlar.mev_faiz_oran || 0.40 })
+        })
+        const data = await res.json()
+        if (data.zincir) {
+          setOpsiyonZinciri(data.zincir)
+        }
+      } catch (err) {
+        console.error("Opsiyon zinciri alınamadı:", err)
+      }
+    }
+    
+    if (!opsiyonZinciri && fiyatlar.bist_endeks > 0) {
+      fetchInitialChain()
+    }
+  }, [fiyatlar, opsiyonZinciri])
 
   // Add this effect to calculate Yıllık Gelir including Aile Desteği
   useEffect(() => {
@@ -307,12 +335,39 @@ function AppInner() {
     }
   }
 
-  async function yilAtla() {
+async function yilAtla(opsiyonAksiyon = null) {
     setHacizUyarisiAcik(false)
     setAktifSayfa("ana")
     setLoading(true)
 
-    const nakit0 = nakitRef.current
+    // Otomatik Opsiyon Kapatma (Vadesi dolmuş ama nakite çevrilmemiş olanlar)
+    let guncelOpsiyonlar = [...portfoy.opsiyonlar];
+    let anlikNakit = nakitRef.current;
+    const aktifOlanlar = guncelOpsiyonlar.filter(o => !o.vadesi_doldu);
+    const suresiDolanlar = guncelOpsiyonlar.filter(o => o.vadesi_doldu);
+    
+    let ekNetKar = 0;
+    let kapatilanlar = [];
+
+    if (suresiDolanlar.length > 0) {
+        suresiDolanlar.forEach(opt => {
+            if (opt.brut_kar > 0) {
+                anlikNakit += opt.brut_kar;
+            }
+            kapatilanlar.push({...opt, not: 'Otomatik (Vade Sonu)'});
+            ekNetKar += opt.net_kar;
+        });
+        
+        nakitiGuncelle(anlikNakit);
+        setPortfoy(p => ({ ...p, opsiyonlar: aktifOlanlar }));
+        setOpsiyonGecmisi(g => [...kapatilanlar.reverse(), ...g].slice(0, 50));
+        setOpsiyonMetrikleri(m => ({
+            ...m,
+            toplam_net_kar: m.toplam_net_kar + ekNetKar
+        }));
+    }
+
+    const nakit0 = anlikNakit;
     const mevduat0 = portfoy.mevduat_tl
     const altinTL0 = portfoy.altin_gram * fiyatlar.altin_try_gram
     const bistTL0 = portfoy.bist_adet * fiyatlar.bist_endeks
@@ -368,27 +423,54 @@ function AppInner() {
       luksYasamPuani: prev.luksYasamPuani + luksPuaniHesapla(standartlar, sahipOlunanEvler),
       toplamYil: prev.toplamYil + 1
     }));
+    
+    let stateData = {
+        ...gameState,
+        yil: yil,
+        yas: yas,
+        cinsiyet: cinsiyet,
+        event_gecmisi: eventGecmisi,
+        tetiklenenler: tetiklenenler,
+        portfoy: {
+            ...portfoy,
+            kirada_ev_var: sahipOlunanEvler.some(ev => ev.kirada)
+        },
+        is_yeri: isYeri,
+        is_level: isLevel,
+        sektor_ekstra_getiri: bekleyenSektorEkstraGetiriRef.current,
+        universite_yili: yeniUniversiteYili,
+        kur: fiyatlar.dolar_try,
+        aktif_opsiyonlar: suresiDolanlar.length > 0 ? aktifOlanlar : portfoy.opsiyonlar
+    }
+    
+    if (opsiyonAksiyon && opsiyonAksiyon.aksiyon === "bozdur") {
+         const bozulacakOpt = portfoy.opsiyonlar.find(o => o.id === opsiyonAksiyon.id);
+         if (bozulacakOpt) {
+             setNakit(n => n + opsiyonAksiyon.kar + bozulacakOpt.premium_odenen);
+             setOpsiyonGecmisi(prev => [...prev, {
+                 ...bozulacakOpt,
+                 kapanis_fiyati: "Erken Bozdurma",
+                 brut_kar: opsiyonAksiyon.kar + bozulacakOpt.premium_odenen,
+                 net_kar: opsiyonAksiyon.kar,
+                 durum: "ITM (Erken)"
+             }]);
+             setOpsiyonMetrikleri(prev => ({
+                 toplam_yatirim: prev.toplam_yatirim,
+                 toplam_net_kar: prev.toplam_net_kar + opsiyonAksiyon.kar
+             }));
+             setPortfoy(p => ({
+                 ...p,
+                 opsiyonlar: p.opsiyonlar.filter(o => o.id !== opsiyonAksiyon.id)
+             }));
+             stateData.aktif_opsiyonlar = stateData.aktif_opsiyonlar.filter(o => o.id !== opsiyonAksiyon.id);
+         }
+    }
 
     try {
       const res = await fetch(`${API_BASE_URL}/yil-atla`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...gameState,
-          yil: yil,
-          yas: yas,
-          cinsiyet: cinsiyet,
-          event_gecmisi: eventGecmisi,
-          tetiklenenler: tetiklenenler,
-          portfoy: {
-            ...portfoy,
-            kirada_ev_var: sahipOlunanEvler.some(ev => ev.kirada)
-          },
-          is_yeri: isYeri,
-          is_level: isLevel,
-          sektor_ekstra_getiri: bekleyenSektorEkstraGetiriRef.current,
-          universite_yili: yeniUniversiteYili,
-        }),
+        body: JSON.stringify(stateData),
       })
       bekleyenSektorEkstraGetiriRef.current = null;
       const data = await res.json()
@@ -577,13 +659,38 @@ function AppInner() {
              yillikTaksit: Math.round(prev.yillikTaksit / 1000)
            }) : null)
         }
+        setOpsiyonMetrikleri(prev => ({
+            ...prev,
+            toplam_net_kar: Math.round(prev.toplam_net_kar / 1000),
+            toplam_yatirim: Math.round(prev.toplam_yatirim / 1000)
+        }))
+        setOpsiyonGecmisi(prev => prev.map(opt => ({
+            ...opt,
+            premium_odenen: Math.round(opt.premium_odenen / 1000),
+            net_kar: Math.round(opt.net_kar / 1000),
+            brut_kar: Math.round(opt.brut_kar / 1000),
+            kapanis_fiyati: typeof opt.kapanis_fiyati === "number" ? Math.round(opt.kapanis_fiyati / 1000 * 100) / 100 : opt.kapanis_fiyati,
+            strike: Math.round(opt.strike / 1000 * 100) / 100
+        })))
       } else {
         setYillikGelir(yeniGelir)
       }
       nakitiGuncelle(yeniNakit)
+      
+      // Opsiyon Sonuçlarını İşle
+      if (data.yil_sonucu.aktif_opsiyonlar) {
+          setPortfoy(p => ({
+              ...p,
+              opsiyonlar: data.yil_sonucu.aktif_opsiyonlar
+          }));
+      }
 
+      // 4. Yeni Fiyatları Güncelle
       if (data.yil_sonucu.fiyatlar) {
         setFiyatlar(data.yil_sonucu.fiyatlar)
+      }
+      if (data.yil_sonucu.opsiyon_zinciri) {
+        setOpsiyonZinciri(data.yil_sonucu.opsiyon_zinciri)
       }
 
       setPortfoy(prev => ({
@@ -692,26 +799,47 @@ function AppInner() {
       // Terfi Eventi Intercept (Side Event Olarak Kuyruğa Ekle)
       if (yeniCalismaBari >= 10 && isYeri && isYeri !== "lise_mezunu" && isLevel < 5) {
         // %70 başarı şansı arka planda hesaplanacak
-        const basariliMi = Math.random() < 0.70;
         yeniEventler.push({
           id: "ev_terfi_sinavi",
-          tek_seferlik: false,
-          tip: "kariyer",
-          baslik: "Kariyer Sınavı",
-          metin: "Uzun süredir aynı pozisyonda çalışıyorsun. Tecrübe barın doldu ve artık terfi etme zamanın geldi. Üst yönetim yeteneklerini değerlendiriyor...",
+          baslik: "Terfi Fırsatı: Yönetici Pozisyonu",
+          metin: "Sıkı çalışman sonuç verdi. Yönetim, performansını takdir etti ve sana bir üst pozisyon için terfi sınavına girme hakkı tanıdı.",
           secenekler: [
             {
-               id: "degerlendirmeye_gir",
-               metin: "Terfi Değerlendirmesine Gir",
-               olasilik_sonuclari: [
-                 {
-                   agirlik: 100,
-                   sonuc_metin: basariliMi ? "Harika! Yönetim performansından çok memnun, terfi aldın ve maaş katsayın arttı." : "Maalesef terfi alamadın. Yönetim daha fazlasını bekliyor. Bar 6'ya düştü.",
-                   terfi_sonucu: basariliMi ? "kabul" : "red",
-                   mutluluk_etki: basariliMi ? 5 : -5,
-                   sabir_etki: basariliMi ? 5 : 0
-                 }
-               ]
+              id: "terfi_kabul",
+              metin: "Sınava Gir (Başarı Şansı: Yüksek)",
+              olasilik_sonuclari: [
+                {
+                  ihtimal: 0.70,
+                  level_etki: 1,
+                  sonuc_metin: "Sınavı başarıyla geçtin! Yönetim senin yeni liderlik özelliklerini takdir etti ve terfini onayladı.",
+                  terfi_sonucu: "kabul",
+                  mutluluk_etki: 10,
+                  sabir_etki: -2
+                },
+                {
+                  ihtimal: 0.30,
+                  level_etki: 0,
+                  sonuc_metin: "Sınavda maalesef bazı eksiklerin görüldü ve terfin reddedildi. Hazırlık için harcadığın para da boşa gitti.",
+                  terfi_sonucu: "red",
+                  nakit_etki: -5000,
+                  mutluluk_etki: -10,
+                  sabir_etki: -5
+                }
+              ]
+            },
+            {
+              id: "terfi_red",
+              metin: "Reddet (Sorumluluk Almak İstemiyorum)",
+              olasilik_sonuclari: [
+                {
+                  ihtimal: 1.0,
+                  level_etki: 0,
+                  sonuc_metin: "Sorumluluk almaktan kaçındın. Mevcut pozisyonunda devam edeceksin.",
+                  terfi_sonucu: "red",
+                  mutluluk_etki: -2,
+                  sabir_etki: 5
+                }
+              ]
             }
           ]
         })
@@ -936,17 +1064,33 @@ function AppInner() {
       setBiasMetrics(prev => {
         let yeniSkorlari = { ...prev.eventSkorlari }
         let yeniSayilari = { ...prev.eventSayilari }
-        for (const [key, value] of Object.entries(secenek.bias_etki)) {
-          if (yeniSkorlari[key] !== undefined) {
-             yeniSkorlari[key] += value
-             yeniSayilari[key] += 1
-          }
+        if (secenek.bias_etki.bias_turu) {
+          const bTuru = secenek.bias_etki.bias_turu
+          yeniSkorlari[bTuru] = (yeniSkorlari[bTuru] || 0) + secenek.bias_etki.skor
+          yeniSayilari[bTuru] = (yeniSayilari[bTuru] || 0) + 1
         }
         return {
           ...prev,
           eventSkorlari: yeniSkorlari,
           eventSayilari: yeniSayilari
         }
+      })
+    }
+
+    if (secenek.opsiyon_aksiyon) {
+      if (secenek.opsiyon_aksiyon.aksiyon === "bozdur") {
+        onOpsiyonKapat(secenek.opsiyon_aksiyon.id, true);
+      } else if (secenek.opsiyon_aksiyon.aksiyon === "ekle") {
+        onOpsiyonGuncelle(secenek.opsiyon_aksiyon.id);
+      }
+    }
+
+    if (secenek.nakit_etki !== undefined && secenek.nakit_etki !== 0) {
+      setNakit(prevNakit => {
+        const currentNakit = isNaN(prevNakit) ? 0 : prevNakit;
+        const yeniNakit = Math.round(currentNakit + secenek.nakit_etki);
+        nakitRef.current = yeniNakit;
+        return yeniNakit;
       })
     }
 
@@ -1349,27 +1493,87 @@ function AppInner() {
     setSahipOlunanAraclar(prev => prev.filter(a => a.id !== aracId))
   }
 
-  function portfoyDegeriHesapla() {
-    const yatirimDegeri = Math.round(
-      portfoy.altin_gram * fiyatlar.altin_try_gram +
-      portfoy.bist_adet * fiyatlar.bist_endeks +
-      (portfoy.bist_bankacilik_adet || 0) * (fiyatlar.bist_bankacilik || 100) +
-      (portfoy.bist_teknoloji_adet || 0) * (fiyatlar.bist_teknoloji || 100) +
-      (portfoy.bist_insaat_adet || 0) * (fiyatlar.bist_insaat || 100) +
-      (portfoy.bist_saglik_adet || 0) * (fiyatlar.bist_saglik || 100) +
-      (portfoy.bist_perakende_adet || 0) * (fiyatlar.bist_perakende || 100) +
-      portfoy.dolar * fiyatlar.dolar_try
-    )
-    const mevduatDegeri = portfoy.mevduat_tl || 0
-    let evDegeri = 0
-    sahipOlunanEvler.forEach(ev => {
-      evDegeri += evGuncelDegerHesapla(ev)
-    })
-    let aracDegeri = 0
-    sahipOlunanAraclar.forEach(arac => {
-      aracDegeri += aracGuncelDegerHesapla(arac)
-    })
-    return yatirimDegeri + mevduatDegeri + evDegeri + aracDegeri
+
+  const onOpsiyonKapat = (optId, isErkenBozdurma = false) => {
+      setPortfoy(prev => {
+          const optIndex = prev.opsiyonlar.findIndex(o => o.id === optId);
+          if (optIndex === -1) return prev;
+          
+const opt = prev.opsiyonlar[optIndex];
+          const yeniOpsiyonlar = [...prev.opsiyonlar];
+          yeniOpsiyonlar.splice(optIndex, 1);
+          
+          if (isErkenBozdurma && opt.kalan_vade === opt.vade) {
+              // İptal (Aynı yıl içinde satış)
+              nakitiGuncelle(nakitRef.current + opt.premium_odenen);
+              setOpsiyonMetrikleri(m => ({
+                  ...m,
+                  toplam_yatirim: m.toplam_yatirim - opt.premium_odenen
+              }));
+              return { ...prev, opsiyonlar: yeniOpsiyonlar };
+          }
+          
+          if (isErkenBozdurma) {
+              nakitiGuncelle(nakitRef.current + opt.guncel_deger);
+          } else {
+              if (opt.brut_kar > 0) {
+                  nakitiGuncelle(nakitRef.current + opt.brut_kar);
+              }
+          }
+          
+          setOpsiyonGecmisi(g => [{...opt, not: isErkenBozdurma ? 'Erken Satış' : 'Vade Sonu'}, ...g].slice(0, 50));
+          
+          setOpsiyonMetrikleri(m => ({
+              toplam_yatirim: m.toplam_yatirim,
+              toplam_net_kar: m.toplam_net_kar + (isErkenBozdurma ? opt.guncel_kar_zarar : opt.net_kar)
+          }));
+          
+          return { ...prev, opsiyonlar: yeniOpsiyonlar };
+      });
+  };
+
+  const onOpsiyonGuncelle = (optId) => {
+      setPortfoy(prev => {
+          const optIndex = prev.opsiyonlar.findIndex(o => o.id === optId);
+          if (optIndex === -1) return prev;
+          
+          const opt = prev.opsiyonlar[optIndex];
+          if (nakitRef.current < opt.guncel_premium) return prev;
+          
+          nakitiGuncelle(nakitRef.current - opt.guncel_premium);
+          
+          const yeniOpsiyonlar = [...prev.opsiyonlar];
+          const yeniAdet = opt.adet + 1;
+          const yeniMaliyet = opt.premium_odenen + opt.guncel_premium;
+          const yeniGuncelDeger = (opt.guncel_deger / opt.adet) * yeniAdet;
+          const yeniKarZarar = yeniGuncelDeger - yeniMaliyet;
+          
+          yeniOpsiyonlar[optIndex] = {
+              ...opt,
+              adet: yeniAdet,
+              premium_odenen: yeniMaliyet,
+              guncel_deger: yeniGuncelDeger,
+              guncel_kar_zarar: yeniKarZarar
+          };
+          
+          setOpsiyonMetrikleri(m => ({
+              toplam_yatirim: m.toplam_yatirim + opt.guncel_premium,
+              toplam_net_kar: m.toplam_net_kar
+          }));
+          
+          return { ...prev, opsiyonlar: yeniOpsiyonlar };
+      });
+  };
+
+  function onOpsiyonAl(secim) {
+    const maliyet = secim.premium;
+    if (nakit < maliyet) { alert("Yetersiz nakit!"); return; }
+    nakitiGuncelle(nakit - maliyet);
+    setPortfoy(p => ({
+      ...p,
+      opsiyonlar: [...p.opsiyonlar, { ...secim, premium_odenen: maliyet, id: "opt_" + Date.now() }]
+    }));
+    setOpsiyonMetrikleri(p => ({ ...p, toplam_yatirim: p.toplam_yatirim + maliyet }));
   }
 
   const portfoyDegeri = Math.round(
@@ -1481,6 +1685,9 @@ function AppInner() {
           <button onClick={() => setAktifSayfa("portfoy")}>
             <span className={`material-symbols-outlined ${aktifSayfa === "portfoy" ? "text-primary" : "text-on-surface-variant"}`}>account_balance</span>
           </button>
+          <button onClick={() => setAktifSayfa("opsiyon")}>
+            <span className={`material-symbols-outlined ${aktifSayfa === "opsiyon" ? "text-primary" : "text-on-surface-variant"}`}>query_stats</span>
+          </button>
           <button onClick={() => setAktifSayfa("standartlar")}>
             <span className={`material-symbols-outlined ${aktifSayfa === "standartlar" ? "text-primary" : "text-on-surface-variant"}`}>psychology</span>
           </button>
@@ -1513,6 +1720,7 @@ function AppInner() {
             { id: "ana", label: "Ana Defter", icon: "terminal" },
             { id: "varliklar", label: "Piyasa Verileri", icon: "trending_up" },
             { id: "banka", label: "Banka & Krediler", icon: "account_balance" },
+            { id: "opsiyon", label: "Opsiyon Piyasaları", icon: "query_stats" },
             { id: "kariyer", label: "Kariyer & Eğitim", icon: "work" },
             { id: "portfoy", label: "Varlık Portföyü", icon: "pie_chart" },
             { id: "standartlar", label: "Psikolojik Profil", icon: "psychology" },
@@ -2031,6 +2239,23 @@ function AppInner() {
           />
         )}
 
+        {aktifSayfa === "opsiyon" && (
+          <OpsiyonSayfasi
+            nakit={nakit}
+            yil={yil}
+            opsiyonZinciri={opsiyonZinciri}
+            fiyatlar={fiyatlar}
+            aktifOpsiyonlar={portfoy.opsiyonlar}
+            opsiyonGecmisi={opsiyonGecmisi}
+            opsiyonMetrikleri={opsiyonMetrikleri}
+            okunanBolum={okunanBolum}
+            mezunOlunanBolum={mezunOlunanBolum}
+            onOpsiyonAl={onOpsiyonAl}
+            onOpsiyonKapat={onOpsiyonKapat}
+            onOpsiyonGuncelle={onOpsiyonGuncelle}
+          />
+        )}
+
         {aktifSayfa === "standartlar" && (
           <YasamStandartlari
             secimler={standartlar}
@@ -2124,9 +2349,7 @@ function MetricCard({ label, value, hint, alert, tooltipNodes }) {
   )
 }
 
-function money(value) {
-  return `₺${Number(value).toLocaleString("tr-TR")}`
-}
+
 
 function formatPct(val) {
   return val >= 0 ? `+%${Math.abs(val).toFixed(1)}` : `-%${Math.abs(val).toFixed(1)}`

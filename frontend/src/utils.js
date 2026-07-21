@@ -5,3 +5,12 @@ export function formatAssetPrice(val) {
   }
   return Math.round(val);
 }
+
+export function money(value) {
+  if (value === null || value === undefined) return "0 ₺"
+  return new Intl.NumberFormat("tr-TR", {
+    style: "currency",
+    currency: "TRY",
+    maximumFractionDigits: 0
+  }).format(value)
+}
