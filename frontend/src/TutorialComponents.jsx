@@ -12,11 +12,16 @@ export function TutorialOdak({ hedefId, children, disablePadding = false }) {
 }
 
 export function TutorialKutusu() {
-  const { aktif, mevcutAdim, ileriGit, tutorialuBitir } = useTutorial()
+  const { aktif, mevcutAdim, adimTamamlandi, ileriGit, tutorialuBitir } = useTutorial()
   if (!aktif || !mevcutAdim) return null
 
+  const hizliAlSatAdimi = mevcutAdim.hedef === "hizli-al-sat"
+  const konumSinifi = hizliAlSatAdimi
+    ? "left-4 right-4 bottom-6 md:left-[17.5rem] md:right-auto"
+    : "left-auto right-6 bottom-6"
+
   return (
-    <div className="fixed bottom-6 right-6 z-[100] max-w-sm bg-surface-container border border-primary shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-stack-md animate-in slide-in-from-bottom-10 fade-in duration-300">
+    <div key={mevcutAdim.hedef} className={`fixed ${konumSinifi} z-[100] max-w-sm bg-surface-container border border-primary shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-stack-md animate-in slide-in-from-bottom-10 fade-in duration-300`}>
       <div className="flex items-center gap-2 text-primary font-headline-md text-headline-md font-black uppercase mb-2 border-b border-outline pb-2">
         <span className="material-symbols-outlined">lightbulb</span>
         Finsim Rehberi
@@ -25,6 +30,15 @@ export function TutorialKutusu() {
       {mevcutAdim.ilerlemeTipi === "buton" ? (
         <button onClick={mevcutAdim.hedef === "sonuc-enflasyon" ? tutorialuBitir : ileriGit} className="w-full bg-primary text-on-primary font-data-sm uppercase py-2 px-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border border-outline font-black hover:bg-primary-container hover:text-on-primary-container transition-colors">
           {mevcutAdim.hedef === "sonuc-enflasyon" ? "Bitti" : "Devam Et"}
+        </button>
+      ) : mevcutAdim.ilerlemeTipi === "gorev" ? (
+        <button
+          type="button"
+          onClick={ileriGit}
+          disabled={!adimTamamlandi}
+          className="w-full bg-primary text-on-primary font-data-sm uppercase py-2 px-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border border-outline font-black transition-colors disabled:bg-surface-variant disabled:text-on-surface-variant disabled:shadow-none disabled:cursor-not-allowed"
+        >
+          {adimTamamlandi ? "Devam Et" : "Önce Bir Alım Yap"}
         </button>
       ) : (
         <div className="flex items-center justify-center gap-2 p-3 bg-surface-variant border border-outline border-dashed text-on-surface-variant font-data-sm uppercase animate-pulse font-bold">

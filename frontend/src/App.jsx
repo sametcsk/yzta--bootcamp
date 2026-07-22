@@ -58,7 +58,7 @@ const VARLIK_META = {
 }
 
 function AppInner() {
-  const { aktif: tutorialAktif, mevcutAdim: tutorialMevcutAdim, adimIndex: tutorialAdimi, ileriGit: tutorialIleriGit, setAktif: setTutorialAktif } = useTutorial()
+  const { aktif: tutorialAktif, mevcutAdim: tutorialMevcutAdim, adimIndex: tutorialAdimi, ileriGit: tutorialIleriGit, eylemiTamamla: tutorialEyleminiTamamla, tutorialuBitir, setAktif: setTutorialAktif } = useTutorial()
 
   const [gameState, setGameState] = useState(INITIAL_STATE)
   const [yil, setYil] = useState(2025)
@@ -264,7 +264,6 @@ function AppInner() {
     if (adim.beklenenEylem === "sayfa:kariyer" && aktifSayfa === "kariyer") tutorialIleriGit()
     if (adim.beklenenEylem === "sayfa:banka" && aktifSayfa === "banka") tutorialIleriGit()
     if (adim.beklenenEylem === "yil_atla_tiklandi" && loading) tutorialIleriGit()
-    if (adim.beklenenEylem === "event_secildi" && mevcutEvent === null) tutorialIleriGit()
     if (adim.beklenenEylem === "is_secildi" && (isYeri !== "lise_mezunu" || universiteYili > 0)) tutorialIleriGit()
   }, [tutorialAktif, tutorialAdimi, aktifSayfa, loading, mevcutEvent, sonucKarti, isYeri, universiteYili])
 
@@ -1228,6 +1227,13 @@ async function yilAtla(opsiyonAksiyon = null) {
     setFinalRapor(null)
     setMevcutEvent(null)
 
+    if (
+      tutorialAktif &&
+      TUTORIAL_ADIMLARI[tutorialAdimi]?.beklenenEylem === "event_secildi"
+    ) {
+      tutorialuBitir()
+    }
+
     if (secenek.olasilik_sonuclari && secenek.olasilik_sonuclari.length > 0) {
       const cikanDal = agirlikliSecim(secenek.olasilik_sonuclari)
       levelDegistir(cikanDal.level_etki)
@@ -2068,6 +2074,7 @@ const opt = prev.opsiyonlar[optIndex];
               </div>
 
               {/* Hızlı İşlem Barı (Sağ Taraf) */}
+              <TutorialOdak hedefId="hizli-al-sat" disablePadding>
               <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col gap-2 h-full">
                 <h2 className="font-headline-md text-headline-md uppercase text-on-surface border-b border-outline-variant pb-2 mb-1">AL-SAT Kısayolu</h2>
                 {(() => {
@@ -2099,6 +2106,7 @@ const opt = prev.opsiyonlar[optIndex];
                               nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.altin_try_gram));
                               setPortfoy(p => ({...p, altin_gram: p.altin_gram + val})); 
                               document.getElementById("hizli_altin_miktar").value = ""; 
+                              tutorialEyleminiTamamla("hizli_alim");
                             } else if (val > 0) uyariGoster("Altın almak için yeterli nakdin yok.");
                           }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
                           <button onClick={() => { 
@@ -2129,6 +2137,7 @@ const opt = prev.opsiyonlar[optIndex];
                               nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.dolar_try));
                               setPortfoy(p => ({...p, dolar: p.dolar + val})); 
                               document.getElementById("hizli_dolar_miktar").value = ""; 
+                              tutorialEyleminiTamamla("hizli_alim");
                             } else if (val > 0) uyariGoster("Dolar almak için yeterli nakdin yok.");
                           }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
                           <button onClick={() => { 
@@ -2159,6 +2168,7 @@ const opt = prev.opsiyonlar[optIndex];
                               nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.bist_endeks));
                               setPortfoy(p => ({...p, bist_adet: p.bist_adet + val})); 
                               document.getElementById("hizli_borsa_miktar").value = ""; 
+                              tutorialEyleminiTamamla("hizli_alim");
                             } else if (val > 0) uyariGoster("BİST100 almak için yeterli nakdin yok.");
                           }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
                           <button onClick={() => { 
@@ -2175,6 +2185,7 @@ const opt = prev.opsiyonlar[optIndex];
                   )
                 })()}
               </div>
+              </TutorialOdak>
             </div>
           </div>
         )}

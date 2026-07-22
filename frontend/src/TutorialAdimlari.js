@@ -72,12 +72,10 @@ export const TUTORIAL_ADIMLARI = [
     metin: "Artık hazırsın. İlk yılımızı yaşamak için 'Ana Defter'e dönelim."
   },
   {
-    hedefId: "nav-opsiyon",
-    pozisyon: "right",
-    baslik: "Türev Piyasalar (Yüksek Risk)",
-    icerik: "En büyük kaldıraç fırsatları ve batış hikayeleri buradadır. Zaman erimesi (Time Decay) konsepti geçerlidir ve oldukça karmaşıktır. NOT: Sadece 'Finans' mezunları erişebilir!",
-    beklenenEylem: "menu_tiklama",
-    beklenenSayfa: "opsiyon"
+    hedef: "hizli-al-sat",
+    ilerlemeTipi: "gorev",
+    beklenenEylem: "hizli_alim",
+    metin: "Ana ekrandaki Al-Sat Kısayolu ile hızlıca Altın, Dolar veya BİST100 alabilirsin. Devam etmek için bu varlıklardan en az bir kez başarılı bir alım yap."
   },
   {
     hedef: "yil-calistir-butonu",
