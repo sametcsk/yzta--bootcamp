@@ -27,7 +27,13 @@ const VARLIK_CONFIG = {
 function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSat, nakit, onBorsaDetay }) {
   const cfg = VARLIK_CONFIG[varlik]
   const gecmis = fiyatGecmisi[varlik] || []
-  const sonFiyat = gecmis.length > 0 ? gecmis[gecmis.length - 1].fiyat : null
+  const baslangicFiyati = {
+    altin: fiyatlar.altin_try_gram,
+    bist: fiyatlar.bist_endeks,
+    dolar: fiyatlar.dolar_try,
+    mevduat: fiyatlar.mev_faiz_oran * 100,
+  }[varlik]
+  const sonFiyat = gecmis.length > 0 ? gecmis[gecmis.length - 1].fiyat : baslangicFiyati
 
   const portfoyMiktar = {
     altin: portfoy.altin_gram,
@@ -71,7 +77,7 @@ function VarlikKart({ varlik, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSa
             {cfg.sinif} · {cfg.birim}
           </div>
         </div>
-        {sonFiyat && (
+        {Number.isFinite(sonFiyat) && (
           <div className="text-right">
             <div className="font-data-lg text-data-lg text-primary">
               {varlik === "mevduat" ? `%${sonFiyat.toFixed(1)}` : `₺${formatAssetPrice(sonFiyat).toLocaleString("tr-TR")}`}

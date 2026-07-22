@@ -68,12 +68,12 @@ function BorsaKart({
   varlikKey, ad, icon, renk, fiyatGecmisi, fiyatlar, portfoy, sonuc, onAl, onSat, nakit, genis
 }) {
   const gecmis = fiyatGecmisi[varlikKey] || []
-  const sonFiyat = gecmis.length > 0 ? gecmis[gecmis.length - 1].fiyat : null
+  const anlikFiyat = fiyatlar[varlikKey === "bist" ? "bist_endeks" : varlikKey]
+  const sonFiyat = gecmis.length > 0 ? gecmis[gecmis.length - 1].fiyat : anlikFiyat
 
   const miktarKey = varlikKey === "bist" ? "bist_adet" : `${varlikKey}_adet`
   const portfoyMiktar = portfoy[miktarKey] || 0
 
-  const anlikFiyat = fiyatlar[varlikKey === "bist" ? "bist_endeks" : varlikKey]
   const portfoyDeger = portfoyMiktar * anlikFiyat
 
   let getiri = null
@@ -103,7 +103,7 @@ function BorsaKart({
             {varlikKey === "bist" ? "Ana Endeks" : "Sektörel Endeks"} · endeks
           </div>
         </div>
-        {sonFiyat !== null && (
+        {Number.isFinite(sonFiyat) && (
           <div className="text-right">
             <div className="font-data-lg text-data-lg text-primary">
               ₺{formatAssetPrice(sonFiyat).toLocaleString("tr-TR")}

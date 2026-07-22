@@ -18,7 +18,7 @@ export const SORULAR = [
   },
   {
     id: 2,
-    kategori: "Loss Aversion",
+    kategori: "Risk Tercihi",
     soru: "Bir yarışmadasın. Kesin olarak 50.000 TL kazanma şansın var. Ama istersen yazı-tura atabilirsin; bilirsen 120.000 TL kazanacaksın, bilemezsen hiçbir şey alamayacaksın. Ne yaparsın?",
     secenekler: [
       { metin: "Asla riske girmem, kesin olan 50.000 TL'yi alır çıkarım.", nakit: 0, sabir: 5, mutluluk: -5, risk: 1, kilit: null, bias_skor: { loss_aversion: 100 } },
@@ -28,7 +28,7 @@ export const SORULAR = [
   },
   {
     id: 3,
-    kategori: "Mental Accounting",
+    kategori: "Zihinsel Muhasebe",
     soru: "Uzun zamandır almak istediğin o pahalı telefon var ama bütçen sıkışık. Yolda yürürken içinde tam da o telefonun parası kadar nakit olan sahipsiz bir zarf buldun (ve sahibini bulman imkansız). Parayı nasıl harcarsın?",
     secenekler: [
       { metin: "Havadan geldi! Hiç düşünmeden o parayla o telefonu alırım.", nakit: 0, sabir: -5, mutluluk: 10, risk: 1, kilit: null, bias_skor: { mental_accounting: 100 } },
@@ -38,7 +38,7 @@ export const SORULAR = [
   },
   {
     id: 4,
-    kategori: "Anchoring",
+    kategori: "Zararına Satma Ikilemi",
     soru: "İki yıl önce büyük heveslerle 20.000 TL'ye aldığın bir eşya şu an ikinci elde sadece 4.000 TL ediyor. Ve senin acil 4.000 TL nakde ihtiyacın var. Eşyayı satar mısın?",
     secenekler: [
       { metin: "Hayatta satmam! Ben ona 20.000 TL verdim, 4 bine vereceğime evde çürüsün daha iyi.", nakit: 0, sabir: 10, mutluluk: -5, risk: 1, kilit: null, bias_skor: { anchoring: 100 } },
@@ -48,7 +48,7 @@ export const SORULAR = [
   },
   {
     id: 5,
-    kategori: "Disposition Effect",
+    kategori: "Elden Çıkarma Etkisi",
     soru: "Bir yatırım yaptın ve sadece 1 ay içinde %50 kâr ettin! Herkes trendin daha da yükseleceğini konuşuyor ama sen çoktan büyük bir kazanç sağladın. Ne yaparsın?",
     secenekler: [
       { metin: "Kâr cebe yakışır! Yükselecek bile olsa, düşme ihtimaline karşı hemen hepsini satıp kârı kilitlerim.", nakit: 0, sabir: -5, mutluluk: 10, risk: 1, kilit: null, bias_skor: { disposition_effect: 100 } },
@@ -58,7 +58,7 @@ export const SORULAR = [
   },
   {
     id: 6,
-    kategori: "Present Bias",
+    kategori: "Anlık Haz Eğilimi",
     soru: "Karşında sihirli bir buton var. Basarsan şu an anında hesabına 100.000 TL yatacak. Ama basmazsan tam 3 yıl sonra hesabına 300.000 TL yatacak. Hangisini seçersin?",
     secenekler: [
       { metin: "Hemen basarım! 3 yıl kim bekleyecek, bugün o 100.000 TL ile hayatımı yaşarım.", nakit: 0, sabir: -10, mutluluk: 15, risk: 1, kilit: null, bias_skor: { present_bias: 100 } },
