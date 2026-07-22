@@ -1,0 +1,86 @@
+[
+  {
+    "id": "kahneman_tversky_1979",
+    "bias_labels": ["loss_aversion"],
+    "title": "Prospect Theory: An Analysis of Decision under Risk",
+    "authors": "Daniel Kahneman; Amos Tversky",
+    "year": 1979,
+    "source": "11_prospect_theory_kahneman_tversky_1979.pdf",
+    "source_url": "https://doi.org/10.2307/1914185",
+    "summary_tr": "İnsanların kayıpları eşdeğer kazançlardan daha güçlü algılayabildiğini ve kararların bir referans noktasına göre değişebildiğini açıklar.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Kayıp korkusuyla verilen event ve portföy kararlarını öğretici biçimde yorumlamak."
+  },
+  {
+    "id": "thaler_1985",
+    "bias_labels": ["mental_accounting"],
+    "title": "Mental Accounting and Consumer Choice",
+    "authors": "Richard H. Thaler",
+    "year": 1985,
+    "source": "01_mental_accounting_thaler_1985.pdf",
+    "source_url": "https://doi.org/10.1287/mksc.4.3.199",
+    "summary_tr": "Kişilerin parayı kaynağına veya kullanım amacına göre ayrı zihinsel hesaplarda değerlendirebildiğini anlatır.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Borç, tasarruf ve yatırım parasının toplam finansal tabloyla birlikte düşünülmesini sağlamak."
+  },
+  {
+    "id": "odean_1998_disposition",
+    "bias_labels": ["disposition_effect"],
+    "title": "Are Investors Reluctant to Realize Their Losses?",
+    "authors": "Terrance Odean",
+    "year": 1998,
+    "source": "02_disposition_effect_odean_1998.pdf",
+    "source_url": "https://doi.org/10.1111/0022-1082.00072",
+    "summary_tr": "Yatırımcıların kazananları erken elden çıkarıp kaybedenleri daha uzun tutma eğilimini işlem verileri üzerinden inceler.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Erken kâr satışı ve zararı kabullenmeme örüntülerini açıklamak."
+  },
+  {
+    "id": "tversky_kahneman_1974",
+    "bias_labels": ["anchoring", "overconfidence"],
+    "title": "Judgment under Uncertainty: Heuristics and Biases",
+    "authors": "Amos Tversky; Daniel Kahneman",
+    "year": 1974,
+    "source": "12_heuristics_biases_tversky_kahneman_1974.pdf",
+    "source_url": "https://doi.org/10.1126/science.185.4157.1124",
+    "summary_tr": "Belirsizlik altında kullanılan kısa yolların sistematik hatalara, özellikle başlangıç değerine takılmaya yol açabileceğini açıklar.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Eski fiyatı değişmez ölçü kabul etme ve tahminlere aşırı güvenme kararlarını sorgulatmak."
+  },
+  {
+    "id": "banerjee_1992",
+    "bias_labels": ["herd_behavior"],
+    "title": "A Simple Model of Herd Behavior",
+    "authors": "Abhijit V. Banerjee",
+    "year": 1992,
+    "source": "03_herd_behavior_banerjee_1992.pdf",
+    "source_url": "https://doi.org/10.2307/2118364",
+    "summary_tr": "Bireylerin kendi bilgileri yerine önceki kişilerin kararlarını izleyerek topluca hatalı bir yöne gidebileceğini modeller.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Popüler olduğu için seçilen seçeneklerde bağımsız gerekçe aramayı teşvik etmek."
+  },
+  {
+    "id": "barberis_thaler_2003",
+    "bias_labels": ["loss_aversion", "anchoring", "mental_accounting", "disposition_effect", "present_bias", "overconfidence", "herd_behavior", "status_quo_bias", "sunk_cost", "moral_hazard"],
+    "title": "A Survey of Behavioral Finance",
+    "authors": "Nicholas Barberis; Richard Thaler",
+    "year": 2003,
+    "source": "07_behavioral_finance_survey_barberis_thaler_2002.pdf",
+    "source_url": "https://doi.org/10.1016/S1574-0102(03)01027-6",
+    "summary_tr": "Davranışsal finansın temel bulgularını, inanç hatalarını ve tercihlerin piyasa kararlarına etkisini bir arada değerlendirir.",
+    "used_by": ["final_report_agent", "learning_plan_agent"],
+    "game_usage": "Final raporda farklı davranış örüntülerini ortak ve eğitsel bir çerçevede açıklamak."
+  },
+  {
+    "id": "thaler_benartzi_2004",
+    "bias_labels": ["present_bias", "status_quo_bias"],
+    "title": "Save More Tomorrow",
+    "authors": "Richard H. Thaler; Shlomo Benartzi",
+    "year": 2004,
+    "source": "09_save_more_tomorrow_thaler_benartzi_2004.pdf",
+    "source_url": "https://doi.org/10.1086/380085",
+    "summary_tr": "Gelecekteki gelir artışlarıyla tasarrufu önceden planlamanın kısa vadeli tercihleri ve ertelemeyi yönetmeye yardımcı olabileceğini gösterir.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Bugünkü tüketim ile gelecekteki hedefler arasındaki dengeyi düşündürmek."
+  }
+]

@@ -275,6 +275,12 @@ export default function BitisSayfasi({
 
               <p className="text-on-surface-variant text-body-md">{finalRapor.summary}</p>
 
+              {finalRapor.ai_status_message && (
+                <p className="border-l-2 border-primary bg-surface-container-high p-3 text-sm text-on-surface-variant">
+                  {finalRapor.ai_status_message} Güvenli rapor kullanılıyor.
+                </p>
+              )}
+
               {finalRapor.strengths?.length > 0 && (
                 <div>
                   <div className="font-data-sm text-data-sm uppercase text-on-surface mb-1">Güçlü Yönler</div>
@@ -297,19 +303,49 @@ export default function BitisSayfasi({
                 </div>
               )}
 
+              {finalRapor.learning_plan && (
+                <section className="border-t border-outline-variant pt-4">
+                  <div className="font-headline-md text-on-surface mb-1">
+                    {finalRapor.learning_plan.title || "Kısa Öğrenme Planı"}
+                  </div>
+                  <div className="font-data-sm text-primary mb-3">
+                    ODAK: {finalRapor.learning_plan.focus_bias_name_tr || "Genel karar farkındalığı"}
+                  </div>
+
+                  {finalRapor.learning_plan.learning_topics?.length > 0 && (
+                    <div className="mb-3">
+                      <div className="font-data-sm text-data-sm uppercase text-on-surface mb-1">Öğrenilecek Kavramlar</div>
+                      <ul className="list-disc list-inside text-on-surface-variant text-body-md">
+                        {finalRapor.learning_plan.learning_topics.map((topic, index) => (
+                          <li key={index}>{topic}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {finalRapor.learning_plan.game_practices?.length > 0 && (
+                    <div>
+                      <div className="font-data-sm text-data-sm uppercase text-on-surface mb-1">Sonraki Oyun Pratiği</div>
+                      <ul className="list-disc list-inside text-on-surface-variant text-body-md">
+                        {finalRapor.learning_plan.game_practices.map((practice, index) => (
+                          <li key={index}>{practice}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {finalRapor.learning_plan.disclaimer && (
+                    <p className="mt-3 text-xs text-on-surface-variant opacity-70">
+                      {finalRapor.learning_plan.disclaimer}
+                    </p>
+                  )}
+                </section>
+              )}
+
               {finalRapor.next_reflection && (
                 <blockquote className="italic border-l border-outline-variant pl-4 text-on-surface opacity-80">
                   {finalRapor.next_reflection}
                 </blockquote>
-              )}
-
-              {finalRapor.llm_prompt_payload && (
-                <div className="mt-4">
-                  <div className="font-data-sm text-data-sm uppercase text-on-surface mb-2">LLM'e Gönderilecek Teşhis Promptu (Simüle Edilmiş)</div>
-                  <pre className="bg-[#110e06] p-4 text-[#8a8168] text-xs whitespace-pre-wrap overflow-x-auto border border-[#4e4634] font-mono">
-                    {finalRapor.llm_prompt_payload}
-                  </pre>
-                </div>
               )}
 
               <p className="font-data-sm text-data-sm uppercase text-on-surface-variant opacity-50 mt-4">

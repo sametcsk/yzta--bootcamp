@@ -23,6 +23,37 @@ import OpsiyonSayfasi from "./OpsiyonSayfasi"
 import { formatAssetPrice, money } from "./utils"
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
+const AGENT_MEMORY_STORAGE_KEY = "finsim_agent_memory_v1"
+
+function kayitliAgentHafizasiniOku() {
+  try {
+    const kayit = JSON.parse(localStorage.getItem(AGENT_MEMORY_STORAGE_KEY) || "null")
+    return kayit?.version === 1 ? kayit : null
+  } catch {
+    localStorage.removeItem(AGENT_MEMORY_STORAGE_KEY)
+    return null
+  }
+}
+
+function agentHafizasiniOlustur(eventGecmisi, profil, coachGecmisi) {
+  const biasCounts = eventGecmisi.reduce((counts, event) => {
+    const label = event.bias_label || event.bias
+    if (label) counts[label] = (counts[label] || 0) + 1
+    return counts
+  }, {})
+
+  return {
+    decision_count: eventGecmisi.length,
+    bias_counts: biasCounts,
+    recent_decisions: eventGecmisi.slice(-3),
+    profile_bias_scores: profil?.bias_scores || {},
+    previous_coach_insights: coachGecmisi.slice(-3).map(kayit => ({
+      year: kayit.year,
+      bias_label: kayit.bias_label,
+      coach_comment: kayit.coach_comment,
+    })),
+  }
+}
 
 const INITIAL_STATE = {
   enf_rejim: 0,
@@ -59,6 +90,7 @@ const VARLIK_META = {
 
 function AppInner() {
   const { aktif: tutorialAktif, mevcutAdim: tutorialMevcutAdim, adimIndex: tutorialAdimi, ileriGit: tutorialIleriGit, setAktif: setTutorialAktif } = useTutorial()
+  const [kayitliAgentHafizasi] = useState(kayitliAgentHafizasiniOku)
 
   const [gameState, setGameState] = useState(INITIAL_STATE)
   const [yil, setYil] = useState(2025)
@@ -115,7 +147,7 @@ function AppInner() {
   const [introTamamlandi, setIntroTamamlandi] = useState(false)
   const [hikayeGoruldu, setHikayeGoruldu] = useState(false)
   const [acilisGecildi, setAcilisGecildi] = useState(false)
-  const [karakterProfili, setKarakterProfili] = useState(null)
+  const [karakterProfili, setKarakterProfili] = useState(kayitliAgentHafizasi?.profile || null)
   const [aktifSayfa, setAktifSayfa] = useState("ana")
   const [yillikGelir, setYillikGelir] = useState(0)
   const [yasamGideri, setYasamGideri] = useState(
@@ -207,10 +239,11 @@ function AppInner() {
   const [eventGecmisi, setEventGecmisi] = useState({})
   const [tetiklenenler, setTetiklenenler] = useState([])
   const [eventKuyrugu, setEventKuyrugu] = useState([])
-  const [eventKayitlari, setEventKayitlari] = useState([])
+  const [eventKayitlari, setEventKayitlari] = useState(kayitliAgentHafizasi?.event_history || [])
   const [coachYorumu, setCoachYorumu] = useState(null)
+  const [coachKayitlari, setCoachKayitlari] = useState(kayitliAgentHafizasi?.coach_history || [])
   const [coachLoading, setCoachLoading] = useState(false)
-  const [finalRapor, setFinalRapor] = useState(null)
+  const [finalRapor, setFinalRapor] = useState(kayitliAgentHafizasi?.final_report || null)
   const [finalRaporLoading, setFinalRaporLoading] = useState(false)
   const [fiyatGecmisi, setFiyatGecmisi] = useState({
     altin: [],
@@ -251,6 +284,18 @@ function AppInner() {
   const [firsatMaliyetiGecmisi, setFirsatMaliyetiGecmisi] = useState([])
 
   const uyariGoster = (mesaj) => setUyariMesaji(mesaj)
+
+  useEffect(() => {
+    const agentHafizasi = {
+      version: 1,
+      profile: karakterProfili,
+      event_history: eventKayitlari,
+      coach_history: coachKayitlari.slice(-3),
+      final_report: finalRapor,
+      updated_at: new Date().toISOString(),
+    }
+    localStorage.setItem(AGENT_MEMORY_STORAGE_KEY, JSON.stringify(agentHafizasi))
+  }, [karakterProfili, eventKayitlari, coachKayitlari, finalRapor])
 
   useEffect(() => {
     if (!tutorialAktif) return
@@ -982,18 +1027,35 @@ async function yilAtla(opsiyonAksiyon = null) {
         }),
       })
 
+      const payload = await res.json()
       if (res.ok) {
-        setKarakterProfili(await res.json())
+        setKarakterProfili(payload)
+      } else if (payload?.detail?.fallback_response) {
+        setKarakterProfili({
+          ...payload.detail.fallback_response,
+          ai_status_message: payload.detail.message,
+        })
       } else {
-        setKarakterProfili(null)
+        setKarakterProfili({
+          profile_name: "Davranış Profili",
+          intro_story: "AI yanıtı şu an üretilemedi. Oyun güvenli başlangıç profiliyle devam edebilir.",
+          generation_source: "llm_error",
+          ai_status_message: "AI yanıtı şu an üretilemedi.",
+        })
       }
     } catch (error) {
       console.error(error)
-      setKarakterProfili(null)
+      setKarakterProfili({
+        profile_name: "Davranış Profili",
+        intro_story: "AI yanıtı şu an üretilemedi. Oyun güvenli başlangıç profiliyle devam edebilir.",
+        generation_source: "llm_error",
+        ai_status_message: "AI yanıtı şu an üretilemedi.",
+      })
     }
   }
 
   function tekrarOyna() {
+    localStorage.removeItem(AGENT_MEMORY_STORAGE_KEY)
     window.location.reload()
   }
 
@@ -1018,19 +1080,40 @@ async function yilAtla(opsiyonAksiyon = null) {
     setIsLevel(prev => Math.min(5, Math.max(1, prev + delta)))
   }
 
-  async function kocYorumunuGetir(eventKaydi) {
+  async function kocYorumunuGetir(eventKaydi, eventGecmisi = eventKayitlari) {
     setCoachYorumu(null)
     setCoachLoading(true)
     try {
       const res = await fetch(`${API_BASE_URL}/ajanlar/koc`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(eventKaydi),
+        body: JSON.stringify({
+          ...eventKaydi,
+          event_history: eventGecmisi,
+          agent_memory: agentHafizasiniOlustur(eventGecmisi, karakterProfili, coachKayitlari),
+        }),
       })
-      if (!res.ok) throw new Error("AI koç yorumu alınamadı.")
-      setCoachYorumu(await res.json())
+      const payload = await res.json()
+      if (!res.ok && !payload?.detail?.fallback_response) throw new Error("AI koç yorumu alınamadı.")
+      const yorum = res.ok
+        ? payload
+        : { ...payload.detail.fallback_response, ai_status_message: payload.detail.message }
+      setCoachYorumu(yorum.should_show === false ? null : yorum)
+      if (yorum.should_show !== false) {
+        setCoachKayitlari(prev => [...prev, yorum].slice(-3))
+      }
     } catch (error) {
       console.error(error)
+      const guvenliYorum = {
+        should_show: true,
+        coach_title: "Karar Farkındalığı",
+        bias_name_tr: "Davranışsal Sinyal",
+        coach_comment: "AI yanıtı şu an üretilemedi. Kararını planın ve uzun vadeli hedeflerinle karşılaştırabilirsin.",
+        reflection_question: "Bu seçimi hangi bilgiye dayanarak yaptın?",
+        ai_status_message: "AI yanıtı şu an üretilemedi.",
+      }
+      setCoachYorumu(guvenliYorum)
+      setCoachKayitlari(prev => [...prev, guvenliYorum].slice(-3))
     } finally {
       setCoachLoading(false)
     }
@@ -1217,6 +1300,7 @@ async function yilAtla(opsiyonAksiyon = null) {
       selected_option: secenek.metin,
       bias_label: secilenEvent.bias_etiketi,
       profile_type: karakterProfili?.profile_type || null,
+      bias_scores: karakterProfili?.bias_scores || {},
       yil,
       event_baslik: secilenEvent.baslik,
       bias: secilenEvent.bias_etiketi,
@@ -1224,7 +1308,8 @@ async function yilAtla(opsiyonAksiyon = null) {
       secim_metin: secenek.metin,
     }
 
-    setEventKayitlari(prev => [...prev, eventKaydi])
+    const yeniEventKayitlari = [...eventKayitlari, eventKaydi]
+    setEventKayitlari(yeniEventKayitlari)
     setFinalRapor(null)
     setMevcutEvent(null)
 
@@ -1289,7 +1374,7 @@ async function yilAtla(opsiyonAksiyon = null) {
         setMevcutEvent(eventKuyrugu[0])
         setEventKuyrugu(prev => prev.slice(1))
       } else {
-        kocYorumunuGetir(eventKaydi)
+        kocYorumunuGetir(eventKaydi, yeniEventKayitlari)
       }
     }
   }
@@ -1304,6 +1389,7 @@ async function yilAtla(opsiyonAksiyon = null) {
         body: JSON.stringify({
           profile: karakterProfili,
           event_history: eventKayitlari,
+          agent_memory: agentHafizasiniOlustur(eventKayitlari, karakterProfili, coachKayitlari),
           final_state: { 
             year: yil, 
             age: yas, 
@@ -1314,8 +1400,11 @@ async function yilAtla(opsiyonAksiyon = null) {
           },
         }),
       })
-      if (!res.ok) throw new Error("Final raporu oluşturulamadı.")
-      setFinalRapor(await res.json())
+      const payload = await res.json()
+      if (!res.ok && !payload?.detail?.fallback_response) throw new Error("Final raporu oluşturulamadı.")
+      setFinalRapor(res.ok
+        ? payload
+        : { ...payload.detail.fallback_response, ai_status_message: payload.detail.message })
     } catch (error) {
       console.error(error)
       setFinalRaporHata(true)
@@ -1637,6 +1726,7 @@ const opt = prev.opsiyonlar[optIndex];
     </div>
   )
 
+  const sonCoachYorumu = coachYorumu || coachKayitlari[coachKayitlari.length - 1]
 
   if (!acilisGecildi) {
     return <AcilisSayfasi onBaslat={() => setAcilisGecildi(true)} fiyatlar={fiyatlar} />
@@ -2019,20 +2109,40 @@ const opt = prev.opsiyonlar[optIndex];
                       DAVRANIŞSAL VERİLER İŞLENİYOR...
                     </div>
                   )}
-                {coachYorumu && (
+                {sonCoachYorumu?.should_show !== false && sonCoachYorumu && (
                   <div className="flex flex-col gap-3">
-                    <div className="font-data-sm text-data-sm text-primary uppercase">KAYIT_{yil}</div>
-                    <h3 className="font-bold text-lg text-on-surface">{coachYorumu.coach_title}</h3>
+                    {sonCoachYorumu.ai_status_message && (
+                      <p className="border-l-2 border-primary bg-surface-container-high p-2 text-sm text-on-surface-variant">
+                        {sonCoachYorumu.ai_status_message} Güvenli koç yorumu kullanılıyor.
+                      </p>
+                    )}
+                    <div className="font-data-sm text-data-sm text-primary uppercase">KAYIT_{sonCoachYorumu.year || yil}</div>
+                    <h3 className="font-bold text-lg text-on-surface">{sonCoachYorumu.coach_title}</h3>
                     <div className="bg-surface-container-high p-2 border-l-2 border-primary font-data-sm text-primary">
-                      TESPİT EDİLEN EĞİLİM: {coachYorumu.bias_name_tr}
+                      TESPİT EDİLEN EĞİLİM: {sonCoachYorumu.bias_name_tr}
                     </div>
-                    <p className="text-on-surface-variant text-sm">{coachYorumu.coach_comment}</p>
+                    <p className="text-on-surface-variant text-sm">{sonCoachYorumu.coach_comment}</p>
                     <blockquote className="italic border-l border-outline-variant pl-4 text-on-surface opacity-80 mt-2">
-                      {coachYorumu.reflection_question}
+                      {sonCoachYorumu.reflection_question}
                     </blockquote>
+                    {coachKayitlari.length > 1 && (
+                      <div className="border-t border-outline-variant pt-3 mt-1">
+                        <div className="font-data-sm text-data-sm text-on-surface-variant uppercase mb-2">ÖNCEKİ ANALİZLER</div>
+                        <div className="flex flex-col gap-1">
+                          {coachKayitlari.slice(0, -1).reverse().map((kayit, index) => (
+                            <div key={`${kayit.year || "kayit"}-${index}`} className="border-l border-outline-variant pl-2 py-1">
+                              <div className="text-xs font-bold text-on-surface-variant">
+                                {kayit.year || "-"} · {kayit.bias_name_tr}
+                              </div>
+                              <p className="text-xs text-on-surface-variant line-clamp-2">{kayit.coach_comment}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-                {!coachLoading && !coachYorumu && (
+                {!coachLoading && !coachYorumu && coachKayitlari.length === 0 && (
                   <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center">
                     <span className="material-symbols-outlined text-4xl mb-2">history</span>
                     <p className="font-data-sm text-data-sm uppercase">KARAR KAYITLARI BEKLENİYOR</p>

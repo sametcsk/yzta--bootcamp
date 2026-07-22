@@ -1,72 +1,114 @@
-import json
+from .bias_catalog import CORE_BIASES, bias_name_tr, normalize_bias_label
+from .llm_client import llm_response_metadata, metin_uret
+from .safety_agent import guvenli_metin_veya_fallback
 
-def _normalize_turkish(text: str) -> str:
-    mapping = {
-        'ı': 'i', 'ş': 's', 'ğ': 'g', 'ç': 'c', 'ü': 'u', 'ö': 'o',
-        'İ': 'i', 'Ş': 's', 'Ğ': 'g', 'Ç': 'c', 'Ü': 'u', 'Ö': 'o'
-    }
-    normalized = ""
-    for char in text:
-        normalized += mapping.get(char, char)
-    return normalized.lower()
 
-STORY_TEMPLATES = {
-    "kolay": "18 yaşında bir gençsin; arkanda büyük bir maddi güvence ve ailenin sağladığı rahatlıkla hayata bir adım önde başlıyorsun. Bugünden itibaren piyasalara yatırım yapabilecek, kariyerinde kritik adımlar atabilecek ve karşına çıkan sürpriz olaylarla kendi kaderini şekillendireceksin. Unutma; bu simülasyonda alacağın her karar, hem servetini hem de gizli yatırımcı kimliğini adım adım inşa edecek. 60 yıllık bu uzun serüven sona erdiğinde; oyun sonu raporunda tüm hayatının özetini ve finansal karakterinin gerçek yüzünü detaylıca göreceksin. Bol şans!",
-    "orta": "18 yaşında bir gençsin; kendi ayakların üzerinde durmanı gerektirecek mütevazı ama yeterli bir destekle hayata başlıyorsun. Bugünden itibaren piyasalara yatırım yapabilecek, kariyerinde kritik adımlar atabilecek ve karşına çıkan sürpriz olaylarla kendi kaderini şekillendireceksin. Unutma; bu simülasyonda alacağın her karar, hem servetini hem de gizli yatırımcı kimliğini adım adım inşa edecek. 60 yıllık bu uzun serüven sona erdiğinde; oyun sonu raporunda tüm hayatının özetini ve finansal karakterinin gerçek yüzünü detaylıca göreceksin. Bol şans!",
-    "zor": "18 yaşında bir gençsin; arkanda hiçbir destek olmadan, cebinde yalnızca hayallerin ve üstesinden gelmen gereken yüklerle zorlu bir hayata atılıyorsun. Bugünden itibaren piyasalara yatırım yapabilecek, kariyerinde kritik adımlar atabilecek ve karşına çıkan sürpriz olaylarla kendi kaderini şekillendireceksin. Unutma; bu simülasyonda alacağın her karar, hem servetini hem de gizli yatırımcı kimliğini adım adım inşa edecek. 60 yıllık bu uzun serüven sona erdiğinde; oyun sonu raporunda tüm hayatının özetini ve finansal karakterinin gerçek yüzünü detaylıca göreceksin. Bol şans!"
+DIFFICULTY_OPENINGS = {
+    "kolay": "18 yaşında, ailenden gelen güçlü bir güvenceyle hayata başladın.",
+    "orta": "18 yaşında, mütevazı bir destekle kendi düzenini kurmaya başladın.",
+    "zor": "18 yaşında, sınırlı kaynaklarla kendi yolunu açman gereken bir hayata adım attın.",
 }
+
+BIAS_STORY_LINES = {
+    "loss_aversion": "İlk kararlarında kaybetme ihtimali, kazanma fırsatından biraz daha yüksek sesle konuştu.",
+    "anchoring": "Karar verirken ilk duyduğun rakamların ve eski referansların izini taşımaya başladın.",
+    "mental_accounting": "Paranı farklı amaçlara ayırmak sana düzen verdi; bazen büyük resmi ikinci plana itti.",
+    "disposition_effect": "Kazancı güvenceye alma isteğin ile zararı kabullenme güçlüğün arasında kaldığın anlar oldu.",
+    "present_bias": "Bugünün rahatlığı ile gelecekte kurmak istediğin hayat arasında sık sık seçim yaptın.",
+}
+
+
+def _value(data: dict, *keys: str, default):
+    for key in keys:
+        if key in data and data[key] is not None:
+            return data[key]
+    return default
+
+
+def _extract_bias_scores(answers: list[dict]) -> tuple[dict, str]:
+    scores = {label: 50 for label in CORE_BIASES}
+    difficulty = "orta"
+    for index, answer in enumerate(answers):
+        question_id = answer.get("question_id", index + 1)
+        raw_scores = answer.get("bias_skor") or answer.get("bias_scores") or {}
+        if question_id == 1:
+            candidate = str(raw_scores.get("zorluk", "")).lower()
+            if candidate in DIFFICULTY_OPENINGS:
+                difficulty = candidate
+        for raw_label, value in raw_scores.items():
+            label = normalize_bias_label(raw_label)
+            if label in scores and isinstance(value, (int, float)):
+                scores[label] = max(0, min(100, round(value)))
+    return scores, difficulty
+
+
+def _story_details(answers: list[dict]) -> list[str]:
+    details = []
+    for answer in answers[1:]:
+        text = answer.get("selected_text") or answer.get("selected_option")
+        if text:
+            details.append(str(text).strip()[:90])
+    return details[:3]
+
+
+def _fallback_story(difficulty: str, dominant_biases: list[str], details: list[str]) -> str:
+    tendency_lines = " ".join(BIAS_STORY_LINES[label] for label in dominant_biases[:2])
+    decision_lines = " ".join(f'"{detail}" seçimin bu yolun izlerinden biri oldu.' for detail in details)
+    return (
+        f"{DIFFICULTY_OPENINGS[difficulty]} {decision_lines} {tendency_lines} "
+        "Şimdi önünde uzun bir finansal yaşam var; vereceğin kararlar bu ilk eğilimi güçlendirebilir ya da dönüştürebilir."
+    )
+
 
 def generate_profile(data: dict) -> dict:
     answers = data.get("answers") or data.get("cevaplar") or []
-    nakit = int(data.get("nakit", data.get("cash", 150000)) or 150000)
-    sabir = int(data.get("sabir", data.get("patience", 50)) or 50)
-    mutluluk = int(data.get("mutluluk", data.get("happiness", 50)) or 50)
-    yillik_gelir = int(data.get("yillik_gelir", data.get("yillikGelir", 216000)) or 216000)
-
-    bias_scores = {
-        "loss_aversion": 50,
-        "mental_accounting": 50,
-        "anchoring": 50,
-        "disposition_effect": 50,
-        "present_bias": 50
-    }
-    
-    zorluk = "orta"
-    
-    for i, ans in enumerate(answers):
-        qid = ans.get("question_id", i+1)
-        
-        # Determine difficulty from question 1
-        if qid == 1:
-            bs = ans.get("bias_skor", {})
-            z = bs.get("zorluk", "").lower()
-            if z in ["kolay", "orta", "zor"]:
-                zorluk = z
-                
-        # Update bias scores
-        bs = ans.get("bias_skor", {})
-        for k, v in bs.items():
-            if k in bias_scores:
-                bias_scores[k] = v
-
-    intro_story = STORY_TEMPLATES.get(zorluk, STORY_TEMPLATES["orta"])
+    cash = int(_value(data, "nakit", "cash", default=150000))
+    patience = int(_value(data, "sabir", "patience", default=50))
+    happiness = int(_value(data, "mutluluk", "happiness", default=50))
+    annual_income = int(_value(data, "yillik_gelir", "yillikGelir", default=216000))
+    bias_scores, difficulty = _extract_bias_scores(answers)
+    ranked_biases = sorted(bias_scores, key=lambda label: bias_scores[label], reverse=True)
+    dominant_bias = ranked_biases[0]
+    story_biases = ranked_biases[:2]
+    selected_details = _story_details(answers)
+    fallback_story = _fallback_story(difficulty, story_biases, selected_details)
+    llm_result = metin_uret(
+        "Sen bir finansal eğitim oyununda kısa ve sıcak intro hikayeleri yazarsın. Yatırım tavsiyesi verme; tanı koyma.",
+        (
+            f"Zorluk: {difficulty}. En belirgin iki eğilim: "
+            f"{', '.join(bias_name_tr(label) for label in story_biases)}. "
+            f"Oyuncunun seçimlerinden ayrıntılar: {selected_details}.\n"
+            f"Taslak: {fallback_story}\n"
+            "En fazla 90 kelimelik Türkçe bir hikaye yaz. Verilen seçimlerden en az iki somut "
+            "ayrıntıyı ve iki baskın davranışsal eğilimi doğal biçimde mutlaka anlat. Kararları "
+            "listeleme, profil etiketi uydurma, yatırım tavsiyesi verme ve klinik tanı koyma."
+        ),
+    )
+    intro_story, llm_safe = guvenli_metin_veya_fallback(llm_result.get("text"), fallback_story)
+    llm_metadata = llm_response_metadata(llm_result, llm_safe)
 
     return {
         "agent": "profile_agent",
         "profile_type": "Davranissal Profil",
-        "classification_model": "rule_based_v2",
-        "profile_name": "Yatırımcı Adayı",
+        "classification_model": "rule_based_v3",
+        "profile_name": "Davranışlarını Keşfeden Oyuncu",
         "risk_level": "orta",
-        "time_horizon": "orta",
+        "time_horizon": "uzun",
         "risk_score": 0,
-        "starting_cash": nakit,
-        "annual_income": yillik_gelir,
-        "patience": sabir,
-        "happiness": mutluluk,
+        "starting_cash": cash,
+        "annual_income": annual_income,
+        "patience": patience,
+        "happiness": happiness,
         "bias_scores": bias_scores,
+        "dominant_bias": dominant_bias,
+        "dominant_bias_name_tr": bias_name_tr(dominant_bias),
+        "story_biases": story_biases,
+        "story_details": selected_details,
         "intro_story": intro_story,
-        "story_source": "rule_based_fragments",
-        "disclaimer": "Bu profil 6 temel soruya verdiğiniz yanıtlarla oluşturulmuştur.",
+        "story_source": llm_metadata["generation_source"],
+        **llm_metadata,
+        "disclaimer": "Bu profil yatırım tavsiyesi değildir; simülasyon içindeki davranış eğilimlerini açıklar.",
     }
+
 
 profil_uret = generate_profile

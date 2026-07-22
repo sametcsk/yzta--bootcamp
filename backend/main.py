@@ -1,8 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from agents.bias_coach_agent import generate_coach_comment
-from agents.final_report_agent import generate_final_report
-from agents.profile_agent import generate_profile
+from agents.learning_plan_agent import generate_learning_plan
+from agents.orchestrator import run_agent_flow
+from agents.llm_client import llm_zorunlu_mu
 from engine.simulasyon import yil_hesapla
 from engine.opsiyon import generate_option_chain
 from events.event_engine import detayli_bias_raporu
@@ -15,6 +15,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def _agent_response(flow_name: str, data: dict) -> dict:
+    result = run_agent_flow(flow_name, data)
+    if llm_zorunlu_mu() and result.get("generation_source") == "llm_error":
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "message": "AI yanıtı şu an üretilemedi.",
+                "llm_error_type": result.get("llm_error_type") or "unknown",
+                "fallback_response": result,
+            },
+        )
+    return result
 
 
 @app.post("/yil-atla")
@@ -66,19 +80,25 @@ def bias_raporu(data: dict):
 @app.post("/agents/profile")
 @app.post("/ajanlar/profil")
 def profil_ajani(data: dict):
-    return generate_profile(data)
+    return _agent_response("profile", data)
 
 
 @app.post("/agents/coach")
 @app.post("/ajanlar/koc")
 def koc_ajani(data: dict):
-    return generate_coach_comment(data)
+    return _agent_response("coach", data)
 
 
 @app.post("/agents/final-report")
 @app.post("/ajanlar/final-rapor")
 def final_rapor_ajani(data: dict):
-    return generate_final_report(data)
+    return _agent_response("final_report", data)
+
+
+@app.post("/agents/learning-plan")
+@app.post("/ajanlar/ogrenme-plani")
+def ogrenme_plani_ajani(data: dict):
+    return generate_learning_plan(data)
 
 
 @app.post("/opsiyon-bias-analizi")

@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function HikayeEkrani({ profil, onDevam }) {
   if (!profil) {
     return (
@@ -33,6 +31,12 @@ export default function HikayeEkrani({ profil, onDevam }) {
         <div className="font-data-md text-primary uppercase mb-8 tracking-widest border-b border-outline-variant pb-4 inline-block px-8">
           Simülasyon Başlıyor
         </div>
+
+        {profil.ai_status_message && (
+          <p className="mb-4 border-l-2 border-primary bg-surface-container-high p-3 text-left text-sm text-on-surface-variant">
+            {profil.ai_status_message} Güvenli hikâye kullanılıyor.
+          </p>
+        )}
         
         <p className="text-on-surface-variant text-body-lg mb-10 leading-relaxed text-left text-[1.1rem]">
           {profil.intro_story || "18 yaşına kadar olan finansal hikayen oldukça sıradan geçti."}
