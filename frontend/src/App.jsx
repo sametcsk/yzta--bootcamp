@@ -424,9 +424,9 @@ function AppInner() {
     }
 
     // İlişkiler Güncellemesi
-    let nafakaOdemesi = 0;
     let olayMesaji = null;
     let olayBaslik = "Olay!";
+    let yeniIsLevel = isLevel;
     let mirasMiktariToplam = 0;
 
     const yeniIliskiler = iliskiler.map(kisi => {
@@ -447,7 +447,7 @@ function AppInner() {
           if (cocukVarMi) {
             yeniKisi.nafaka = true;
             olayBaslik = "BOŞANMA VE NAFAKA";
-            olayMesaji = `Eşiniz ${yeniKisi.isim}, kendisiyle uzun süredir ilgilenmediğiniz için evi terk edip sizden boşandı! Mahkeme, ortada çocuk olduğu için yaşam standartlarınızın %30'u tutarında nafaka bağladı.`;
+            olayMesaji = `Eşiniz ${yeniKisi.isim}, kendisiyle uzun süredir ilgilenmediğiniz için evi terk edip sizden boşandı! Mahkeme, yaşam standartlarınıza 500$ değerinde aylık nafaka gideri bağladı.`;
           } else {
             olayBaslik = "BOŞANMA";
             olayMesaji = `Eşiniz ${yeniKisi.isim}, kendisiyle uzun süredir ilgilenmediğiniz için sizden boşandı.`;
@@ -455,9 +455,6 @@ function AppInner() {
         }
       }
 
-      if (yeniKisi.nafaka) {
-        nafakaOdemesi += (yasamGideri * 0.3); // Yıllık yaşam giderinin %30'u nafaka
-      }
 
       // Miras Mekaniği
       if (yeniKisi.tip === 'aile' && yeniKisi.yas >= 70 && yeniKisi.statu === 'aktif') {
@@ -476,14 +473,10 @@ function AppInner() {
     setIliskiler(yeniIliskiler);
     const dinamikObj = { ...YASAM_STANDARTLARI, ...getDinamikStandartlar(yeniIliskiler) };
     setYasamGideri(Math.round(toplamAylikUsd(standartlar, dinamikObj) * fiyatlar.dolar_try * 12));
-    anlikNakit -= nafakaOdemesi;
     anlikNakit += mirasMiktariToplam;
 
     if (olayMesaji) {
       setTimeout(() => setSonucKarti({ baslik: olayBaslik, metin: olayMesaji }), 1500);
-    }
-    if (nafakaOdemesi > 0) {
-      setTimeout(() => uyariGoster(`Bu yıl boşandığınız eşinize ${(nafakaOdemesi).toLocaleString('tr-TR')} ₺ nafaka ödediniz.`), 4000);
     }
 
     // Rastgele İlişki Eventi (2 yılda 1 / %50 ihtimal)

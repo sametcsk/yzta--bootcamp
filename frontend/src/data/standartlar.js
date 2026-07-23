@@ -129,6 +129,16 @@ export function getDinamikStandartlar(iliskiler = []) {
       };
     }
   });
+
+  iliskiler.filter(k => k.nafaka).forEach(eskiEs => {
+    dinamik[`nafaka_${eskiEs.id}`] = {
+      label: `Nafaka (${eskiEs.isim})`,
+      icon: "💔",
+      secenekler: [
+        { id: "dusuk", label: "Mahkeme Kararı", aylik_usd: 500, mutluluk_etki: 0, sabir_etki: 0 }
+      ]
+    };
+  });
   
   return dinamik;
 }
