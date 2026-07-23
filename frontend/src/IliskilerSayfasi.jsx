@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import kadinImg from "./assets/kadin.png";
-import erkekImg from "./assets/erkek.png";
+import { getPortraitPath, siradakiPortreyiAl } from "./utils/portraits";
 
 const ISIMLER_KADIN = ["Ayşe", "Fatma", "Zeynep", "Elif", "Merve", "Aslı", "Selin", "Burcu", "Ceren", "Eda"];
 const ISIMLER_ERKEK = ["Ali", "Ahmet", "Mehmet", "Can", "Burak", "Emre", "Ozan", "Cem", "Deniz", "Kerem"];
@@ -13,7 +12,11 @@ export default function IliskilerSayfasi({
   nakitiGuncelle, 
   yil,
   fiyatlar,
-  setSonucKarti
+  setSonucKarti,
+  mekanaGitmeSayisi,
+  setMekanaGitmeSayisi,
+  portreSirasi,
+  setPortreSirasi
 }) {
   const [bildirim, setBildirim] = useState(null);
   const [tanismaModal, setTanismaModal] = useState(null); // { isim, cinsiyet, yas }
@@ -119,9 +122,15 @@ export default function IliskilerSayfasi({
 
   // 4. Sosyal Mekanlar ve Keşif Sistemi
   const handleMekanaGit = (maliyet) => {
+    if (mekanaGitmeSayisi >= 2) {
+      return gosterBildirim("Yoruldun", "Bu yıl yeterince dışarı çıktın ve yeni mekanlar keşfettin. Dinlenmelisin.", "error");
+    }
+
     if (nakit < maliyet) {
       return gosterBildirim("Nakit Yetersiz", `Bu mekana gitmek için paranız yetmiyor.`, "error");
     }
+
+    setMekanaGitmeSayisi(prev => prev + 1);
     nakitiGuncelle(nakit - maliyet);
 
     const sans = Math.random();
@@ -130,13 +139,18 @@ export default function IliskilerSayfasi({
       const isKadin = Math.random() < 0.5;
       const isim = isKadin ? ISIMLER_KADIN[Math.floor(Math.random() * ISIMLER_KADIN.length)] : ISIMLER_ERKEK[Math.floor(Math.random() * ISIMLER_ERKEK.length)];
       const yas = Math.floor(Math.random() * 15) + 18; // 18-32 arası
+      const cinsiyetStr = isKadin ? "kadin" : "erkek";
+      
+      const { secilenId, newSira } = siradakiPortreyiAl(cinsiyetStr, "yetiskin", portreSirasi);
+      setPortreSirasi(newSira);
       
       setTanismaModal({ 
         id: "kisi_" + Date.now(),
         isim, 
-        cinsiyet: isKadin ? "kadin" : "erkek", 
+        cinsiyet: cinsiyetStr, 
         yas,
-        iliskiSeviyesi: 10
+        iliskiSeviyesi: 10,
+        portraitId: secilenId
       });
     } else {
       gosterBildirim("Güzel Bir Gün", `Mekanda harika vakit geçirdiniz ama kimseyle tanışmadınız.`, "info");
@@ -257,9 +271,18 @@ export default function IliskilerSayfasi({
        return gosterBildirim("Zaten Bebek Var", `Bu yıl zaten bir bebeğiniz oldu!`, "info");
     }
 
+    const dogumMasrafi = 50000;
+    if (nakit < dogumMasrafi) {
+      return gosterBildirim("Nakit Yetersiz", `Çocuk sahibi olmak için en az ${dogumMasrafi.toLocaleString('tr-TR')} ₺ gerekiyor.`, "error");
+    }
+
+    nakitiGuncelle(nakit - dogumMasrafi);
     const cinsiyet = Math.random() < 0.5 ? "kadin" : "erkek";
     const isimler = cinsiyet === "kadin" ? ISIMLER_KADIN : ISIMLER_ERKEK;
     const isim = isimler[Math.floor(Math.random() * isimler.length)];
+
+    const { secilenId, newSira } = siradakiPortreyiAl(cinsiyet, "cocuk", portreSirasi);
+    setPortreSirasi(newSira);
 
     setIliskiler(prev => [...prev, {
       id: "cocuk_" + Date.now(),
@@ -269,7 +292,8 @@ export default function IliskilerSayfasi({
       tip: "cocuk",
       statu: "aktif",
       iliskiSeviyesi: 100,
-      sonEtkilesimYili: yil
+      sonEtkilesimYili: yil,
+      portraitId: secilenId
     }]);
 
     gosterBildirim("MÜJDE!", `Nur topu gibi bir çocuğunuz oldu! Adını ${isim} koydunuz. Artık ebeveynsiniz.`, "success");
@@ -342,7 +366,7 @@ export default function IliskilerSayfasi({
             
             <div className="flex flex-col items-center mb-6">
               <div className="w-24 h-24 bg-surface-variant rounded-full flex items-center justify-center overflow-hidden border-2 border-outline mb-3">
-                {tanismaModal.cinsiyet === "kadin" ? <img src={kadinImg} alt="Kadin" className="w-full h-full object-cover" /> : <img src={erkekImg} alt="Erkek" className="w-full h-full object-cover" />}
+                <img src={getPortraitPath({ ...tanismaModal, tip: 'date' }, tanismaModal.yas)} alt={tanismaModal.isim} className="w-full h-full object-cover" />
               </div>
               <div className="font-title-lg font-bold">{tanismaModal.isim}</div>
               <div className="text-on-surface-variant">{tanismaModal.yas} Yaşında</div>
@@ -409,57 +433,6 @@ export default function IliskilerSayfasi({
 
       <div className="max-w-4xl mx-auto space-y-stack-lg pb-24">
         
-        <div className="bg-surface-container border border-outline-variant shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-stack-md mb-stack-md">
-          <h2 className="font-headline-sm text-headline-sm font-black uppercase text-primary border-b border-outline pb-2 mb-4">
-            Aile Üyeleri
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {iliskiler.filter(i => i.tip === "aile").map(kisi => (
-              <div key={kisi.id} className="bg-surface-container-low border border-outline-variant p-4 flex flex-col gap-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-surface-variant rounded flex items-center justify-center overflow-hidden border border-outline">
-                    {kisi.cinsiyet === "kadin" ? <img src={kadinImg} alt="Kadin" className="w-full h-full object-cover" /> : <img src={erkekImg} alt="Erkek" className="w-full h-full object-cover" />}
-                  </div>
-                  <div>
-                    <div className="font-title-md text-title-md font-bold text-on-surface">{kisi.isim} ({kisi.yas})</div>
-                    <div className={`font-label-sm text-label-sm capitalize ${kisi.statu === 'küs' ? 'text-error font-bold' : 'text-on-surface-variant'}`}>
-                      {kisi.statu}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="w-full bg-surface-variant rounded-full h-2.5 dark:bg-gray-700">
-                  <div className="bg-primary h-2.5 rounded-full transition-all duration-300" style={{ width: `${kisi.iliskiSeviyesi}%` }}></div>
-                </div>
-                <div className="text-xs text-right text-on-surface-variant">İlişki: {kisi.iliskiSeviyesi}/100</div>
-
-                <div className="flex gap-2 flex-wrap mt-2">
-                  <button 
-                    onClick={() => handleParaIste(kisi)}
-                    disabled={kisi.statu === 'küs'}
-                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50"
-                  >
-                    Para İste
-                  </button>
-                  <button 
-                    onClick={() => handleDisariCik(kisi)}
-                    disabled={kisi.statu === 'küs'}
-                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50"
-                  >
-                    Dışarı Çık
-                  </button>
-                  <button 
-                    onClick={() => handleYatirimTavsiyesi(kisi)}
-                    disabled={kisi.statu === 'küs'}
-                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50"
-                  >
-                    Tavsiye İste
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
         <div className="bg-surface-container border border-outline-variant shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-stack-md mb-stack-md">
           <h2 className="font-headline-sm text-headline-sm font-black uppercase text-secondary border-b border-outline pb-2 mb-4">
@@ -472,8 +445,8 @@ export default function IliskilerSayfasi({
               {iliskiler.filter(i => i.tip === "date" || i.tip === "es").map(kisi => (
                 <div key={kisi.id} className="bg-surface-container-low border border-outline-variant p-4 flex flex-col gap-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-secondary rounded flex items-center justify-center overflow-hidden border border-outline">
-                      {kisi.cinsiyet === "kadin" ? <img src={kadinImg} alt="Kadin" className="w-full h-full object-cover" /> : <img src={erkekImg} alt="Erkek" className="w-full h-full object-cover" />}
+                    <div className="w-12 h-12 bg-surface-variant rounded flex items-center justify-center overflow-hidden border border-outline">
+                      <img src={getPortraitPath(kisi, kisi.yas)} alt={kisi.isim} className="w-full h-full object-cover" />
                     </div>
                     <div>
                       <div className="font-title-md text-title-md font-bold text-on-surface">{kisi.isim} ({kisi.yas})</div>
@@ -524,7 +497,9 @@ export default function IliskilerSayfasi({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {iliskiler.filter(i => i.tip === "cocuk").map(kisi => (
               <div key={kisi.id} className="bg-surface-container-low border border-outline-variant p-4 flex flex-col gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] items-center text-center">
-                 <div className="text-4xl mb-1">{kisi.yas < 3 ? "👶" : kisi.yas < 13 ? "🧒" : "🧑"}</div>
+                 <div className="w-16 h-16 bg-surface-variant rounded-full flex items-center justify-center overflow-hidden border border-outline mb-2">
+                    <img src={getPortraitPath(kisi, kisi.yas)} alt={kisi.isim} className="w-full h-full object-cover" />
+                 </div>
                  <div className="font-title-md font-bold text-on-surface">{kisi.isim}</div>
                  <div className="text-sm text-on-surface-variant">{kisi.yas} Yaşında</div>
               </div>
@@ -543,8 +518,15 @@ export default function IliskilerSayfasi({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {iliskiler.filter(i => i.tip === "arkadas").map(kisi => (
                 <div key={kisi.id} className="bg-surface-container-low border border-outline-variant p-4 flex flex-col gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                  <div className="font-title-sm font-bold text-on-surface">{kisi.isim} ({kisi.yas})</div>
-                  <div className="text-xs text-on-surface-variant">Meslek: {kisi.meslek}</div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-surface-variant rounded-full flex items-center justify-center overflow-hidden border border-outline">
+                      <img src={getPortraitPath(kisi, kisi.yas)} alt={kisi.isim} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <div className="font-title-sm font-bold text-on-surface">{kisi.isim} ({kisi.yas})</div>
+                      <div className="text-xs text-on-surface-variant">Meslek: {kisi.meslek}</div>
+                    </div>
+                  </div>
                   <div className="w-full bg-surface-variant rounded-full h-1.5 dark:bg-gray-700 mt-1">
                     <div className="bg-tertiary h-1.5 rounded-full transition-all duration-300" style={{ width: `${kisi.iliskiSeviyesi}%` }}></div>
                   </div>

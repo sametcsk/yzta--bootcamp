@@ -84,7 +84,7 @@ export function getRandomIliskiEvent(iliskiler, fiyatlar, yil) {
 
     olasiOlaylar.push({
       baslik: "Kombi / Eşya Bozulması",
-      mesaj: `${aile.isim} sizi aradı, evdeki kombi bozulmuş ve masrafı karşılayamıyorlar.`,
+      mesaj: `${aile.id === "anne" ? "Annen" : "Baban"} sizi aradı, evdeki kombi bozulmuş ve masrafı karşılayamıyorlar.`,
       kisiId: aile.id,
       kisiIsim: aile.isim,
       secenekler: [
@@ -111,7 +111,7 @@ export function getRandomIliskiEvent(iliskiler, fiyatlar, yil) {
 
     olasiOlaylar.push({
       baslik: "Sağlık Kontrolü",
-      mesaj: `${aile.isim} kendini iyi hissetmediğini söyledi, detaylı bir check-up lazım.`,
+      mesaj: `${aile.id === "anne" ? "Annen" : "Baban"} kendini iyi hissetmediğini söyledi, detaylı bir check-up lazım.`,
       kisiId: aile.id,
       kisiIsim: aile.isim,
       secenekler: [
