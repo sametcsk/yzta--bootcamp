@@ -66,6 +66,17 @@ export const TUTORIAL_ADIMLARI = [
     metin: "Şu an her şey en düşük seviyede. İleride maaşın arttıkça lüks yaşamak seni mutlu eder ama eksiye düşüp iflas etmemek için harcamalarına dikkat et!"
   },
   {
+    hedef: "sidebar-iliskiler",
+    ilerlemeTipi: "eylem",
+    beklenenEylem: "sayfa:iliskiler",
+    metin: "Paradan bahsettik, peki ya sosyal hayatın? Sol menüden 'İlişkiler' sayfasına tıkla."
+  },
+  {
+    hedef: "iliskiler-sayfasi",
+    ilerlemeTipi: "buton",
+    metin: "Ailenle vakit geçirebilir, tavsiye isteyebilir veya yeni insanlarla tanışıp evlenebilirsin. Seçim senin!"
+  },
+  {
     hedef: "sidebar-ana",
     ilerlemeTipi: "eylem",
     beklenenEylem: "sayfa:ana",

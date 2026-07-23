@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { getPortraitPath, siradakiPortreyiAl } from "./utils/portraits";
+import { siradakiPortreyiAl, getPortraitPath } from "./utils/portraits";
+import { luksPuaniHesapla } from "./data/standartlar";
 
 const ISIMLER_KADIN = ["Ayşe", "Fatma", "Zeynep", "Elif", "Merve", "Aslı", "Selin", "Burcu", "Ceren", "Eda"];
 const ISIMLER_ERKEK = ["Ali", "Ahmet", "Mehmet", "Can", "Burak", "Emre", "Ozan", "Cem", "Deniz", "Kerem"];
@@ -16,7 +17,9 @@ export default function IliskilerSayfasi({
   mekanaGitmeSayisi,
   setMekanaGitmeSayisi,
   portreSirasi,
-  setPortreSirasi
+  setPortreSirasi,
+  standartlar, 
+  sahipOlunanEvler
 }) {
   const [bildirim, setBildirim] = useState(null);
   const [tanismaModal, setTanismaModal] = useState(null); // { isim, cinsiyet, yas }
@@ -141,7 +144,8 @@ export default function IliskilerSayfasi({
         cinsiyet: cinsiyetStr, 
         yas,
         iliskiSeviyesi: 10,
-        portraitId: secilenId
+        portraitId: secilenId,
+        beklentiPuan: Math.floor(Math.random() * 8) + 1
       });
     } else {
       gosterBildirim("Güzel Bir Gün", `Mekanda harika vakit geçirdiniz ama kimseyle tanışmadınız.`, "info");
@@ -156,7 +160,14 @@ export default function IliskilerSayfasi({
       return;
     }
 
+    const myLuks = luksPuaniHesapla(standartlar, sahipOlunanEvler, []);
+
     if (secim === "arkadas_ol") {
+      if (myLuks < tanismaModal.beklentiPuan) {
+         setTanismaModal(null);
+         return gosterBildirim("Seni Beğenmedi", `Kıyafetlerin ve yaşam tarzın onun pek ilgisini çekmedi. Yeni insanlarla tanışabilmek için daha iyi bir yaşam standardına (lüks) sahip olman gerekiyor.`, "error");
+      }
+      
       const meslek = MESLEKLER_ARKADAS[Math.floor(Math.random() * MESLEKLER_ARKADAS.length)];
       setIliskiler(prev => [...prev, {
         ...tanismaModal,
@@ -170,6 +181,11 @@ export default function IliskilerSayfasi({
     }
 
     if (secim === "date_cagir") {
+      if (myLuks < tanismaModal.beklentiPuan + 2) {
+         setTanismaModal(null);
+         return gosterBildirim("Reddedildin", `Date teklifini geri çevirdi. Kıyafetlerin, anlattıkların ve yaşam tarzın onu etkilememiş gibi görünüyor. Belki de yaşam standartlarını yükseltmelisin.`, "error");
+      }
+      
       const mevcutDate = iliskiler.find(k => (k.tip === "date" || k.tip === "es") && k.statu === "aktif");
       
       if (mevcutDate) {

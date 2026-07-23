@@ -283,6 +283,7 @@ function AppInner() {
     if (adim.beklenenEylem === "sayfa:varliklar" && aktifSayfa === "varliklar") tutorialIleriGit()
     if (adim.beklenenEylem === "sayfa:portfoy" && aktifSayfa === "portfoy") tutorialIleriGit()
     if (adim.beklenenEylem === "sayfa:standartlar" && aktifSayfa === "standartlar") tutorialIleriGit()
+    if (adim.beklenenEylem === "sayfa:iliskiler" && aktifSayfa === "iliskiler") tutorialIleriGit()
     if (adim.beklenenEylem === "sayfa:ana" && aktifSayfa === "ana") tutorialIleriGit()
     if (adim.beklenenEylem === "sayfa:kariyer" && aktifSayfa === "kariyer") tutorialIleriGit()
     if (adim.beklenenEylem === "sayfa:banka" && aktifSayfa === "banka") tutorialIleriGit()
@@ -2484,19 +2485,23 @@ function AppInner() {
         )}
 
         {aktifSayfa === "iliskiler" && (
-          <IliskilerSayfasi
-            iliskiler={iliskiler}
-            setIliskiler={setIliskiler}
-            nakit={nakit}
-            nakitiGuncelle={nakitiGuncelle}
-            yil={yil}
-            fiyatlar={fiyatlar}
-            setSonucKarti={setSonucKarti}
-            mekanaGitmeSayisi={mekanaGitmeSayisi}
-            setMekanaGitmeSayisi={setMekanaGitmeSayisi}
-            portreSirasi={portreSirasi}
-            setPortreSirasi={setPortreSirasi}
-          />
+          <div id="iliskiler-sayfasi" className="flex-1 overflow-y-auto flex flex-col">
+            <IliskilerSayfasi
+              iliskiler={iliskiler}
+              setIliskiler={setIliskiler}
+              nakit={nakit}
+              nakitiGuncelle={nakitiGuncelle}
+              yil={yil}
+              fiyatlar={fiyatlar}
+              setSonucKarti={setSonucKarti}
+              mekanaGitmeSayisi={mekanaGitmeSayisi}
+              setMekanaGitmeSayisi={setMekanaGitmeSayisi}
+              portreSirasi={portreSirasi}
+              setPortreSirasi={setPortreSirasi}
+              standartlar={standartlar}
+              sahipOlunanEvler={sahipOlunanEvler}
+            />
+          </div>
         )}
 
         {aktifSayfa === "portfoy" && (
