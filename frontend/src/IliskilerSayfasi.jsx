@@ -20,19 +20,10 @@ export default function IliskilerSayfasi({
 }) {
   const [bildirim, setBildirim] = useState(null);
   const [tanismaModal, setTanismaModal] = useState(null); // { isim, cinsiyet, yas }
-  const [kayinpederModal, setKayinpederModal] = useState(false);
-  const [kayinpederSonuc, setKayinpederSonuc] = useState(null);
 
   React.useEffect(() => {
-    if (yil % 2 === 0 && yil > 2025) {
-      const es = iliskiler.find(k => k.tip === "es" && k.statu === "aktif");
-      if (es && !es.kayinpederOlayiOldu && es.evlilikYili !== undefined && (yil - es.evlilikYili) >= 4) {
-        if (Math.random() < 0.4) {
-          setKayinpederModal(true);
-          setKayinpederSonuc(null);
-        }
-      }
-    }
+    // Aile/kayınpeder olayını IliskiEventleri.js'ye taşıdığımız için burayı boş bırakıyoruz.
+    // Diğer effect'ler buraya eklenebilir.
   }, [yil]);
 
   const gosterBildirim = (baslik, mesaj, tip = "info") => {
@@ -117,7 +108,7 @@ export default function IliskilerSayfasi({
       ? ["Geçen gün haberlerde gördüm, teknoloji şirketleri çok kâr açıklayacakmış.", "Altın her zaman güvenli limandır evladım, hiçbir zaman üzmez.", "Bankalar çok faiz dağıtıyor bu aralar, borsa için iyi olmayabilir.", "Emlak fiyatları uçacak diyorlar, parası olan ev alsın."]
       : ["Komşu parayı dolara yatırmış çok kazanmış, ama ben anlamam.", "Benim zamanımda borsa falan yoktu, en iyisi yastık altı.", "Boşver yatırımı falan, sağlığın yerinde olsun.", "Birisi borsada bütün parasını batırmış geçen gün, dikkatli ol."];
     
-    gosterBildirim("Tavsiye Geldi", `"${tavsiyeler[Math.floor(Math.random() * tavsiyeler.length)]}"`, "info");
+    setSonucKarti({ baslik: "Tavsiye Geldi", metin: `"${tavsiyeler[Math.floor(Math.random() * tavsiyeler.length)]}"` });
   };
 
   // 4. Sosyal Mekanlar ve Keşif Sistemi
@@ -263,6 +254,19 @@ export default function IliskilerSayfasi({
     gosterBildirim("EVLENDİNİZ!", `Tebrikler! ${kisi.isim} ile evlendiniz. Düğün masrafı: ${dugunMaliyeti.toLocaleString('tr-TR')} ₺`, "success");
   };
 
+  const handleBosan = (kisi) => {
+    const kur = fiyatlar?.dolar_try || 40;
+    const nafaka = Math.floor(20000 * kur / 100) * 100;
+    
+    if (nakit < nafaka) {
+       return gosterBildirim("Nakit Yetersiz", `Boşanma avukatı ve nafaka için en az ${nafaka.toLocaleString('tr-TR')} ₺ nakite ihtiyacınız var.`, "error");
+    }
+    
+    nakitiGuncelle(nakit - nafaka);
+    updateKisi(kisi.id, { statu: "boşandı", tip: "eski_es", iliskiSeviyesi: 0 });
+    setSonucKarti({ baslik: "Boşandınız", metin: `${kisi.isim} ile yollarınızı ayırdınız. Boşanma masrafı ve nafaka olarak ${nafaka.toLocaleString('tr-TR')} ₺ ödediniz.` });
+  };
+
   const handleCocukYap = () => {
     const es = iliskiler.find(k => k.tip === "es" && k.statu === "aktif");
     if (!es) return;
@@ -396,43 +400,63 @@ export default function IliskilerSayfasi({
         </div>
       )}
 
-      {/* Kayınpeder Modalı */}
-      {kayinpederModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-surface border-2 border-outline p-6 max-w-sm w-full shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center">
-            <h3 className="font-headline-sm font-black text-primary mb-4">Ailevi Meseleler</h3>
-            
-            {!kayinpederSonuc ? (
-              <>
-                <div className="mb-6 text-on-surface-variant">
-                  Eşinin ailesi sıkışmış ve sizden borç istiyorlar. Yaklaşık {(Math.floor(500 * (fiyatlar?.dolar_try || 40) / 100) * 100).toLocaleString('tr-TR')} ₺'ye ihtiyaçları var.
-                </div>
-                <div className="space-y-3">
-                  <button 
-                    onClick={() => handleKayinpederSecim(true)}
-                    className="w-full bg-primary text-on-primary font-bold py-3 hover:brightness-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                  >
-                    Borç Ver (İlişkiniz Güçlenir)
-                  </button>
-                  <button 
-                    onClick={() => handleKayinpederSecim(false)}
-                    className="w-full bg-surface text-on-surface-variant font-bold py-3 border border-outline hover:bg-error hover:text-on-error transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                  >
-                    Reddet (İlişkiniz Bozulur)
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="mb-6 text-on-surface font-bold text-lg">
-                {kayinpederSonuc}
-              </div>
-            )}
           </div>
         </div>
       )}
 
       <div className="max-w-4xl mx-auto space-y-stack-lg pb-24">
         
+        <div className="bg-surface-container border border-outline-variant shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-stack-md mb-stack-md">
+          <h2 className="font-headline-sm text-headline-sm font-black uppercase text-primary border-b border-outline pb-2 mb-4">
+            Aile Üyeleri
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {iliskiler.filter(i => i.tip === "aile").map(kisi => (
+              <div key={kisi.id} className="bg-surface-container-low border border-outline-variant p-4 flex flex-col gap-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-surface-variant rounded flex items-center justify-center overflow-hidden border border-outline">
+                    <img src={getPortraitPath(kisi, kisi.yas)} alt={kisi.isim} className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <div className="font-title-md text-title-md font-bold text-on-surface">{kisi.isim} ({kisi.yas})</div>
+                    <div className={`font-label-sm text-label-sm capitalize ${kisi.statu === 'küs' ? 'text-error font-bold' : 'text-on-surface-variant'}`}>
+                      {kisi.statu}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="w-full bg-surface-variant rounded-full h-2.5 dark:bg-gray-700">
+                  <div className="bg-primary h-2.5 rounded-full transition-all duration-300" style={{ width: `${kisi.iliskiSeviyesi}%` }}></div>
+                </div>
+                <div className="text-xs text-right text-on-surface-variant">İlişki: {kisi.iliskiSeviyesi}/100</div>
+
+                <div className="flex gap-2 flex-wrap mt-2">
+                  <button 
+                    onClick={() => handleParaIste(kisi)}
+                    disabled={kisi.statu === 'küs'}
+                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50"
+                  >
+                    Para İste
+                  </button>
+                  <button 
+                    onClick={() => handleDisariCik(kisi)}
+                    disabled={kisi.statu === 'küs'}
+                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50"
+                  >
+                    Dışarı Çık
+                  </button>
+                  <button 
+                    onClick={() => handleYatirimTavsiyesi(kisi)}
+                    disabled={kisi.statu === 'küs'}
+                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50"
+                  >
+                    Tavsiye İste
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className="bg-surface-container border border-outline-variant shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-stack-md mb-stack-md">
           <h2 className="font-headline-sm text-headline-sm font-black uppercase text-secondary border-b border-outline pb-2 mb-4">
@@ -470,6 +494,11 @@ export default function IliskilerSayfasi({
                       {kisi.tip === "date" && kisi.iliskiSeviyesi >= 100 && (
                          <button onClick={() => handleEvlen(kisi)} className="w-full mt-2 bg-secondary text-on-secondary font-bold py-2 hover:brightness-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                            💍 Evlenme Teklifi Et
+                         </button>
+                      )}
+                      {kisi.tip === "es" && (
+                         <button onClick={() => handleBosan(kisi)} className="w-full mt-2 bg-error text-on-error font-bold py-2 hover:brightness-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                           💔 Boşan
                          </button>
                       )}
                     </div>

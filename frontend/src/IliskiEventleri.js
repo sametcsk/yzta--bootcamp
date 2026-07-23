@@ -75,6 +75,32 @@ export function getRandomIliskiEvent(iliskiler, fiyatlar, yil) {
         }
       ]
     });
+
+    if (!es.kayinpederOlayiOldu && (yil - (es.evlilikYili || yil)) >= 2) {
+       const odenmeIhtimali = Math.random() < 0.5;
+       olasiOlaylar.push({
+         baslik: "Ailevi Meseleler",
+         mesaj: `Eşinin ailesi sıkışmış ve sizden acil borç istiyorlar. Yaklaşık ${tlYap(500).toLocaleString('tr-TR')} ₺'ye ihtiyaçları var.`,
+         kisiId: es.id,
+         kisiIsim: es.isim,
+         secenekler: [
+           {
+             metin: "Borç Ver (Riskli)",
+             maliyetTl: odenmeIhtimali ? 0 : tlYap(500),
+             iliskiDegisimi: 15,
+             sonucMesaji: odenmeIhtimali ? "Borç verdiniz ve aranız düzeldi. Kısa süre sonra borcu geri ödediler, hem paranızı aldınız hem takdir topladınız!" : "Borç verdiniz ve aranız düzeldi. Ancak kayınpeder borcu geri ödeyemedi...",
+             ekstraGuncelleme: { kayinpederOlayiOldu: true }
+           },
+           {
+             metin: "Reddet",
+             maliyetTl: 0,
+             iliskiDegisimi: -20,
+             sonucMesaji: "Borç vermediniz. Eşiniz bu duruma çok bozuldu ve aranız açıldı.",
+             ekstraGuncelleme: { kayinpederOlayiOldu: true }
+           }
+         ]
+       });
+    }
   }
 
   // Aile olayları

@@ -359,7 +359,11 @@ function AppInner() {
 
     setIliskiler(prev => prev.map(k => {
       if (k.id === aktifIliskiEvent.kisiId) {
-        return { ...k, iliskiSeviyesi: Math.min(100, Math.max(0, k.iliskiSeviyesi + secenek.iliskiDegisimi)) };
+        return { 
+          ...k, 
+          iliskiSeviyesi: Math.min(100, Math.max(0, k.iliskiSeviyesi + secenek.iliskiDegisimi)),
+          ...(secenek.ekstraGuncelleme || {})
+        };
       }
       return k;
     }));
