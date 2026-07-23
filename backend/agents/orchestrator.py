@@ -103,7 +103,12 @@ def _report_safety_step(state: dict) -> dict:
 
 def _learning_step(state: dict) -> dict:
     report = state["result"]
-    learning_plan = generate_learning_plan({"report": report})
+    learning_plan = generate_safe_learning_plan({"report": report})
+    return {**state, "result": {**report, "learning_plan": learning_plan}}
+
+
+def generate_safe_learning_plan(data: dict) -> dict:
+    learning_plan = generate_learning_plan(data)
     learning_text = " ".join(learning_plan.get("learning_topics", []) + learning_plan.get("game_practices", []))
     safety = guvenlik_kontrolu(learning_text)
     if not safety["approved"]:
@@ -113,8 +118,7 @@ def _learning_step(state: dict) -> dict:
             "game_practices": LEARNING_SAFE_PRACTICES,
             "generation_source": "safety_fallback",
         }
-    learning_plan = {**learning_plan, "safety_check": safety}
-    return {**state, "result": {**report, "learning_plan": learning_plan}}
+    return {**learning_plan, "safety_check": safety}
 
 
 FLOW_STEPS = {

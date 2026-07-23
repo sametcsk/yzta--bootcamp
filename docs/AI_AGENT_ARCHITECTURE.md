@@ -19,7 +19,7 @@ Her metin agentı önce deterministik bir fallback hazırlar. `GEMINI_API_KEY` t
 
 `memory_agent.py`, mevcut `event_history` verisinden karar sayısını, bias tekrarlarını ve son üç kararı çıkarır. Hafıza sözleşmesi ayrıca `profile_bias_scores` ve son üç `previous_coach_insights` alanını taşır. Bu hafıza yalnızca açık oyun oturumu kapsamındadır; kişisel veri saklamaz ve oyun ekonomisini değiştirmez. Bias Coach bu deterministik özeti Gemini promptunda kullanır; Final Report aynı özeti response içinde taşır. Gemini kapalıysa özet response içinde kalır ve kural tabanlı agentlar çalışmaya devam eder.
 
-Frontend, profil ile AI karar/koç/final rapor kayıtlarını `finsim_agent_memory_v1` anahtarıyla yerel tarayıcı hafızasında saklar. Sayfa yenileme bu AI kayıtlarını silmez; "Tekrar Oyna" işlemi yeni oyun için kaydı bilinçli olarak temizler. Bu kayıt para, portföy veya ekonomi motorunun sahibi değildir.
+Frontend, profil ile AI karar/koç/final rapor kayıtlarını `finsim_agent_memory_v1` anahtarıyla yerel tarayıcı hafızasında saklar. Her kayıt `session_id` taşır; sayfa yenileme aynı oturumun AI kayıtlarını silmez, fakat yeni intro tamamlandığında veya "Tekrar Oyna" işleminde yeni bir session açılarak eski koç/final/event geçmişinin yeni oyuna sızması engellenir. Bu kayıt para, portföy veya ekonomi motorunun sahibi değildir.
 
 `backend/agents/orchestrator.py`, küçük LangChain `RunnableLambda` zincirleriyle bir agentın çıktısını sıradaki adıma aktarır. LangGraph kullanılmaz; Sprint 3 sunumunda takip edilebilecek üç açık akış vardır:
 
@@ -97,7 +97,7 @@ Final rapordaki baskın eğilime göre kaynaklardan 2-3 eğitim konusu ve oyun i
 
 ### Safety
 
-`safety_agent.py`; kesin al/sat yönlendirmesi, portföye ekleme önerisi, garanti veya güvenli getiri iddiası, klinik teşhis, psikolojik tanı ve küçümseyici dili denetler. Safety adımı yalnız sonuç raporlamaz; kontrol geçmezse Coach, Final Report ve Learning Plan çıktısını güvenli rule-based fallback ile değiştirir.
+`safety_agent.py`; kesin al/sat yönlendirmesi, portföye ekleme önerisi, garanti veya güvenli getiri iddiası, klinik teşhis, psikolojik tanı ve küçümseyici dili denetler. Safety adımı yalnız sonuç raporlamaz; kontrol geçmezse Coach, Final Report ve Learning Plan çıktısını güvenli rule-based fallback ile değiştirir. Standalone `learning-plan` endpointi de aynı güvenli learning plan helper'ından döner.
 
 ## API Uçları
 

@@ -17,6 +17,31 @@ BIAS_STORY_LINES = {
     "present_bias": "Bugünün rahatlığı ile gelecekte kurmak istediğin hayat arasında sık sık seçim yaptın.",
 }
 
+PROFILE_STORY_SYSTEM_PROMPT = (
+    "You are the narrative profile agent of a Turkish financial education simulation game. "
+    "Your task is to write a short, vivid intro story that helps the player feel they are entering "
+    "a life simulation, not filling out a survey. Write the final answer in Turkish only. "
+    "Use warm, natural Turkish. Do not give investment advice, do not diagnose the player, do not use "
+    "clinical language, and do not invent facts that are not present in the supplied context."
+)
+
+PROFILE_STORY_USER_PROMPT_TEMPLATE = (
+    "Game context:\n"
+    "- Player starts at age 18.\n"
+    "- Difficulty level: {difficulty}\n"
+    "- Top behavioral finance tendencies: {bias_names}\n"
+    "- Concrete choices made by the player: {selected_details}\n\n"
+    "Fallback draft in Turkish:\n{fallback_story}\n\n"
+    "Rewrite the draft as a single Turkish story paragraph with these rules:\n"
+    "1. Maximum 90 Turkish words.\n"
+    "2. Include at least two concrete details from the player's choices.\n"
+    "3. Mention the two dominant behavioral tendencies naturally, without sounding like a diagnosis.\n"
+    "4. Do not list the decisions one by one.\n"
+    "5. Do not create a new profile label.\n"
+    "6. Do not recommend buying, selling, holding, investing, borrowing, or any financial action.\n"
+    "7. Make it feel like the beginning of a financial life journey."
+)
+
 
 def _value(data: dict, *keys: str, default):
     for key in keys:
@@ -73,15 +98,12 @@ def generate_profile(data: dict) -> dict:
     selected_details = _story_details(answers)
     fallback_story = _fallback_story(difficulty, story_biases, selected_details)
     llm_result = metin_uret(
-        "Sen bir finansal eğitim oyununda kısa ve sıcak intro hikayeleri yazarsın. Yatırım tavsiyesi verme; tanı koyma.",
-        (
-            f"Zorluk: {difficulty}. En belirgin iki eğilim: "
-            f"{', '.join(bias_name_tr(label) for label in story_biases)}. "
-            f"Oyuncunun seçimlerinden ayrıntılar: {selected_details}.\n"
-            f"Taslak: {fallback_story}\n"
-            "En fazla 90 kelimelik Türkçe bir hikaye yaz. Verilen seçimlerden en az iki somut "
-            "ayrıntıyı ve iki baskın davranışsal eğilimi doğal biçimde mutlaka anlat. Kararları "
-            "listeleme, profil etiketi uydurma, yatırım tavsiyesi verme ve klinik tanı koyma."
+        PROFILE_STORY_SYSTEM_PROMPT,
+        PROFILE_STORY_USER_PROMPT_TEMPLATE.format(
+            difficulty=difficulty,
+            bias_names=", ".join(bias_name_tr(label) for label in story_biases),
+            selected_details=selected_details,
+            fallback_story=fallback_story,
         ),
     )
     intro_story, llm_safe = guvenli_metin_veya_fallback(llm_result.get("text"), fallback_story)

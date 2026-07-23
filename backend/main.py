@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from agents.learning_plan_agent import generate_learning_plan
-from agents.orchestrator import run_agent_flow
+from agents.orchestrator import generate_safe_learning_plan, run_agent_flow
 from agents.llm_client import llm_zorunlu_mu
 from engine.simulasyon import yil_hesapla
 from engine.opsiyon import generate_option_chain
@@ -98,7 +97,7 @@ def final_rapor_ajani(data: dict):
 @app.post("/agents/learning-plan")
 @app.post("/ajanlar/ogrenme-plani")
 def ogrenme_plani_ajani(data: dict):
-    return generate_learning_plan(data)
+    return generate_safe_learning_plan(data)
 
 
 @app.post("/opsiyon-bias-analizi")

@@ -320,6 +320,17 @@ def test_orchestrator_unsafe_final_ve_learning_metinlerini_degistirir(monkeypatc
     assert result["learning_plan"]["learning_topics"] == orchestrator.LEARNING_SAFE_TOPICS
 
 
+def test_standalone_learning_plan_safety_kapisindan_gecer(monkeypatch):
+    monkeypatch.setattr(orchestrator, "generate_learning_plan", lambda data: {
+        "learning_topics": ["Portföyüne ekle."],
+        "game_practices": [],
+    })
+    result = orchestrator.generate_safe_learning_plan({})
+    assert result["safety_check"]["approved"] is False
+    assert result["learning_topics"] == orchestrator.LEARNING_SAFE_TOPICS
+    assert result["generation_source"] == "safety_fallback"
+
+
 def test_final_flow_learning_plan_ekler(monkeypatch):
     monkeypatch.setattr(orchestrator, "LANGCHAIN_AVAILABLE", False)
     result = orchestrator.run_agent_flow("final_report", {

@@ -24,18 +24,31 @@ import { formatAssetPrice, money } from "./utils"
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
 const AGENT_MEMORY_STORAGE_KEY = "finsim_agent_memory_v1"
+const AGENT_SESSION_STORAGE_KEY = "finsim_agent_session_id_v1"
 
-function kayitliAgentHafizasiniOku() {
+function yeniAgentSessionId() {
+  return `agent_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+}
+
+function aktifAgentSessionIdOku() {
+  const kayitliSessionId = localStorage.getItem(AGENT_SESSION_STORAGE_KEY)
+  if (kayitliSessionId) return kayitliSessionId
+  const yeniSessionId = yeniAgentSessionId()
+  localStorage.setItem(AGENT_SESSION_STORAGE_KEY, yeniSessionId)
+  return yeniSessionId
+}
+
+function kayitliAgentHafizasiniOku(sessionId) {
   try {
     const kayit = JSON.parse(localStorage.getItem(AGENT_MEMORY_STORAGE_KEY) || "null")
-    return kayit?.version === 1 ? kayit : null
+    return kayit?.version === 2 && kayit?.session_id === sessionId ? kayit : null
   } catch {
     localStorage.removeItem(AGENT_MEMORY_STORAGE_KEY)
     return null
   }
 }
 
-function agentHafizasiniOlustur(eventGecmisi, profil, coachGecmisi) {
+function agentHafizasiniOlustur(eventGecmisi, profil, coachGecmisi, sessionId) {
   const biasCounts = eventGecmisi.reduce((counts, event) => {
     const label = event.bias_label || event.bias
     if (label) counts[label] = (counts[label] || 0) + 1
@@ -43,6 +56,7 @@ function agentHafizasiniOlustur(eventGecmisi, profil, coachGecmisi) {
   }, {})
 
   return {
+    session_id: sessionId,
     decision_count: eventGecmisi.length,
     bias_counts: biasCounts,
     recent_decisions: eventGecmisi.slice(-3),
@@ -90,7 +104,8 @@ const VARLIK_META = {
 
 function AppInner() {
   const { aktif: tutorialAktif, mevcutAdim: tutorialMevcutAdim, adimIndex: tutorialAdimi, ileriGit: tutorialIleriGit, setAktif: setTutorialAktif } = useTutorial()
-  const [kayitliAgentHafizasi] = useState(kayitliAgentHafizasiniOku)
+  const [agentSessionId, setAgentSessionId] = useState(aktifAgentSessionIdOku)
+  const [kayitliAgentHafizasi] = useState(() => kayitliAgentHafizasiniOku(agentSessionId))
 
   const [gameState, setGameState] = useState(INITIAL_STATE)
   const [yil, setYil] = useState(2025)
@@ -287,7 +302,8 @@ function AppInner() {
 
   useEffect(() => {
     const agentHafizasi = {
-      version: 1,
+      version: 2,
+      session_id: agentSessionId,
       profile: karakterProfili,
       event_history: eventKayitlari,
       coach_history: coachKayitlari.slice(-3),
@@ -295,7 +311,7 @@ function AppInner() {
       updated_at: new Date().toISOString(),
     }
     localStorage.setItem(AGENT_MEMORY_STORAGE_KEY, JSON.stringify(agentHafizasi))
-  }, [karakterProfili, eventKayitlari, coachKayitlari, finalRapor])
+  }, [agentSessionId, karakterProfili, eventKayitlari, coachKayitlari, finalRapor])
 
   useEffect(() => {
     if (!tutorialAktif) return
@@ -985,6 +1001,16 @@ async function yilAtla(opsiyonAksiyon = null) {
   }
 
   async function introyuBitir(sonuc) {
+    const yeniSessionId = yeniAgentSessionId()
+    localStorage.setItem(AGENT_SESSION_STORAGE_KEY, yeniSessionId)
+    localStorage.removeItem(AGENT_MEMORY_STORAGE_KEY)
+    setAgentSessionId(yeniSessionId)
+    setKarakterProfili(null)
+    setEventKayitlari([])
+    setCoachYorumu(null)
+    setCoachKayitlari([])
+    setFinalRapor(null)
+
     setBars({ sabir: sonuc.sabir, mutluluk: sonuc.mutluluk })
     nakitiGuncelle(sonuc.nakit)
     setYillikGelir(sonuc.yillikGelir)
@@ -1029,14 +1055,16 @@ async function yilAtla(opsiyonAksiyon = null) {
 
       const payload = await res.json()
       if (res.ok) {
-        setKarakterProfili(payload)
+        setKarakterProfili({ ...payload, session_id: yeniSessionId })
       } else if (payload?.detail?.fallback_response) {
         setKarakterProfili({
           ...payload.detail.fallback_response,
+          session_id: yeniSessionId,
           ai_status_message: payload.detail.message,
         })
       } else {
         setKarakterProfili({
+          session_id: yeniSessionId,
           profile_name: "Davranış Profili",
           intro_story: "AI yanıtı şu an üretilemedi. Oyun güvenli başlangıç profiliyle devam edebilir.",
           generation_source: "llm_error",
@@ -1046,6 +1074,7 @@ async function yilAtla(opsiyonAksiyon = null) {
     } catch (error) {
       console.error(error)
       setKarakterProfili({
+        session_id: yeniSessionId,
         profile_name: "Davranış Profili",
         intro_story: "AI yanıtı şu an üretilemedi. Oyun güvenli başlangıç profiliyle devam edebilir.",
         generation_source: "llm_error",
@@ -1056,6 +1085,7 @@ async function yilAtla(opsiyonAksiyon = null) {
 
   function tekrarOyna() {
     localStorage.removeItem(AGENT_MEMORY_STORAGE_KEY)
+    localStorage.removeItem(AGENT_SESSION_STORAGE_KEY)
     window.location.reload()
   }
 
@@ -1090,7 +1120,7 @@ async function yilAtla(opsiyonAksiyon = null) {
         body: JSON.stringify({
           ...eventKaydi,
           event_history: eventGecmisi,
-          agent_memory: agentHafizasiniOlustur(eventGecmisi, karakterProfili, coachKayitlari),
+          agent_memory: agentHafizasiniOlustur(eventGecmisi, karakterProfili, coachKayitlari, agentSessionId),
         }),
       })
       const payload = await res.json()
@@ -1301,6 +1331,7 @@ async function yilAtla(opsiyonAksiyon = null) {
       bias_label: secilenEvent.bias_etiketi,
       profile_type: karakterProfili?.profile_type || null,
       bias_scores: karakterProfili?.bias_scores || {},
+      session_id: agentSessionId,
       yil,
       event_baslik: secilenEvent.baslik,
       bias: secilenEvent.bias_etiketi,
@@ -1389,7 +1420,7 @@ async function yilAtla(opsiyonAksiyon = null) {
         body: JSON.stringify({
           profile: karakterProfili,
           event_history: eventKayitlari,
-          agent_memory: agentHafizasiniOlustur(eventKayitlari, karakterProfili, coachKayitlari),
+          agent_memory: agentHafizasiniOlustur(eventKayitlari, karakterProfili, coachKayitlari, agentSessionId),
           final_state: { 
             year: yil, 
             age: yas, 

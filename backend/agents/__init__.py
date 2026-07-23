@@ -4,7 +4,7 @@ from .profile_agent import generate_profile, profil_uret
 from .learning_plan_agent import generate_learning_plan, ogrenme_plani_uret
 from .memory_agent import ajan_hafizasi_olustur, build_agent_memory
 from .decision_analyst_agent import analyze_decision, karar_analizi_yap
-from .orchestrator import run_agent_flow, ajan_akisini_calistir
+from .orchestrator import generate_safe_learning_plan, run_agent_flow, ajan_akisini_calistir
 from .rag_service import ilgili_kaynaklari_getir, kaynaklari_getir
 from .safety_agent import guvenlik_kontrolu, guvenlik_kontrolu_yap
 
@@ -23,6 +23,7 @@ __all__ = [
     "karar_analizi_yap",
     "run_agent_flow",
     "ajan_akisini_calistir",
+    "generate_safe_learning_plan",
     "ilgili_kaynaklari_getir",
     "kaynaklari_getir",
     "guvenlik_kontrolu",
