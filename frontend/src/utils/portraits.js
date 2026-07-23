@@ -27,7 +27,7 @@ export function getPortraitPath(kisi, mevcutYas) {
   }
 
   // Eş, Date, Arkadaş (Yetişkin - 2 Aşama)
-  if (["es", "date", "arkadas"].includes(kisi.tip)) {
+  if (["es", "eski_es", "date", "arkadas"].includes(kisi.tip)) {
     const isOld = kisi.yas >= 40;
     const pId = kisi.portraitId || (kisi.cinsiyet === "erkek" ? "m1" : "w1");
     return `/portraits/adults/${pId}/${isOld ? 4 : 3}.png`;

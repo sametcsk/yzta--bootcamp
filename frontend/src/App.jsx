@@ -260,6 +260,19 @@ function AppInner() {
   const bekleyenEventKaydiRef = useRef(null)
   const [firsatMaliyetiGecmisi, setFirsatMaliyetiGecmisi] = useState([])
 
+  useEffect(() => {
+    setIliskiler(prev => {
+      if (!prev.some(k => k.id === "anne")) {
+        return [
+          { id: "anne", isim: "Annen", yas: 45, tip: "aile", cinsiyet: "kadin", iliskiSeviyesi: 50, statu: "aktif" },
+          { id: "baba", isim: "Baban", yas: 48, tip: "aile", cinsiyet: "erkek", iliskiSeviyesi: 50, statu: "aktif" },
+          ...prev
+        ];
+      }
+      return prev;
+    });
+  }, []);
+
   const uyariGoster = (mesaj) => setUyariMesaji(mesaj)
 
   useEffect(() => {
@@ -350,7 +363,7 @@ function AppInner() {
   const handleIliskiEventSecimi = (secenek) => {
     if (!aktifIliskiEvent) return;
 
-    if (nakitRef.current < secenek.maliyetTl) {
+    if (secenek.maliyetTl > 0 && nakitRef.current < secenek.maliyetTl) {
       uyariGoster(`Bu seçenek için yeterli nakitiniz yok! En az ${secenek.maliyetTl.toLocaleString('tr-TR')} ₺ gerekiyor.`);
       return;
     }
@@ -2105,6 +2118,42 @@ function AppInner() {
                         })}
                       </div>
                     </div>
+
+                  ) : aktifIliskiEvent ? (
+                    <div className="flex flex-col gap-4">
+                      <div className="font-data-sm text-data-sm text-primary uppercase flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">diversity_1</span>
+                        SOSYAL OLAY_{yil}
+                      </div>
+                      <h3 className="font-headline-md text-headline-md text-error">{aktifIliskiEvent.baslik}</h3>
+                      <p className="text-on-surface-variant text-body-md">{aktifIliskiEvent.mesaj}</p>
+                      <div className="flex flex-col gap-2 mt-4">
+                        {aktifIliskiEvent.secenekler.map((s, i) => (
+                          <button
+                            key={i}
+                            onClick={() => handleIliskiEventSecimi(s)}
+                            className={`p-3 text-left border bg-surface-variant border-outline hover:border-primary hover:bg-surface-container-high transition-colors text-on-surface btn-shadow`}
+                          >
+                            <div className="flex justify-between items-start gap-2">
+                              <div className="font-data-sm text-data-sm uppercase mb-1">SEÇ_0{i + 1}</div>
+                            </div>
+                            <div className="font-bold">{s.metin}</div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {s.maliyetTl > 0 && (
+                                <span className="text-[10px] px-1 font-bold uppercase bg-error text-background">
+                                  Nakit -₺{s.maliyetTl.toLocaleString("tr-TR")}
+                                </span>
+                              )}
+                              {s.iliskiDegisimi !== undefined && s.iliskiDegisimi !== 0 && (
+                                <span className={`text-[10px] px-1 font-bold uppercase ${s.iliskiDegisimi > 0 ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
+                                  İlişki {s.iliskiDegisimi > 0 ? '+' : ''}{s.iliskiDegisimi}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center">
                       <span className="material-symbols-outlined text-4xl mb-2">check_circle</span>
@@ -2474,29 +2523,6 @@ function AppInner() {
         <TutorialKutusu />
         <OyunUyarisi mesaj={uyariMesaji} onKapat={() => setUyariMesaji(null)} />
 
-        {aktifIliskiEvent && (
-          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[70] p-4">
-            <div className="bg-surface border-4 border-primary p-6 max-w-md w-full shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center text-center animate-bounce-in">
-              <h2 className="font-headline-sm font-black text-primary mb-2 uppercase tracking-wide">
-                {aktifIliskiEvent.baslik}
-              </h2>
-              <p className="text-on-surface mb-6 font-body-lg text-lg">
-                {aktifIliskiEvent.mesaj}
-              </p>
-              <div className="w-full space-y-3">
-                {aktifIliskiEvent.secenekler.map((secenek, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleIliskiEventSecimi(secenek)}
-                    className={`w-full font-bold py-3 px-4 border border-outline hover:brightness-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${secenek.maliyetTl > 0 ? 'bg-primary text-on-primary' : 'bg-surface-variant text-on-surface-variant'}`}
-                  >
-                    {secenek.metin} {secenek.maliyetTl > 0 && `(Maliyet: ${secenek.maliyetTl.toLocaleString('tr-TR')} ₺)`}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   )
