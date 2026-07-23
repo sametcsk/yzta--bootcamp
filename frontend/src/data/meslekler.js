@@ -10,10 +10,10 @@ export const MESLEKLER = {
     gereksinim: null,
     pozisyonAdi: {
       1: "Emekli",
-      2: "Kıdemli Emekli",
-      3: "Uzman Emekli",
-      4: "Baş Emekli",
-      5: "Gazi Emekli",
+      2: "Emekli",
+      3: "Emekli",
+      4: "Emekli",
+      5: "Emekli",
     },
     levelCarpani: { 1: 1.00, 2: 1.00, 3: 1.00, 4: 1.00, 5: 1.00 },
     sabir: 5, mutluluk: 5

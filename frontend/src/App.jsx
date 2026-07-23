@@ -509,7 +509,10 @@ async function yilAtla(opsiyonAksiyon = null) {
       setTemelMaas(yeniTemelMaas)
       setYasamGideri(yeniGider)
       
-      const yeniMaasEndeksi = maasEndeksi * (1 + data.yil_sonucu.enflasyon / 100)
+      let yeniMaasEndeksi = maasEndeksi * (1 + data.yil_sonucu.enflasyon / 100)
+      if (data.yil_sonucu.redenominasyon) {
+        yeniMaasEndeksi = yeniMaasEndeksi / 1000
+      }
       setMaasEndeksi(yeniMaasEndeksi)
       
       // İş ilanlarını yenile
