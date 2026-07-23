@@ -1,10 +1,11 @@
 import IntroEkrani from "./IntroEkrani"
 import VarlikSayfasi from "./VarlikSayfasi"
 import YasamStandartlari from "./YasamStandartlari"
-import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalitesiEtkisi, luksPuaniHesapla } from "./data/standartlar"
+import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalitesiEtkisi, luksPuaniHesapla, getDinamikStandartlar } from "./data/standartlar"
 import PortfoySayfasi from "./PortfoySayfasi"
 import AcilisSayfasi from "./AcilisSayfasi"
 import HikayeEkrani from "./HikayeEkrani"
+import { getPortraitPath } from "./utils/portraits"
 import KariyerSayfasi from "./KariyerSayfasi"
 import BankaSekmesi from "./BankaSekmesi"
 import TutorialModal from "./TutorialModal"
@@ -21,6 +22,8 @@ import { supabase, supabaseAktif } from "./supabaseClient"
 import BorsaSayfasi from "./BorsaSayfasi"
 import OpsiyonSayfasi from "./OpsiyonSayfasi"
 import { formatAssetPrice, money } from "./utils"
+import IliskilerSayfasi from "./IliskilerSayfasi"
+import { getRandomIliskiEvent } from "./IliskiEventleri"
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
 
@@ -63,9 +66,16 @@ function AppInner() {
   const [gameState, setGameState] = useState(INITIAL_STATE)
   const [yil, setYil] = useState(2025)
   const [yas, setYas] = useState(18)
+  const [iliskiler, setIliskiler] = useState([
+    { id: "anne", isim: "Anne", yas: 45, tip: "aile", cinsiyet: "kadin", iliskiSeviyesi: 50, statu: "aktif" },
+    { id: "baba", isim: "Baba", yas: 48, tip: "aile", cinsiyet: "erkek", iliskiSeviyesi: 50, statu: "aktif" }
+  ])
   const [sonuc, setSonuc] = useState(null)
   const [loading, setLoading] = useState(false)
-  
+  const [aktifIliskiEvent, setAktifIliskiEvent] = useState(null)
+  const [mekanaGitmeSayisi, setMekanaGitmeSayisi] = useState(0)
+  const [portreSirasi, setPortreSirasi] = useState({ adults_w: 0, adults_m: 0, kids_w: 0, kids_m: 0 })
+
   // Kariyer ve Eğitim State'leri
   const [sinavPuani, setSinavPuani] = useState(null)
   const [okunanBolum, setOkunanBolum] = useState(null)
@@ -85,7 +95,7 @@ function AppInner() {
   const [krediNotu, setKrediNotu] = useState(500)
   const [iflasSayisi, setIflasSayisi] = useState(0)
   const [hacizUyarisiAcik, setHacizUyarisiAcik] = useState(false)
-  
+
   // Bias Heuristics Metrikleri
   const [biasMetrics, setBiasMetrics] = useState({
     luksYasamPuani: 0,
@@ -177,7 +187,7 @@ function AppInner() {
         console.error("Opsiyon zinciri alınamadı:", err)
       }
     }
-    
+
     if (!opsiyonZinciri && fiyatlar.bist_endeks > 0) {
       fetchInitialChain()
     }
@@ -186,11 +196,11 @@ function AppInner() {
   // Add this effect to calculate Yıllık Gelir including Aile Desteği
   useEffect(() => {
     let gelir = Math.round(temelMaas * levelCarpaniGetir(isYeri, isLevel))
-    
+
     if (yil - 2026 < 2) {
       gelir += yasamGideri
     }
-    
+
     setYillikGelir(gelir)
   }, [temelMaas, isYeri, isLevel, yil, yasamGideri])
 
@@ -278,10 +288,10 @@ function AppInner() {
     if (mevcutEvent && mevcutEvent.secenekler) {
       let nakitSartiVar = false
       let seceneklerinHepsineNakitYetersiz = true
-      
+
       mevcutEvent.secenekler.forEach(s => {
         if (!s.kilit) return
-        
+
         let kilitli = false
         if (s.kilit.tur === "nakit") {
           nakitSartiVar = true
@@ -296,16 +306,16 @@ function AppInner() {
           const pozisyonDegeri = (portfoy[adetKey] || 0) * (fiyatlar[fiyatKey] || 100)
           if (nakitRef.current < pozisyonDegeri * s.kilit.oran) kilitli = true
         }
-        
+
         if (!kilitli && ["nakit", "nakit_usd", "sektor_pozisyon_yuzdesi"].includes(s.kilit.tur)) {
-            seceneklerinHepsineNakitYetersiz = false
+          seceneklerinHepsineNakitYetersiz = false
         }
       })
-      
+
       if (nakitSartiVar) {
         setNakitGerekenEventSayisi(prev => prev + 1)
         if (seceneklerinHepsineNakitYetersiz) {
-            setNakitYetersizKalanEventSayisi(prev => prev + 1)
+          setNakitYetersizKalanEventSayisi(prev => prev + 1)
         }
       }
     }
@@ -337,36 +347,134 @@ function AppInner() {
     }
   }
 
-async function yilAtla(opsiyonAksiyon = null) {
+  const handleIliskiEventSecimi = (secenek) => {
+    if (!aktifIliskiEvent) return;
+
+    if (nakitRef.current < secenek.maliyetTl) {
+      uyariGoster(`Bu seçenek için yeterli nakitiniz yok! En az ${secenek.maliyetTl.toLocaleString('tr-TR')} ₺ gerekiyor.`);
+      return;
+    }
+
+    nakitiGuncelle(nakitRef.current - secenek.maliyetTl);
+
+    setIliskiler(prev => prev.map(k => {
+      if (k.id === aktifIliskiEvent.kisiId) {
+        return { ...k, iliskiSeviyesi: Math.min(100, Math.max(0, k.iliskiSeviyesi + secenek.iliskiDegisimi)) };
+      }
+      return k;
+    }));
+
+    setAktifIliskiEvent(null);
+    setTimeout(() => {
+      setSonucKarti({
+        baslik: "Sonuç",
+        metin: secenek.sonucMesaji
+      });
+    }, 500);
+  };
+
+  async function yilAtla(opsiyonAksiyon = null) {
     setHacizUyarisiAcik(false)
     setAktifSayfa("ana")
     setLoading(true)
+    setMekanaGitmeSayisi(0)
 
     // Otomatik Opsiyon Kapatma (Vadesi dolmuş ama nakite çevrilmemiş olanlar)
     let guncelOpsiyonlar = [...portfoy.opsiyonlar];
     let anlikNakit = nakitRef.current;
     const aktifOlanlar = guncelOpsiyonlar.filter(o => !o.vadesi_doldu);
     const suresiDolanlar = guncelOpsiyonlar.filter(o => o.vadesi_doldu);
-    
+
     let ekNetKar = 0;
     let kapatilanlar = [];
 
     if (suresiDolanlar.length > 0) {
-        suresiDolanlar.forEach(opt => {
-            if (opt.brut_kar > 0) {
-                anlikNakit += opt.brut_kar;
-            }
-            kapatilanlar.push({...opt, not: 'Otomatik (Vade Sonu)'});
-            ekNetKar += opt.net_kar;
-        });
-        
-        nakitiGuncelle(anlikNakit);
-        setPortfoy(p => ({ ...p, opsiyonlar: aktifOlanlar }));
-        setOpsiyonGecmisi(g => [...kapatilanlar.reverse(), ...g].slice(0, 50));
-        setOpsiyonMetrikleri(m => ({
-            ...m,
-            toplam_net_kar: m.toplam_net_kar + ekNetKar
-        }));
+      suresiDolanlar.forEach(opt => {
+        if (opt.brut_kar > 0) {
+          anlikNakit += opt.brut_kar;
+        }
+        kapatilanlar.push({ ...opt, not: 'Otomatik (Vade Sonu)' });
+        ekNetKar += opt.net_kar;
+      });
+
+      nakitiGuncelle(anlikNakit);
+      setPortfoy(p => ({ ...p, opsiyonlar: aktifOlanlar }));
+      setOpsiyonGecmisi(g => [...kapatilanlar.reverse(), ...g].slice(0, 50));
+      setOpsiyonMetrikleri(m => ({
+        ...m,
+        toplam_net_kar: m.toplam_net_kar + ekNetKar
+      }));
+    }
+
+    // İlişkiler Güncellemesi
+    let nafakaOdemesi = 0;
+    let olayMesaji = null;
+    let olayBaslik = "Olay!";
+    let mirasMiktariToplam = 0;
+
+    const yeniIliskiler = iliskiler.map(kisi => {
+      let yeniKisi = { ...kisi, yas: kisi.yas + 1 };
+
+      const sonEtk = kisi.sonEtkilesimYili || 2025;
+      const gecenYil = (yil + 1) - sonEtk;
+
+      if (gecenYil >= 2 && kisi.statu === 'aktif' && kisi.tip !== 'cocuk' && kisi.tip !== 'aile') {
+        yeniKisi.iliskiSeviyesi -= 10;
+      }
+
+      if (yeniKisi.iliskiSeviyesi <= 0 && gecenYil >= 4 && kisi.statu === 'aktif' && kisi.tip !== 'cocuk') {
+        yeniKisi.statu = 'küs';
+        yeniKisi.iliskiSeviyesi = 0;
+        if (kisi.tip === 'es') {
+          const cocukVarMi = iliskiler.some(k => k.tip === 'cocuk');
+          if (cocukVarMi) {
+            yeniKisi.nafaka = true;
+            olayBaslik = "BOŞANMA VE NAFAKA";
+            olayMesaji = `Eşiniz ${yeniKisi.isim}, kendisiyle uzun süredir ilgilenmediğiniz için evi terk edip sizden boşandı! Mahkeme, ortada çocuk olduğu için yaşam standartlarınızın %30'u tutarında nafaka bağladı.`;
+          } else {
+            olayBaslik = "BOŞANMA";
+            olayMesaji = `Eşiniz ${yeniKisi.isim}, kendisiyle uzun süredir ilgilenmediğiniz için sizden boşandı.`;
+          }
+        }
+      }
+
+      if (yeniKisi.nafaka) {
+        nafakaOdemesi += (yasamGideri * 0.3); // Yıllık yaşam giderinin %30'u nafaka
+      }
+
+      // Miras Mekaniği
+      if (yeniKisi.tip === 'aile' && yeniKisi.yas >= 70 && yeniKisi.statu === 'aktif') {
+        if (Math.random() < 0.05) {
+          yeniKisi.statu = 'vefat';
+          const mirasMiktari = Math.floor(Math.random() * 20000 + 10000) * (fiyatlar.dolar_try || 40);
+          mirasMiktariToplam += mirasMiktari;
+          olayBaslik = "Acı Kayıp ve Miras";
+          olayMesaji = `${yeniKisi.isim} vefat etti. Başınız sağ olsun. Size ${mirasMiktari.toLocaleString('tr-TR')} ₺ miras bıraktı.`;
+        }
+      }
+
+      return yeniKisi;
+    });
+
+    setIliskiler(yeniIliskiler);
+    const dinamikObj = { ...YASAM_STANDARTLARI, ...getDinamikStandartlar(yeniIliskiler) };
+    setYasamGideri(Math.round(toplamAylikUsd(standartlar, dinamikObj) * fiyatlar.dolar_try * 12));
+    anlikNakit -= nafakaOdemesi;
+    anlikNakit += mirasMiktariToplam;
+
+    if (olayMesaji) {
+      setTimeout(() => setSonucKarti({ baslik: olayBaslik, metin: olayMesaji }), 1500);
+    }
+    if (nafakaOdemesi > 0) {
+      setTimeout(() => uyariGoster(`Bu yıl boşandığınız eşinize ${(nafakaOdemesi).toLocaleString('tr-TR')} ₺ nafaka ödediniz.`), 4000);
+    }
+
+    // Rastgele İlişki Eventi (2 yılda 1 / %50 ihtimal)
+    if (Math.random() < 0.5) {
+      const event = getRandomIliskiEvent(yeniIliskiler, fiyatlar, yil);
+      if (event) {
+        setTimeout(() => setAktifIliskiEvent(event), 2000); // Diğer alertlerden sonra gelsin
+      }
     }
 
     const nakit0 = anlikNakit;
@@ -386,7 +494,7 @@ async function yilAtla(opsiyonAksiyon = null) {
     let yeniUniversiteYili = universiteYili
     let yeniMezunOlunanBolum = mezunOlunanBolum
     let yeniOkunanBolum = okunanBolum
-    
+
     if (universiteYili > 0 && universiteYili < 4) {
       yeniUniversiteYili += 1
       if (yeniUniversiteYili === 4) {
@@ -396,18 +504,18 @@ async function yilAtla(opsiyonAksiyon = null) {
         yeniUniversiteYili = 0
       }
     }
-    
+
     // Çalışma Barı Artışı
     let yeniCalismaBari = calismaBari
     if (isYeri && isYeri !== "lise_mezunu") {
-       const isVasifsiz = MESLEKLER[isYeri] && !MESLEKLER[isYeri].gereksinim;
-       if (isVasifsiz) {
-         yeniCalismaBari += sikiCalisAktif ? 3 : 2
-       } else {
-         yeniCalismaBari += sikiCalisAktif ? 2 : 1
-       }
+      const isVasifsiz = MESLEKLER[isYeri] && !MESLEKLER[isYeri].gereksinim;
+      if (isVasifsiz) {
+        yeniCalismaBari += sikiCalisAktif ? 3 : 2
+      } else {
+        yeniCalismaBari += sikiCalisAktif ? 2 : 1
+      }
     }
-    
+
     // Otomatik Mezuna Kalma ve Sınav Hakkı Yenileme
     if (sinavPuani !== null && !yeniOkunanBolum) {
       setMezunaKalmaSayisi(prev => prev + 1)
@@ -422,50 +530,50 @@ async function yilAtla(opsiyonAksiyon = null) {
 
     setBiasMetrics(prev => ({
       ...prev,
-      luksYasamPuani: prev.luksYasamPuani + luksPuaniHesapla(standartlar, sahipOlunanEvler),
+      luksYasamPuani: prev.luksYasamPuani + luksPuaniHesapla(standartlar, sahipOlunanEvler, iliskiler),
       toplamYil: prev.toplamYil + 1
     }));
-    
+
     let stateData = {
-        ...gameState,
-        yil: yil,
-        yas: yas,
-        cinsiyet: cinsiyet,
-        event_gecmisi: eventGecmisi,
-        tetiklenenler: tetiklenenler,
-        portfoy: {
-            ...portfoy,
-            kirada_ev_var: sahipOlunanEvler.some(ev => ev.kirada)
-        },
-        is_yeri: isYeri,
-        is_level: isLevel,
-        sektor_ekstra_getiri: bekleyenSektorEkstraGetiriRef.current,
-        universite_yili: yeniUniversiteYili,
-        kur: fiyatlar.dolar_try,
-        aktif_opsiyonlar: suresiDolanlar.length > 0 ? aktifOlanlar : portfoy.opsiyonlar
+      ...gameState,
+      yil: yil,
+      yas: yas,
+      cinsiyet: cinsiyet,
+      event_gecmisi: eventGecmisi,
+      tetiklenenler: tetiklenenler,
+      portfoy: {
+        ...portfoy,
+        kirada_ev_var: sahipOlunanEvler.some(ev => ev.kirada)
+      },
+      is_yeri: isYeri,
+      is_level: isLevel,
+      sektor_ekstra_getiri: bekleyenSektorEkstraGetiriRef.current,
+      universite_yili: yeniUniversiteYili,
+      kur: fiyatlar.dolar_try,
+      aktif_opsiyonlar: suresiDolanlar.length > 0 ? aktifOlanlar : portfoy.opsiyonlar
     }
-    
+
     if (opsiyonAksiyon && opsiyonAksiyon.aksiyon === "bozdur") {
-         const bozulacakOpt = portfoy.opsiyonlar.find(o => o.id === opsiyonAksiyon.id);
-         if (bozulacakOpt) {
-             setNakit(n => n + opsiyonAksiyon.kar + bozulacakOpt.premium_odenen);
-             setOpsiyonGecmisi(prev => [...prev, {
-                 ...bozulacakOpt,
-                 kapanis_fiyati: "Erken Bozdurma",
-                 brut_kar: opsiyonAksiyon.kar + bozulacakOpt.premium_odenen,
-                 net_kar: opsiyonAksiyon.kar,
-                 durum: "ITM (Erken)"
-             }]);
-             setOpsiyonMetrikleri(prev => ({
-                 toplam_yatirim: prev.toplam_yatirim,
-                 toplam_net_kar: prev.toplam_net_kar + opsiyonAksiyon.kar
-             }));
-             setPortfoy(p => ({
-                 ...p,
-                 opsiyonlar: p.opsiyonlar.filter(o => o.id !== opsiyonAksiyon.id)
-             }));
-             stateData.aktif_opsiyonlar = stateData.aktif_opsiyonlar.filter(o => o.id !== opsiyonAksiyon.id);
-         }
+      const bozulacakOpt = portfoy.opsiyonlar.find(o => o.id === opsiyonAksiyon.id);
+      if (bozulacakOpt) {
+        setNakit(n => n + opsiyonAksiyon.kar + bozulacakOpt.premium_odenen);
+        setOpsiyonGecmisi(prev => [...prev, {
+          ...bozulacakOpt,
+          kapanis_fiyati: "Erken Bozdurma",
+          brut_kar: opsiyonAksiyon.kar + bozulacakOpt.premium_odenen,
+          net_kar: opsiyonAksiyon.kar,
+          durum: "ITM (Erken)"
+        }]);
+        setOpsiyonMetrikleri(prev => ({
+          toplam_yatirim: prev.toplam_yatirim,
+          toplam_net_kar: prev.toplam_net_kar + opsiyonAksiyon.kar
+        }));
+        setPortfoy(p => ({
+          ...p,
+          opsiyonlar: p.opsiyonlar.filter(o => o.id !== opsiyonAksiyon.id)
+        }));
+        stateData.aktif_opsiyonlar = stateData.aktif_opsiyonlar.filter(o => o.id !== opsiyonAksiyon.id);
+      }
     }
 
     try {
@@ -508,18 +616,18 @@ async function yilAtla(opsiyonAksiyon = null) {
       const yeniGider = Math.round(yasamGideri * (1 + data.yil_sonucu.enflasyon / 100))
       setTemelMaas(yeniTemelMaas)
       setYasamGideri(yeniGider)
-      
+
       let yeniMaasEndeksi = maasEndeksi * (1 + data.yil_sonucu.enflasyon / 100)
       if (data.yil_sonucu.redenominasyon) {
         yeniMaasEndeksi = yeniMaasEndeksi / 1000
       }
       setMaasEndeksi(yeniMaasEndeksi)
-      
+
       // İş ilanlarını yenile
       setIsIlanlari(yeniIlanlarUret(yeniMaasEndeksi))
 
       const yeniDolarKuru = data.yil_sonucu.fiyatlar.dolar_try
-      setYasamGideri(Math.round(toplamAylikUsd(standartlar, YASAM_STANDARTLARI) * yeniDolarKuru * 12))
+      setYasamGideri(Math.round(toplamAylikUsd(standartlar, { ...YASAM_STANDARTLARI, ...getDinamikStandartlar(iliskiler) }) * yeniDolarKuru * 12))
 
       // Portföy Getirisi Hesaplama (Sıfır Atma Durumunu Göze Alarak)
       let w_start_gercek = nakitRef.current + Math.round(
@@ -657,37 +765,37 @@ async function yilAtla(opsiyonAksiyon = null) {
         setYasamGideri(Math.round(yeniGider / 1000))
         setTemelMaas(Math.round(yeniTemelMaas / 1000))
         if (kredi) {
-           setKredi(prev => prev ? ({
-             ...prev,
-             anapara: Math.round(prev.anapara / 1000),
-             borc: Math.round(prev.borc / 1000),
-             yillikTaksit: Math.round(prev.yillikTaksit / 1000)
-           }) : null)
+          setKredi(prev => prev ? ({
+            ...prev,
+            anapara: Math.round(prev.anapara / 1000),
+            borc: Math.round(prev.borc / 1000),
+            yillikTaksit: Math.round(prev.yillikTaksit / 1000)
+          }) : null)
         }
         setOpsiyonMetrikleri(prev => ({
-            ...prev,
-            toplam_net_kar: Math.round(prev.toplam_net_kar / 1000),
-            toplam_yatirim: Math.round(prev.toplam_yatirim / 1000)
+          ...prev,
+          toplam_net_kar: Math.round(prev.toplam_net_kar / 1000),
+          toplam_yatirim: Math.round(prev.toplam_yatirim / 1000)
         }))
         setOpsiyonGecmisi(prev => prev.map(opt => ({
-            ...opt,
-            premium_odenen: Math.round(opt.premium_odenen / 1000),
-            net_kar: Math.round(opt.net_kar / 1000),
-            brut_kar: Math.round(opt.brut_kar / 1000),
-            kapanis_fiyati: typeof opt.kapanis_fiyati === "number" ? Math.round(opt.kapanis_fiyati / 1000 * 100) / 100 : opt.kapanis_fiyati,
-            strike: Math.round(opt.strike / 1000 * 100) / 100
+          ...opt,
+          premium_odenen: Math.round(opt.premium_odenen / 1000),
+          net_kar: Math.round(opt.net_kar / 1000),
+          brut_kar: Math.round(opt.brut_kar / 1000),
+          kapanis_fiyati: typeof opt.kapanis_fiyati === "number" ? Math.round(opt.kapanis_fiyati / 1000 * 100) / 100 : opt.kapanis_fiyati,
+          strike: Math.round(opt.strike / 1000 * 100) / 100
         })))
       } else {
         setYillikGelir(yeniGelir)
       }
       nakitiGuncelle(yeniNakit)
-      
+
       // Opsiyon Sonuçlarını İşle
       if (data.yil_sonucu.aktif_opsiyonlar) {
-          setPortfoy(p => ({
-              ...p,
-              opsiyonlar: data.yil_sonucu.aktif_opsiyonlar
-          }));
+        setPortfoy(p => ({
+          ...p,
+          opsiyonlar: data.yil_sonucu.aktif_opsiyonlar
+        }));
       }
 
       // 4. Yeni Fiyatları Güncelle
@@ -737,7 +845,8 @@ async function yilAtla(opsiyonAksiyon = null) {
 
 
       // Yaşam kalitesi debuff
-      const kalite = yasamKalitesiEtkisi(standartlar, YASAM_STANDARTLARI)
+      const dinamikObj = { ...YASAM_STANDARTLARI, ...getDinamikStandartlar(iliskiler) };
+      const kalite = yasamKalitesiEtkisi(standartlar, { ...YASAM_STANDARTLARI, ...getDinamikStandartlar(iliskiler) })
 
       // Finansal debuff
       let finansalDebuff = { mutluluk: 0, sabir: 0 }
@@ -782,11 +891,11 @@ async function yilAtla(opsiyonAksiyon = null) {
         return {
           altin: prev.altin !== null ? prev.altin * (1 + getiriler.altin) : null,
           bist: prev.bist !== null ? prev.bist * (1 + getiriler.bist) : null,
-          bist_bankacilik: prev.bist_bankacilik !== null ? prev.bist_bankacilik * (1 + (data.yil_sonucu.sektor_getirileri.bankacilik - data.yil_sonucu.enflasyon)/100) : null,
-          bist_teknoloji: prev.bist_teknoloji !== null ? prev.bist_teknoloji * (1 + (data.yil_sonucu.sektor_getirileri.teknoloji - data.yil_sonucu.enflasyon)/100) : null,
-          bist_insaat: prev.bist_insaat !== null ? prev.bist_insaat * (1 + (data.yil_sonucu.sektor_getirileri.insaat - data.yil_sonucu.enflasyon)/100) : null,
-          bist_saglik: prev.bist_saglik !== null ? prev.bist_saglik * (1 + (data.yil_sonucu.sektor_getirileri.saglik - data.yil_sonucu.enflasyon)/100) : null,
-          bist_perakende: prev.bist_perakende !== null ? prev.bist_perakende * (1 + (data.yil_sonucu.sektor_getirileri.perakende - data.yil_sonucu.enflasyon)/100) : null,
+          bist_bankacilik: prev.bist_bankacilik !== null ? prev.bist_bankacilik * (1 + (data.yil_sonucu.sektor_getirileri.bankacilik - data.yil_sonucu.enflasyon) / 100) : null,
+          bist_teknoloji: prev.bist_teknoloji !== null ? prev.bist_teknoloji * (1 + (data.yil_sonucu.sektor_getirileri.teknoloji - data.yil_sonucu.enflasyon) / 100) : null,
+          bist_insaat: prev.bist_insaat !== null ? prev.bist_insaat * (1 + (data.yil_sonucu.sektor_getirileri.insaat - data.yil_sonucu.enflasyon) / 100) : null,
+          bist_saglik: prev.bist_saglik !== null ? prev.bist_saglik * (1 + (data.yil_sonucu.sektor_getirileri.saglik - data.yil_sonucu.enflasyon) / 100) : null,
+          bist_perakende: prev.bist_perakende !== null ? prev.bist_perakende * (1 + (data.yil_sonucu.sektor_getirileri.perakende - data.yil_sonucu.enflasyon) / 100) : null,
           dolar: prev.dolar !== null ? prev.dolar * (1 + getiriler.dolar) : null,
           mevduat: prev.mevduat !== null ? prev.mevduat * (1 + getiriler.mevduat) : null,
         }
@@ -853,14 +962,14 @@ async function yilAtla(opsiyonAksiyon = null) {
       if (yeniEventler.length > 0) {
         setMevcutEvent(yeniEventler[0])
         setEventKuyrugu(yeniEventler.slice(1))
-        
+
         yeniEventler.forEach(ev => {
-           setEventGecmisi(prev => ({ ...prev, [ev.id]: yil + 1 }))
-           if (ev.tek_seferlik) setTetiklenenler(prev => [...prev, ev.id])
+          setEventGecmisi(prev => ({ ...prev, [ev.id]: yil + 1 }))
+          if (ev.tek_seferlik) setTetiklenenler(prev => [...prev, ev.id])
         })
         setCoachYorumu(null)
       }
-      
+
       if (data.yil_sonucu.oyun_bitti) {
         setOyunBitti({
           netWorth: w_appreciated,
@@ -965,11 +1074,11 @@ async function yilAtla(opsiyonAksiyon = null) {
     }
 
     setIntroTamamlandi(true) // Render HikayeEkrani with loading state immediately
-    
+
     if (sonuc.nakit === 5000) setZorluk("Zor")
     else if (sonuc.nakit === 200000) setZorluk("Kolay")
     else setZorluk("Orta")
-    
+
     try {
       const res = await fetch(`${API_BASE_URL}/ajanlar/profil`, {
         method: "POST",
@@ -1002,7 +1111,8 @@ async function yilAtla(opsiyonAksiyon = null) {
   function standartDegis(kategori, secimId) {
     const yeniSecimler = { ...standartlar, [kategori]: secimId }
     setStandartlar(yeniSecimler)
-    setYasamGideri(Math.round(toplamAylikUsd(yeniSecimler, YASAM_STANDARTLARI) * fiyatlar.dolar_try * 12))
+    const dinamikObj = { ...YASAM_STANDARTLARI, ...getDinamikStandartlar(iliskiler) };
+    setYasamGideri(Math.round(toplamAylikUsd(yeniSecimler, dinamikObj) * fiyatlar.dolar_try * 12))
   }
 
   function agirlikliSecim(dallar) {
@@ -1040,7 +1150,7 @@ async function yilAtla(opsiyonAksiyon = null) {
 
   function sonucKartiniKapat() {
     setSonucKarti(null)
-    
+
     if (eventKuyrugu.length > 0) {
       setMevcutEvent(eventKuyrugu[0])
       setEventKuyrugu(prev => prev.slice(1))
@@ -1102,7 +1212,7 @@ async function yilAtla(opsiyonAksiyon = null) {
     if (secenek.nakit_etki_usd && secenek.nakit_etki_usd !== 0) {
       const guncelDolarKuru = fiyatlar?.dolar_try || 40;
       const tlEtkisi = Math.round(secenek.nakit_etki_usd * guncelDolarKuru)
-      
+
       setNakit(prevNakit => {
         const currentNakit = isNaN(prevNakit) ? 0 : prevNakit;
         const yeniNakit = Math.round(currentNakit + tlEtkisi);
@@ -1127,7 +1237,7 @@ async function yilAtla(opsiyonAksiyon = null) {
 
     if (secenek.aksiyon) {
       const { tip, sektor, oran, yeni_is } = secenek.aksiyon
-      
+
       if (tip === "is_degistir" && yeni_is) {
         setIsYeri(yeni_is)
         setIsLevel(1)
@@ -1140,55 +1250,55 @@ async function yilAtla(opsiyonAksiyon = null) {
         const mevcutDeger = mevcutPay * guncelFiyat
 
         if (tip === "sektor_al") {
-        const alinacakTutar = mevcutDeger * oran
-        if (nakitRef.current >= alinacakTutar) {
-          const alinacakPay = alinacakTutar / guncelFiyat
+          const alinacakTutar = mevcutDeger * oran
+          if (nakitRef.current >= alinacakTutar) {
+            const alinacakPay = alinacakTutar / guncelFiyat
+            setNakit(prevNakit => {
+              const currentNakit = isNaN(prevNakit) ? 20000 : prevNakit
+              const yeniNakit = Math.round(currentNakit - alinacakTutar)
+              nakitRef.current = yeniNakit
+              return yeniNakit
+            })
+            setPortfoy(prev => ({
+              ...prev,
+              [adetKey]: (prev[adetKey] || 0) + alinacakPay
+            }))
+          }
+        } else if (tip === "sektor_sat") {
+          const satilacakPay = mevcutPay * oran
+          const gelir = satilacakPay * guncelFiyat
           setNakit(prevNakit => {
             const currentNakit = isNaN(prevNakit) ? 20000 : prevNakit
-            const yeniNakit = Math.round(currentNakit - alinacakTutar)
+            const yeniNakit = Math.round(currentNakit + gelir)
             nakitRef.current = yeniNakit
             return yeniNakit
           })
           setPortfoy(prev => ({
             ...prev,
-            [adetKey]: (prev[adetKey] || 0) + alinacakPay
+            [adetKey]: (prev[adetKey] || 0) - satilacakPay
           }))
         }
-      } else if (tip === "sektor_sat") {
-        const satilacakPay = mevcutPay * oran
-        const gelir = satilacakPay * guncelFiyat
-        setNakit(prevNakit => {
-            const currentNakit = isNaN(prevNakit) ? 20000 : prevNakit
-            const yeniNakit = Math.round(currentNakit + gelir)
-            nakitRef.current = yeniNakit
-            return yeniNakit
-        })
-        setPortfoy(prev => ({
-          ...prev,
-          [adetKey]: (prev[adetKey] || 0) - satilacakPay
-        }))
       }
     }
-  }
 
     if (secenek.portfoy_etki && secenek.portfoy_etki.dinamik_hisse_usd) {
-        const degerUsd = secenek.portfoy_etki.dinamik_hisse_usd
-        const degerTl = degerUsd * (fiyatlar?.dolar_try || 40)
-        
-        let sektorKey = "bist_perakende_adet"
-        let fiyatKey = "bist_perakende"
-        if (isYeri === "muhendis") { sektorKey = "bist_teknoloji_adet"; fiyatKey = "bist_teknoloji"; }
-        else if (isYeri === "doktor") { sektorKey = "bist_saglik_adet"; fiyatKey = "bist_saglik"; }
-        else if (isYeri === "ekonomist") { sektorKey = "bist_bankacilik_adet"; fiyatKey = "bist_bankacilik"; }
-        else if (isYeri === "insaat_iscisi") { sektorKey = "bist_insaat_adet"; fiyatKey = "bist_insaat"; }
-        
-        const guncelFiyat = fiyatlar?.[fiyatKey] || 100
-        const alinacakPay = degerTl / guncelFiyat
-        
-        setPortfoy(prev => ({
-          ...prev,
-          [sektorKey]: (prev[sektorKey] || 0) + alinacakPay
-        }))
+      const degerUsd = secenek.portfoy_etki.dinamik_hisse_usd
+      const degerTl = degerUsd * (fiyatlar?.dolar_try || 40)
+
+      let sektorKey = "bist_perakende_adet"
+      let fiyatKey = "bist_perakende"
+      if (isYeri === "muhendis") { sektorKey = "bist_teknoloji_adet"; fiyatKey = "bist_teknoloji"; }
+      else if (isYeri === "doktor") { sektorKey = "bist_saglik_adet"; fiyatKey = "bist_saglik"; }
+      else if (isYeri === "ekonomist") { sektorKey = "bist_bankacilik_adet"; fiyatKey = "bist_bankacilik"; }
+      else if (isYeri === "insaat_iscisi") { sektorKey = "bist_insaat_adet"; fiyatKey = "bist_insaat"; }
+
+      const guncelFiyat = fiyatlar?.[fiyatKey] || 100
+      const alinacakPay = degerTl / guncelFiyat
+
+      setPortfoy(prev => ({
+        ...prev,
+        [sektorKey]: (prev[sektorKey] || 0) + alinacakPay
+      }))
     }
 
     if (secenek.aksiyon) {
@@ -1199,7 +1309,7 @@ async function yilAtla(opsiyonAksiyon = null) {
         const vade = 3;
         const yillikTaksitHesabi = (tutar * r * Math.pow(1 + r, vade)) / (Math.pow(1 + r, vade) - 1);
         const yillikTaksit = Math.round(yillikTaksitHesabi);
-        
+
         setKredi({
           anapara: tutar,
           borc: yillikTaksit * vade,
@@ -1247,7 +1357,7 @@ async function yilAtla(opsiyonAksiyon = null) {
           getiri: cikanDal.sektor_ekstra_getiri
         }
       }
-      
+
       if (cikanDal.portfoy_etki && (cikanDal.portfoy_etki.dinamik_hisse_adet || cikanDal.portfoy_etki.dinamik_hisse_usd)) {
         let sektorKey = "bist_perakende_adet"
         let fiyatKey = "bist_perakende"
@@ -1255,7 +1365,7 @@ async function yilAtla(opsiyonAksiyon = null) {
         else if (isYeri === "doktor") { sektorKey = "bist_saglik_adet"; fiyatKey = "bist_saglik"; }
         else if (isYeri === "ekonomist") { sektorKey = "bist_bankacilik_adet"; fiyatKey = "bist_bankacilik"; }
         else if (isYeri === "insaat_iscisi") { sektorKey = "bist_insaat_adet"; fiyatKey = "bist_insaat"; }
-        
+
         let alinacakPay = 0
         if (cikanDal.portfoy_etki.dinamik_hisse_adet) {
           alinacakPay = cikanDal.portfoy_etki.dinamik_hisse_adet
@@ -1270,12 +1380,12 @@ async function yilAtla(opsiyonAksiyon = null) {
           [sektorKey]: (prev[sektorKey] || 0) + alinacakPay
         }))
       }
-      
+
       if (cikanDal.terfi_sonucu) {
         if (cikanDal.terfi_sonucu === "kabul") {
           setIsLevel(prev => {
             const newLevel = Math.min(prev + 1, 5)
-            setCvGecmisi(oldCv => [{ yil: yil+1, yas: yas+1, unvan: pozisyonAdiGetir(isYeri, newLevel), isYeri: MESLEKLER[isYeri]?.ad }, ...oldCv])
+            setCvGecmisi(oldCv => [{ yil: yil + 1, yas: yas + 1, unvan: pozisyonAdiGetir(isYeri, newLevel), isYeri: MESLEKLER[isYeri]?.ad }, ...oldCv])
             return newLevel
           })
           setCalismaBari(0)
@@ -1285,10 +1395,10 @@ async function yilAtla(opsiyonAksiyon = null) {
       }
 
       if (cikanDal.mutluluk_etki || cikanDal.sabir_etki) {
-         setBars(prev => ({
-            sabir: Math.min(100, Math.max(20, prev.sabir + (cikanDal.sabir_etki || 0))),
-            mutluluk: Math.min(100, Math.max(20, prev.mutluluk + (cikanDal.mutluluk_etki || 0))),
-         }))
+        setBars(prev => ({
+          sabir: Math.min(100, Math.max(20, prev.sabir + (cikanDal.sabir_etki || 0))),
+          mutluluk: Math.min(100, Math.max(20, prev.mutluluk + (cikanDal.mutluluk_etki || 0))),
+        }))
       }
 
       bekleyenEventKaydiRef.current = eventKaydi
@@ -1313,11 +1423,11 @@ async function yilAtla(opsiyonAksiyon = null) {
         body: JSON.stringify({
           profile: karakterProfili,
           event_history: eventKayitlari,
-          final_state: { 
-            year: yil, 
-            age: yas, 
-            cash: nakit, 
-            net_worth: toplamDeger, 
+          final_state: {
+            year: yil,
+            age: yas,
+            cash: nakit,
+            net_worth: toplamDeger,
             bankruptcy_count: iflasSayisi,
             bias_metrics: biasMetrics
           },
@@ -1407,7 +1517,7 @@ async function yilAtla(opsiyonAksiyon = null) {
     if (varlik.startsWith("bist") && gameState.enf_kriz_mevcut) {
       setBiasMetrics(prev => ({ ...prev, panikSatisSayisi: prev.panikSatisSayisi + 1 }))
     }
-    
+
     // Bias Metrik: Kârı Erken Kesme (Boğa piyasasında satmak)
     if (varlik.startsWith("bist") && gameState.bist > 200 && !gameState.enf_kriz_mevcut) {
       setBiasMetrics(prev => ({ ...prev, erkenKarSatisSayisi: prev.erkenKarSatisSayisi + 1 }))
@@ -1507,74 +1617,74 @@ async function yilAtla(opsiyonAksiyon = null) {
 
 
   const onOpsiyonKapat = (optId, isErkenBozdurma = false) => {
-      setPortfoy(prev => {
-          const optIndex = prev.opsiyonlar.findIndex(o => o.id === optId);
-          if (optIndex === -1) return prev;
-          
-const opt = prev.opsiyonlar[optIndex];
-          const yeniOpsiyonlar = [...prev.opsiyonlar];
-          yeniOpsiyonlar.splice(optIndex, 1);
-          
-          if (isErkenBozdurma && opt.kalan_vade === opt.vade) {
-              // İptal (Aynı yıl içinde satış)
-              nakitiGuncelle(nakitRef.current + opt.premium_odenen);
-              setOpsiyonMetrikleri(m => ({
-                  ...m,
-                  toplam_yatirim: m.toplam_yatirim - opt.premium_odenen
-              }));
-              return { ...prev, opsiyonlar: yeniOpsiyonlar };
-          }
-          
-          if (isErkenBozdurma) {
-              nakitiGuncelle(nakitRef.current + opt.guncel_deger);
-          } else {
-              if (opt.brut_kar > 0) {
-                  nakitiGuncelle(nakitRef.current + opt.brut_kar);
-              }
-          }
-          
-          setOpsiyonGecmisi(g => [{...opt, not: isErkenBozdurma ? 'Erken Satış' : 'Vade Sonu'}, ...g].slice(0, 50));
-          
-          setOpsiyonMetrikleri(m => ({
-              toplam_yatirim: m.toplam_yatirim,
-              toplam_net_kar: m.toplam_net_kar + (isErkenBozdurma ? opt.guncel_kar_zarar : opt.net_kar)
-          }));
-          
-          return { ...prev, opsiyonlar: yeniOpsiyonlar };
-      });
+    setPortfoy(prev => {
+      const optIndex = prev.opsiyonlar.findIndex(o => o.id === optId);
+      if (optIndex === -1) return prev;
+
+      const opt = prev.opsiyonlar[optIndex];
+      const yeniOpsiyonlar = [...prev.opsiyonlar];
+      yeniOpsiyonlar.splice(optIndex, 1);
+
+      if (isErkenBozdurma && opt.kalan_vade === opt.vade) {
+        // İptal (Aynı yıl içinde satış)
+        nakitiGuncelle(nakitRef.current + opt.premium_odenen);
+        setOpsiyonMetrikleri(m => ({
+          ...m,
+          toplam_yatirim: m.toplam_yatirim - opt.premium_odenen
+        }));
+        return { ...prev, opsiyonlar: yeniOpsiyonlar };
+      }
+
+      if (isErkenBozdurma) {
+        nakitiGuncelle(nakitRef.current + opt.guncel_deger);
+      } else {
+        if (opt.brut_kar > 0) {
+          nakitiGuncelle(nakitRef.current + opt.brut_kar);
+        }
+      }
+
+      setOpsiyonGecmisi(g => [{ ...opt, not: isErkenBozdurma ? 'Erken Satış' : 'Vade Sonu' }, ...g].slice(0, 50));
+
+      setOpsiyonMetrikleri(m => ({
+        toplam_yatirim: m.toplam_yatirim,
+        toplam_net_kar: m.toplam_net_kar + (isErkenBozdurma ? opt.guncel_kar_zarar : opt.net_kar)
+      }));
+
+      return { ...prev, opsiyonlar: yeniOpsiyonlar };
+    });
   };
 
   const onOpsiyonGuncelle = (optId) => {
-      setPortfoy(prev => {
-          const optIndex = prev.opsiyonlar.findIndex(o => o.id === optId);
-          if (optIndex === -1) return prev;
-          
-          const opt = prev.opsiyonlar[optIndex];
-          if (nakitRef.current < opt.guncel_premium) return prev;
-          
-          nakitiGuncelle(nakitRef.current - opt.guncel_premium);
-          
-          const yeniOpsiyonlar = [...prev.opsiyonlar];
-          const yeniAdet = opt.adet + 1;
-          const yeniMaliyet = opt.premium_odenen + opt.guncel_premium;
-          const yeniGuncelDeger = (opt.guncel_deger / opt.adet) * yeniAdet;
-          const yeniKarZarar = yeniGuncelDeger - yeniMaliyet;
-          
-          yeniOpsiyonlar[optIndex] = {
-              ...opt,
-              adet: yeniAdet,
-              premium_odenen: yeniMaliyet,
-              guncel_deger: yeniGuncelDeger,
-              guncel_kar_zarar: yeniKarZarar
-          };
-          
-          setOpsiyonMetrikleri(m => ({
-              toplam_yatirim: m.toplam_yatirim + opt.guncel_premium,
-              toplam_net_kar: m.toplam_net_kar
-          }));
-          
-          return { ...prev, opsiyonlar: yeniOpsiyonlar };
-      });
+    setPortfoy(prev => {
+      const optIndex = prev.opsiyonlar.findIndex(o => o.id === optId);
+      if (optIndex === -1) return prev;
+
+      const opt = prev.opsiyonlar[optIndex];
+      if (nakitRef.current < opt.guncel_premium) return prev;
+
+      nakitiGuncelle(nakitRef.current - opt.guncel_premium);
+
+      const yeniOpsiyonlar = [...prev.opsiyonlar];
+      const yeniAdet = opt.adet + 1;
+      const yeniMaliyet = opt.premium_odenen + opt.guncel_premium;
+      const yeniGuncelDeger = (opt.guncel_deger / opt.adet) * yeniAdet;
+      const yeniKarZarar = yeniGuncelDeger - yeniMaliyet;
+
+      yeniOpsiyonlar[optIndex] = {
+        ...opt,
+        adet: yeniAdet,
+        premium_odenen: yeniMaliyet,
+        guncel_deger: yeniGuncelDeger,
+        guncel_kar_zarar: yeniKarZarar
+      };
+
+      setOpsiyonMetrikleri(m => ({
+        toplam_yatirim: m.toplam_yatirim + opt.guncel_premium,
+        toplam_net_kar: m.toplam_net_kar
+      }));
+
+      return { ...prev, opsiyonlar: yeniOpsiyonlar };
+    });
   };
 
   function onOpsiyonAl(secim) {
@@ -1613,7 +1723,8 @@ const opt = prev.opsiyonlar[optIndex];
   const profilAdi = karakterProfili?.profile_name || "Profil Hazırlanıyor"
   const seviye = Math.max(1, yas - 24)
 
-  const guncelKalite = yasamKalitesiEtkisi(standartlar, YASAM_STANDARTLARI)
+  const dinamikObj = { ...YASAM_STANDARTLARI, ...getDinamikStandartlar(iliskiler) };
+  const guncelKalite = yasamKalitesiEtkisi(standartlar, dinamikObj)
   let guncelFinansalDebuff = { mutluluk: 0, sabir: 0 }
   if (yillikGelir < yasamGideri) {
     guncelFinansalDebuff = { mutluluk: -8, sabir: -5 }
@@ -1706,6 +1817,9 @@ const opt = prev.opsiyonlar[optIndex];
           <button onClick={() => setAktifSayfa("standartlar")}>
             <span className={`material-symbols-outlined ${aktifSayfa === "standartlar" ? "text-primary" : "text-on-surface-variant"}`}>psychology</span>
           </button>
+          <button onClick={() => setAktifSayfa("iliskiler")}>
+            <span className={`material-symbols-outlined ${aktifSayfa === "iliskiler" ? "text-primary" : "text-on-surface-variant"}`}>favorite</span>
+          </button>
         </div>
       </header>
 
@@ -1715,13 +1829,7 @@ const opt = prev.opsiyonlar[optIndex];
           <div className="font-headline-md text-headline-md text-primary font-black uppercase tracking-tighter mb-2">FINSIM_OS</div>
           <div className="flex items-center gap-3 mt-4">
             <div className="w-10 h-10 bg-surface-variant rounded flex items-center justify-center border border-outline overflow-hidden">
-              {cinsiyet === "kadin" ? (
-                <img src={kadinImg} alt="Avatar" className="w-full h-full object-cover" />
-              ) : cinsiyet === "erkek" ? (
-                <img src={erkekImg} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="material-symbols-outlined text-on-surface-variant">person</span>
-              )}
+              <img src={getPortraitPath({ tip: 'main', cinsiyet }, yas)} alt="Avatar" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="font-data-sm text-data-sm uppercase text-on-surface">{profilAdi}</div>
@@ -1739,16 +1847,16 @@ const opt = prev.opsiyonlar[optIndex];
             { id: "kariyer", label: "Kariyer & Eğitim", icon: "work" },
             { id: "portfoy", label: "Varlık Portföyü", icon: "pie_chart" },
             { id: "standartlar", label: "Psikolojik Profil", icon: "psychology" },
+            { id: "iliskiler", label: "İlişkiler", icon: "favorite" },
           ].map((item) => (
             <TutorialOdak key={item.id} hedefId={"sidebar-" + item.id} disablePadding>
               <button
                 onClick={() => setAktifSayfa(item.id)}
                 disabled={!!mevcutEvent}
-                className={`w-full flex items-center p-stack-md mb-stack-sm font-data-sm text-data-sm uppercase transition-colors ${
-                  !!mevcutEvent ? "opacity-50 cursor-not-allowed " : ""
-                }${aktifSayfa === item.id
-                  ? "bg-primary text-on-primary font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-                  : "text-on-surface-variant hover:text-primary hover:bg-surface-container-high"
+                className={`w-full flex items-center p-stack-md mb-stack-sm font-data-sm text-data-sm uppercase transition-colors ${!!mevcutEvent ? "opacity-50 cursor-not-allowed " : ""
+                  }${aktifSayfa === item.id
+                    ? "bg-primary text-on-primary font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    : "text-on-surface-variant hover:text-primary hover:bg-surface-container-high"
                   }`}
               >
                 <span className="material-symbols-outlined mr-3">{item.icon}</span>
@@ -1786,7 +1894,7 @@ const opt = prev.opsiyonlar[optIndex];
             </button>
           </div>
         )}
-        
+
         {hacizUyarisiAcik && (
           <div className="bg-error-container border border-error card-shadow p-stack-md text-on-error-container mb-stack-lg">
             <div className="font-headline-md text-headline-md font-black uppercase flex items-center gap-2">
@@ -1819,7 +1927,7 @@ const opt = prev.opsiyonlar[optIndex];
 
         {aktifSayfa === "ana" && (
           <div className="flex flex-col gap-6">
-            
+
             {/* TEST BUTONU - GEÇİCİ */}
             <button
               onClick={() => { setYas(60); setYil(2062); nakitiGuncelle(nakitRef.current + 5000000); }}
@@ -1887,132 +1995,132 @@ const opt = prev.opsiyonlar[optIndex];
                     <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Sistem Olayı</h2>
                     <span className="material-symbols-outlined text-on-surface-variant">warning</span>
                   </div>
-                {sonucKarti ? (
-                  <div className="flex flex-col gap-4">
-                    <div className="font-data-sm text-data-sm text-primary uppercase">SONUÇ_{yil}</div>
-                    <h3 className="font-headline-md text-headline-md text-error">{sonucKarti.baslik}</h3>
-                    <p className="text-on-surface-variant text-body-md">{sonucKarti.metin}</p>
-                    <button
-                      onClick={sonucKartiniKapat}
-                      className="self-start bg-primary-container text-background font-data-lg text-data-lg uppercase py-2 px-6 btn-shadow border border-outline font-bold mt-2"
-                    >
-                      Devam Et
-                    </button>
-                  </div>
-                ) : redenominasyonKarti ? (
-                  <div className="flex flex-col gap-4">
-                    <div className="font-data-sm text-data-sm text-error uppercase font-bold flex items-center gap-2">
-                      <span className="material-symbols-outlined">warning</span>
-                      ZORUNLU GÜNCELLEME_{yil}
+                  {sonucKarti ? (
+                    <div className="flex flex-col gap-4">
+                      <div className="font-data-sm text-data-sm text-primary uppercase">SONUÇ_{yil}</div>
+                      <h3 className="font-headline-md text-headline-md text-error">{sonucKarti.baslik}</h3>
+                      <p className="text-on-surface-variant text-body-md">{sonucKarti.metin}</p>
+                      <button
+                        onClick={sonucKartiniKapat}
+                        className="self-start bg-primary-container text-background font-data-lg text-data-lg uppercase py-2 px-6 btn-shadow border border-outline font-bold mt-2"
+                      >
+                        Devam Et
+                      </button>
                     </div>
-                    <h3 className="font-headline-md text-headline-md text-error">{redenominasyonKarti.baslik}</h3>
-                    <p className="text-on-surface-variant text-body-md leading-relaxed">{redenominasyonKarti.metin}</p>
-                    <button
-                      onClick={() => setRedenominasyonKarti(null)}
-                      className="self-start bg-primary-container text-background font-data-lg text-data-lg uppercase py-2 px-6 btn-shadow border border-outline font-bold mt-2 hover:bg-primary transition-colors"
-                    >
-                      Anlaşıldı, Devam Et
-                    </button>
-                  </div>
-                ) : mevcutEvent ? (
-                  <div className="flex flex-col gap-4">
-                    <div className="font-data-sm text-data-sm text-primary uppercase">UYARI_{yil}</div>
-                    <h3 className="font-headline-md text-headline-md text-error">{mevcutEvent.baslik}</h3>
-                    <p className="text-on-surface-variant text-body-md">{mevcutEvent.metin}</p>
-                    <div className="flex flex-col gap-2 mt-4">
-                      {mevcutEvent.secenekler.map((s, i) => {
-                        const kilitli = s.kilit && (
-                          (s.kilit.tur === "sabir" && bars.sabir < s.kilit.min) ||
-                          (s.kilit.tur === "mutluluk" && bars.mutluluk < s.kilit.min) ||
-                          (s.kilit.tur === "nakit" && nakit < s.kilit.min) ||
-                          (s.kilit.tur === "nakit_usd" && nakit < s.kilit.min * fiyatlar.dolar_try) ||
-                          (s.kilit.tur === "sektor_pozisyon_yuzdesi" && nakit < (portfoy[`bist_${s.kilit.sektor}_adet`] || 0) * (fiyatlar[`bist_${s.kilit.sektor}`] || 100) * s.kilit.oran)
-                        )
-                        const olumluDal = s.olasilik_sonuclari?.find(d => d.level_etki > 0)
-                        return (
-                          <button
-                            key={i}
-                            disabled={kilitli}
-                            onClick={() => !kilitli && eventSeceneginiSec(s)}
-                            className={`p-3 text-left border ${kilitli
-                              ? "bg-surface-container-highest border-outline-variant text-on-surface-variant opacity-50 cursor-not-allowed"
-                              : "bg-surface-variant border-outline hover:border-primary hover:bg-surface-container-high transition-colors text-on-surface btn-shadow"
-                              }`}
-                          >
-                            <div className="flex justify-between items-start gap-2">
-                              <div className="font-data-sm text-data-sm uppercase mb-1">{kilitli ? "KİLİTLİ" : `SEÇ_0${i + 1}`}</div>
-                              {s.risk_seviyesi && s.risk_seviyesi !== "risksiz" && (
-                                <span className={`text-[10px] px-1 font-bold uppercase ${s.risk_seviyesi === "yüksek" ? "bg-error text-background" :
-                                  s.risk_seviyesi === "orta" ? "bg-[#f5c842] text-black" :
-                                    "bg-[#34d399] text-black"
-                                  }`}>
-                                  {s.risk_seviyesi} risk
-                                </span>
-                              )}
-                            </div>
-                            <div className="font-bold">{s.metin}</div>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              {s.aksiyon && s.aksiyon.tip === "sektor_al" && (
-                                <span className="text-[10px] px-1 font-bold uppercase bg-error text-background">
-                                  Nakit -₺{Math.round((portfoy[`bist_${s.aksiyon.sektor}_adet`] || 0) * (fiyatlar[`bist_${s.aksiyon.sektor}`] || 100) * s.aksiyon.oran).toLocaleString("tr-TR")}
-                                </span>
-                              )}
-                              {s.aksiyon && s.aksiyon.tip === "sektor_sat" && (
-                                <span className="text-[10px] px-1 font-bold uppercase bg-[#34d399] text-black">
-                                  Nakit +₺{Math.round((portfoy[`bist_${s.aksiyon.sektor}_adet`] || 0) * (fiyatlar[`bist_${s.aksiyon.sektor}`] || 100) * s.aksiyon.oran).toLocaleString("tr-TR")}
-                                </span>
-                              )}
-                              {s.mutluluk_etki !== undefined && s.mutluluk_etki !== 0 && (
-                                <span className={`text-[10px] px-1 font-bold uppercase ${s.mutluluk_etki > 0 ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
-                                  Mutluluk {s.mutluluk_etki > 0 ? '+' : ''}{s.mutluluk_etki}
-                                </span>
-                              )}
-                              {s.sabir_etki !== undefined && s.sabir_etki !== 0 && (
-                                <span className={`text-[10px] px-1 font-bold uppercase ${s.sabir_etki > 0 ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
-                                  Sabır {s.sabir_etki > 0 ? '+' : ''}{s.sabir_etki}
-                                </span>
-                              )}
-                              {s.nakit_etki_usd !== undefined && s.nakit_etki_usd !== 0 && (
-                                <span className={`text-[10px] px-1 font-bold uppercase ${s.nakit_etki_usd > 0 ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
-                                  Nakit {s.nakit_etki_usd > 0 ? '+' : ''}{s.nakit_etki_usd}$
-                                </span>
-                              )}
-                            </div>
-                            {olumluDal && !kilitli && (
-                              <div className="text-primary font-data-sm text-data-sm mt-1">
-                                İHTİMAL: %{Math.round(olumluDal.ihtimal * 100)} olumlu sonuç
+                  ) : redenominasyonKarti ? (
+                    <div className="flex flex-col gap-4">
+                      <div className="font-data-sm text-data-sm text-error uppercase font-bold flex items-center gap-2">
+                        <span className="material-symbols-outlined">warning</span>
+                        ZORUNLU GÜNCELLEME_{yil}
+                      </div>
+                      <h3 className="font-headline-md text-headline-md text-error">{redenominasyonKarti.baslik}</h3>
+                      <p className="text-on-surface-variant text-body-md leading-relaxed">{redenominasyonKarti.metin}</p>
+                      <button
+                        onClick={() => setRedenominasyonKarti(null)}
+                        className="self-start bg-primary-container text-background font-data-lg text-data-lg uppercase py-2 px-6 btn-shadow border border-outline font-bold mt-2 hover:bg-primary transition-colors"
+                      >
+                        Anlaşıldı, Devam Et
+                      </button>
+                    </div>
+                  ) : mevcutEvent ? (
+                    <div className="flex flex-col gap-4">
+                      <div className="font-data-sm text-data-sm text-primary uppercase">UYARI_{yil}</div>
+                      <h3 className="font-headline-md text-headline-md text-error">{mevcutEvent.baslik}</h3>
+                      <p className="text-on-surface-variant text-body-md">{mevcutEvent.metin}</p>
+                      <div className="flex flex-col gap-2 mt-4">
+                        {mevcutEvent.secenekler.map((s, i) => {
+                          const kilitli = s.kilit && (
+                            (s.kilit.tur === "sabir" && bars.sabir < s.kilit.min) ||
+                            (s.kilit.tur === "mutluluk" && bars.mutluluk < s.kilit.min) ||
+                            (s.kilit.tur === "nakit" && nakit < s.kilit.min) ||
+                            (s.kilit.tur === "nakit_usd" && nakit < s.kilit.min * fiyatlar.dolar_try) ||
+                            (s.kilit.tur === "sektor_pozisyon_yuzdesi" && nakit < (portfoy[`bist_${s.kilit.sektor}_adet`] || 0) * (fiyatlar[`bist_${s.kilit.sektor}`] || 100) * s.kilit.oran)
+                          )
+                          const olumluDal = s.olasilik_sonuclari?.find(d => d.level_etki > 0)
+                          return (
+                            <button
+                              key={i}
+                              disabled={kilitli}
+                              onClick={() => !kilitli && eventSeceneginiSec(s)}
+                              className={`p-3 text-left border ${kilitli
+                                ? "bg-surface-container-highest border-outline-variant text-on-surface-variant opacity-50 cursor-not-allowed"
+                                : "bg-surface-variant border-outline hover:border-primary hover:bg-surface-container-high transition-colors text-on-surface btn-shadow"
+                                }`}
+                            >
+                              <div className="flex justify-between items-start gap-2">
+                                <div className="font-data-sm text-data-sm uppercase mb-1">{kilitli ? "KİLİTLİ" : `SEÇ_0${i + 1}`}</div>
+                                {s.risk_seviyesi && s.risk_seviyesi !== "risksiz" && (
+                                  <span className={`text-[10px] px-1 font-bold uppercase ${s.risk_seviyesi === "yüksek" ? "bg-error text-background" :
+                                    s.risk_seviyesi === "orta" ? "bg-[#f5c842] text-black" :
+                                      "bg-[#34d399] text-black"
+                                    }`}>
+                                    {s.risk_seviyesi} risk
+                                  </span>
+                                )}
                               </div>
-                            )}
-                            {kilitli && s.kilit && (
-                              <div className="text-error font-data-sm text-data-sm mt-2">
-                                GEREKSİNİM: {s.kilit.tur} {s.kilit.min}
+                              <div className="font-bold">{s.metin}</div>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {s.aksiyon && s.aksiyon.tip === "sektor_al" && (
+                                  <span className="text-[10px] px-1 font-bold uppercase bg-error text-background">
+                                    Nakit -₺{Math.round((portfoy[`bist_${s.aksiyon.sektor}_adet`] || 0) * (fiyatlar[`bist_${s.aksiyon.sektor}`] || 100) * s.aksiyon.oran).toLocaleString("tr-TR")}
+                                  </span>
+                                )}
+                                {s.aksiyon && s.aksiyon.tip === "sektor_sat" && (
+                                  <span className="text-[10px] px-1 font-bold uppercase bg-[#34d399] text-black">
+                                    Nakit +₺{Math.round((portfoy[`bist_${s.aksiyon.sektor}_adet`] || 0) * (fiyatlar[`bist_${s.aksiyon.sektor}`] || 100) * s.aksiyon.oran).toLocaleString("tr-TR")}
+                                  </span>
+                                )}
+                                {s.mutluluk_etki !== undefined && s.mutluluk_etki !== 0 && (
+                                  <span className={`text-[10px] px-1 font-bold uppercase ${s.mutluluk_etki > 0 ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
+                                    Mutluluk {s.mutluluk_etki > 0 ? '+' : ''}{s.mutluluk_etki}
+                                  </span>
+                                )}
+                                {s.sabir_etki !== undefined && s.sabir_etki !== 0 && (
+                                  <span className={`text-[10px] px-1 font-bold uppercase ${s.sabir_etki > 0 ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
+                                    Sabır {s.sabir_etki > 0 ? '+' : ''}{s.sabir_etki}
+                                  </span>
+                                )}
+                                {s.nakit_etki_usd !== undefined && s.nakit_etki_usd !== 0 && (
+                                  <span className={`text-[10px] px-1 font-bold uppercase ${s.nakit_etki_usd > 0 ? "bg-[#34d399] text-black" : "bg-error text-background"}`}>
+                                    Nakit {s.nakit_etki_usd > 0 ? '+' : ''}{s.nakit_etki_usd}$
+                                  </span>
+                                )}
                               </div>
-                            )}
-                          </button>
-                        )
-                      })}
+                              {olumluDal && !kilitli && (
+                                <div className="text-primary font-data-sm text-data-sm mt-1">
+                                  İHTİMAL: %{Math.round(olumluDal.ihtimal * 100)} olumlu sonuç
+                                </div>
+                              )}
+                              {kilitli && s.kilit && (
+                                <div className="text-error font-data-sm text-data-sm mt-2">
+                                  GEREKSİNİM: {s.kilit.tur} {s.kilit.min}
+                                </div>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center">
-                    <span className="material-symbols-outlined text-4xl mb-2">check_circle</span>
-                    <p className="font-data-sm text-data-sm uppercase">BEKLEYEN OLAY YOK</p>
-                  </div>
-                )}
-                
-                {sonuc?.fisilti && (
-                  <div className="mt-4 pt-4 border-t border-outline flex flex-col gap-2 bg-surface-container-high p-3 rounded">
-                    <div className="flex gap-2 items-center">
-                      <span className="text-[10px] px-1 font-bold uppercase bg-[#f5c842] text-black">
-                        Fısıltı Haber
-                      </span>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center">
+                      <span className="material-symbols-outlined text-4xl mb-2">check_circle</span>
+                      <p className="font-data-sm text-data-sm uppercase">BEKLEYEN OLAY YOK</p>
                     </div>
-                    <p className="text-sm font-data-sm italic text-on-surface-variant">
-                      "{sonuc.fisilti}"
-                    </p>
-                  </div>
-                )}
-              </div>
+                  )}
+
+                  {sonuc?.fisilti && (
+                    <div className="mt-4 pt-4 border-t border-outline flex flex-col gap-2 bg-surface-container-high p-3 rounded">
+                      <div className="flex gap-2 items-center">
+                        <span className="text-[10px] px-1 font-bold uppercase bg-[#f5c842] text-black">
+                          Fısıltı Haber
+                        </span>
+                      </div>
+                      <p className="text-sm font-data-sm italic text-on-surface-variant">
+                        "{sonuc.fisilti}"
+                      </p>
+                    </div>
+                  )}
+                </div>
               </TutorialOdak>
 
               {/* AI Coach Panel */}
@@ -2028,32 +2136,32 @@ const opt = prev.opsiyonlar[optIndex];
                       DAVRANIŞSAL VERİLER İŞLENİYOR...
                     </div>
                   )}
-                {coachYorumu && (
-                  <div className="flex flex-col gap-3">
-                    <div className="font-data-sm text-data-sm text-primary uppercase">KAYIT_{yil}</div>
-                    <h3 className="font-bold text-lg text-on-surface">{coachYorumu.coach_title}</h3>
-                    <div className="bg-surface-container-high p-2 border-l-2 border-primary font-data-sm text-primary">
-                      TESPİT EDİLEN EĞİLİM: {coachYorumu.bias_name_tr}
+                  {coachYorumu && (
+                    <div className="flex flex-col gap-3">
+                      <div className="font-data-sm text-data-sm text-primary uppercase">KAYIT_{yil}</div>
+                      <h3 className="font-bold text-lg text-on-surface">{coachYorumu.coach_title}</h3>
+                      <div className="bg-surface-container-high p-2 border-l-2 border-primary font-data-sm text-primary">
+                        TESPİT EDİLEN EĞİLİM: {coachYorumu.bias_name_tr}
+                      </div>
+                      <p className="text-on-surface-variant text-sm">{coachYorumu.coach_comment}</p>
+                      <blockquote className="italic border-l border-outline-variant pl-4 text-on-surface opacity-80 mt-2">
+                        {coachYorumu.reflection_question}
+                      </blockquote>
                     </div>
-                    <p className="text-on-surface-variant text-sm">{coachYorumu.coach_comment}</p>
-                    <blockquote className="italic border-l border-outline-variant pl-4 text-on-surface opacity-80 mt-2">
-                      {coachYorumu.reflection_question}
-                    </blockquote>
-                  </div>
-                )}
-                {!coachLoading && !coachYorumu && (
-                  <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center">
-                    <span className="material-symbols-outlined text-4xl mb-2">history</span>
-                    <p className="font-data-sm text-data-sm uppercase">KARAR KAYITLARI BEKLENİYOR</p>
-                  </div>
-                )}
+                  )}
+                  {!coachLoading && !coachYorumu && (
+                    <div className="flex-1 flex flex-col items-center justify-center text-on-surface-variant opacity-50 p-8 text-center">
+                      <span className="material-symbols-outlined text-4xl mb-2">history</span>
+                      <p className="font-data-sm text-data-sm uppercase">KARAR KAYITLARI BEKLENİYOR</p>
+                    </div>
+                  )}
                 </div>
               </TutorialOdak>
             </div>
 
             {/* Alt Bölüm: Yıl Özeti ve Hızlı İşlemler */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
-              
+
               {/* Yıl Özeti (Sol Taraf) */}
               <div>
                 {sonuc && (
@@ -2078,116 +2186,116 @@ const opt = prev.opsiyonlar[optIndex];
 
               {/* Hızlı İşlem Barı (Sağ Taraf) */}
               <TutorialOdak hedefId="hizli-al-sat" disablePadding>
-              <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col gap-2 h-full">
-                <h2 className="font-headline-md text-headline-md uppercase text-on-surface border-b border-outline-variant pb-2 mb-1">AL-SAT Kısayolu</h2>
-                {(() => {
-                  const oncekiAltin = fiyatGecmisi.altin.length > 1 ? fiyatGecmisi.altin[fiyatGecmisi.altin.length - 2].fiyat : fiyatlar.altin_try_gram;
-                  const altinDegisimPct = oncekiAltin > 0 ? (((fiyatlar.altin_try_gram - oncekiAltin) / oncekiAltin) * 100).toFixed(1) : 0;
-                  
-                  const oncekiDolar = fiyatGecmisi.dolar.length > 1 ? fiyatGecmisi.dolar[fiyatGecmisi.dolar.length - 2].fiyat : fiyatlar.dolar_try;
-                  const dolarDegisimPct = oncekiDolar > 0 ? (((fiyatlar.dolar_try - oncekiDolar) / oncekiDolar) * 100).toFixed(1) : 0;
+                <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col gap-2 h-full">
+                  <h2 className="font-headline-md text-headline-md uppercase text-on-surface border-b border-outline-variant pb-2 mb-1">AL-SAT Kısayolu</h2>
+                  {(() => {
+                    const oncekiAltin = fiyatGecmisi.altin.length > 1 ? fiyatGecmisi.altin[fiyatGecmisi.altin.length - 2].fiyat : fiyatlar.altin_try_gram;
+                    const altinDegisimPct = oncekiAltin > 0 ? (((fiyatlar.altin_try_gram - oncekiAltin) / oncekiAltin) * 100).toFixed(1) : 0;
 
-                  const oncekiBorsa = fiyatGecmisi.bist.length > 1 ? fiyatGecmisi.bist[fiyatGecmisi.bist.length - 2].fiyat : fiyatlar.bist_endeks;
-                  const borsaDegisimPct = oncekiBorsa > 0 ? (((fiyatlar.bist_endeks - oncekiBorsa) / oncekiBorsa) * 100).toFixed(1) : 0;
-                  
-                  return (
-                    <>
-                      <div className="bg-surface border border-outline flex flex-wrap items-center justify-between gap-3 p-2 min-h-12 rounded w-full text-sm font-data-sm">
-                        <div className="flex flex-col flex-1">
-                          <span className="font-bold text-on-surface uppercase text-yellow-500">ALTIN</span>
-                          <span className="text-on-surface-variant text-[10px]">Sahip: {portfoy.altin_gram} gr</span>
-                        </div>
-                        <div className="flex flex-col items-end px-3 border-r border-outline w-24">
-                          <span className="font-bold text-on-surface text-sm">{money(fiyatlar.altin_try_gram)}</span>
-                          <span className={`text-[10px] ${altinDegisimPct >= 0 ? "text-[#34d399]" : "text-error"}`}>{altinDegisimPct > 0 ? "+" : ""}{altinDegisimPct}%</span>
-                        </div>
-                        <div className="flex gap-2 items-center justify-end w-full sm:w-auto sm:shrink-0">
-                          <input id="hizli_altin_miktar" type="number" className="w-20 h-8 bg-background border border-outline px-2 rounded text-on-surface text-center text-sm" placeholder="gr" min="1" />
-                          <button onClick={() => { 
-                            const val = Number(document.getElementById("hizli_altin_miktar").value); 
-                            if(val > 0 && nakitRef.current >= val * fiyatlar.altin_try_gram) {
-                              nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.altin_try_gram));
-                              setPortfoy(p => ({...p, altin_gram: p.altin_gram + val})); 
-                              document.getElementById("hizli_altin_miktar").value = ""; 
-                              tutorialEyleminiTamamla("hizli_alim");
-                            } else if (val > 0) uyariGoster("Altın almak için yeterli nakdin yok.");
-                          }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
-                          <button onClick={() => { 
-                            const val = Number(document.getElementById("hizli_altin_miktar").value); 
-                            if(val > 0 && portfoy.altin_gram >= val) { 
-                              nakitiGuncelle(Math.round(nakitRef.current + val * fiyatlar.altin_try_gram));
-                              setPortfoy(p => ({...p, altin_gram: p.altin_gram - val})); 
-                              document.getElementById("hizli_altin_miktar").value = ""; 
-                            } else if (val > 0) uyariGoster("Satmak istediğin miktarda altına sahip değilsin.");
-                          }} className="bg-error text-on-error min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">SAT</button>
-                        </div>
-                      </div>
+                    const oncekiDolar = fiyatGecmisi.dolar.length > 1 ? fiyatGecmisi.dolar[fiyatGecmisi.dolar.length - 2].fiyat : fiyatlar.dolar_try;
+                    const dolarDegisimPct = oncekiDolar > 0 ? (((fiyatlar.dolar_try - oncekiDolar) / oncekiDolar) * 100).toFixed(1) : 0;
 
-                      <div className="bg-surface border border-outline flex flex-wrap items-center justify-between gap-3 p-2 min-h-12 rounded w-full text-sm font-data-sm">
-                        <div className="flex flex-col flex-1">
-                          <span className="font-bold text-on-surface uppercase text-green-500">DOLAR</span>
-                          <span className="text-on-surface-variant text-[10px]">Sahip: {portfoy.dolar} $</span>
-                        </div>
-                        <div className="flex flex-col items-end px-3 border-r border-outline w-24">
-                          <span className="font-bold text-on-surface text-sm">{money(fiyatlar.dolar_try)}</span>
-                          <span className={`text-[10px] ${dolarDegisimPct >= 0 ? "text-[#34d399]" : "text-error"}`}>{dolarDegisimPct > 0 ? "+" : ""}{dolarDegisimPct}%</span>
-                        </div>
-                        <div className="flex gap-2 items-center justify-end w-full sm:w-auto sm:shrink-0">
-                          <input id="hizli_dolar_miktar" type="number" className="w-20 h-8 bg-background border border-outline px-2 rounded text-on-surface text-center text-sm" placeholder="$" min="1" />
-                          <button onClick={() => { 
-                            const val = Number(document.getElementById("hizli_dolar_miktar").value); 
-                            if(val > 0 && nakitRef.current >= val * fiyatlar.dolar_try) {
-                              nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.dolar_try));
-                              setPortfoy(p => ({...p, dolar: p.dolar + val})); 
-                              document.getElementById("hizli_dolar_miktar").value = ""; 
-                              tutorialEyleminiTamamla("hizli_alim");
-                            } else if (val > 0) uyariGoster("Dolar almak için yeterli nakdin yok.");
-                          }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
-                          <button onClick={() => { 
-                            const val = Number(document.getElementById("hizli_dolar_miktar").value); 
-                            if(val > 0 && portfoy.dolar >= val) { 
-                              nakitiGuncelle(Math.round(nakitRef.current + val * fiyatlar.dolar_try));
-                              setPortfoy(p => ({...p, dolar: p.dolar - val})); 
-                              document.getElementById("hizli_dolar_miktar").value = ""; 
-                            } else if (val > 0) uyariGoster("Satmak istediğin miktarda dolara sahip değilsin.");
-                          }} className="bg-error text-on-error min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">SAT</button>
-                        </div>
-                      </div>
+                    const oncekiBorsa = fiyatGecmisi.bist.length > 1 ? fiyatGecmisi.bist[fiyatGecmisi.bist.length - 2].fiyat : fiyatlar.bist_endeks;
+                    const borsaDegisimPct = oncekiBorsa > 0 ? (((fiyatlar.bist_endeks - oncekiBorsa) / oncekiBorsa) * 100).toFixed(1) : 0;
 
-                      <div className="bg-surface border border-outline flex flex-wrap items-center justify-between gap-3 p-2 min-h-12 rounded w-full text-sm font-data-sm">
-                        <div className="flex flex-col flex-1">
-                          <span className="font-bold text-on-surface uppercase text-blue-500">BİST100</span>
-                          <span className="text-on-surface-variant text-[10px]">Sahip: {portfoy.bist_adet} Lot</span>
+                    return (
+                      <>
+                        <div className="bg-surface border border-outline flex flex-wrap items-center justify-between gap-3 p-2 min-h-12 rounded w-full text-sm font-data-sm">
+                          <div className="flex flex-col flex-1">
+                            <span className="font-bold text-on-surface uppercase text-yellow-500">ALTIN</span>
+                            <span className="text-on-surface-variant text-[10px]">Sahip: {portfoy.altin_gram} gr</span>
+                          </div>
+                          <div className="flex flex-col items-end px-3 border-r border-outline w-24">
+                            <span className="font-bold text-on-surface text-sm">{money(fiyatlar.altin_try_gram)}</span>
+                            <span className={`text-[10px] ${altinDegisimPct >= 0 ? "text-[#34d399]" : "text-error"}`}>{altinDegisimPct > 0 ? "+" : ""}{altinDegisimPct}%</span>
+                          </div>
+                          <div className="flex gap-2 items-center justify-end w-full sm:w-auto sm:shrink-0">
+                            <input id="hizli_altin_miktar" type="number" className="w-20 h-8 bg-background border border-outline px-2 rounded text-on-surface text-center text-sm" placeholder="gr" min="1" />
+                            <button onClick={() => {
+                              const val = Number(document.getElementById("hizli_altin_miktar").value);
+                              if (val > 0 && nakitRef.current >= val * fiyatlar.altin_try_gram) {
+                                nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.altin_try_gram));
+                                setPortfoy(p => ({ ...p, altin_gram: p.altin_gram + val }));
+                                document.getElementById("hizli_altin_miktar").value = "";
+                                tutorialEyleminiTamamla("hizli_alim");
+                              } else if (val > 0) uyariGoster("Altın almak için yeterli nakdin yok.");
+                            }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
+                            <button onClick={() => {
+                              const val = Number(document.getElementById("hizli_altin_miktar").value);
+                              if (val > 0 && portfoy.altin_gram >= val) {
+                                nakitiGuncelle(Math.round(nakitRef.current + val * fiyatlar.altin_try_gram));
+                                setPortfoy(p => ({ ...p, altin_gram: p.altin_gram - val }));
+                                document.getElementById("hizli_altin_miktar").value = "";
+                              } else if (val > 0) uyariGoster("Satmak istediğin miktarda altına sahip değilsin.");
+                            }} className="bg-error text-on-error min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">SAT</button>
+                          </div>
                         </div>
-                        <div className="flex flex-col items-end px-3 border-r border-outline w-24">
-                          <span className="font-bold text-on-surface text-sm">{money(fiyatlar.bist_endeks)}</span>
-                          <span className={`text-[10px] ${borsaDegisimPct >= 0 ? "text-[#34d399]" : "text-error"}`}>{borsaDegisimPct > 0 ? "+" : ""}{borsaDegisimPct}%</span>
+
+                        <div className="bg-surface border border-outline flex flex-wrap items-center justify-between gap-3 p-2 min-h-12 rounded w-full text-sm font-data-sm">
+                          <div className="flex flex-col flex-1">
+                            <span className="font-bold text-on-surface uppercase text-green-500">DOLAR</span>
+                            <span className="text-on-surface-variant text-[10px]">Sahip: {portfoy.dolar} $</span>
+                          </div>
+                          <div className="flex flex-col items-end px-3 border-r border-outline w-24">
+                            <span className="font-bold text-on-surface text-sm">{money(fiyatlar.dolar_try)}</span>
+                            <span className={`text-[10px] ${dolarDegisimPct >= 0 ? "text-[#34d399]" : "text-error"}`}>{dolarDegisimPct > 0 ? "+" : ""}{dolarDegisimPct}%</span>
+                          </div>
+                          <div className="flex gap-2 items-center justify-end w-full sm:w-auto sm:shrink-0">
+                            <input id="hizli_dolar_miktar" type="number" className="w-20 h-8 bg-background border border-outline px-2 rounded text-on-surface text-center text-sm" placeholder="$" min="1" />
+                            <button onClick={() => {
+                              const val = Number(document.getElementById("hizli_dolar_miktar").value);
+                              if (val > 0 && nakitRef.current >= val * fiyatlar.dolar_try) {
+                                nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.dolar_try));
+                                setPortfoy(p => ({ ...p, dolar: p.dolar + val }));
+                                document.getElementById("hizli_dolar_miktar").value = "";
+                                tutorialEyleminiTamamla("hizli_alim");
+                              } else if (val > 0) uyariGoster("Dolar almak için yeterli nakdin yok.");
+                            }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
+                            <button onClick={() => {
+                              const val = Number(document.getElementById("hizli_dolar_miktar").value);
+                              if (val > 0 && portfoy.dolar >= val) {
+                                nakitiGuncelle(Math.round(nakitRef.current + val * fiyatlar.dolar_try));
+                                setPortfoy(p => ({ ...p, dolar: p.dolar - val }));
+                                document.getElementById("hizli_dolar_miktar").value = "";
+                              } else if (val > 0) uyariGoster("Satmak istediğin miktarda dolara sahip değilsin.");
+                            }} className="bg-error text-on-error min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">SAT</button>
+                          </div>
                         </div>
-                        <div className="flex gap-2 items-center justify-end w-full sm:w-auto sm:shrink-0">
-                          <input id="hizli_borsa_miktar" type="number" className="w-20 h-8 bg-background border border-outline px-2 rounded text-on-surface text-center text-sm" placeholder="Lot" min="1" />
-                          <button onClick={() => { 
-                            const val = Number(document.getElementById("hizli_borsa_miktar").value); 
-                            if(val > 0 && nakitRef.current >= val * fiyatlar.bist_endeks) {
-                              nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.bist_endeks));
-                              setPortfoy(p => ({...p, bist_adet: p.bist_adet + val})); 
-                              document.getElementById("hizli_borsa_miktar").value = ""; 
-                              tutorialEyleminiTamamla("hizli_alim");
-                            } else if (val > 0) uyariGoster("BİST100 almak için yeterli nakdin yok.");
-                          }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
-                          <button onClick={() => { 
-                            const val = Number(document.getElementById("hizli_borsa_miktar").value); 
-                            if(val > 0 && portfoy.bist_adet >= val) { 
-                              nakitiGuncelle(Math.round(nakitRef.current + val * fiyatlar.bist_endeks));
-                              setPortfoy(p => ({...p, bist_adet: p.bist_adet - val})); 
-                              document.getElementById("hizli_borsa_miktar").value = ""; 
-                            } else if (val > 0) uyariGoster("Satmak istediğin miktarda BİST100 lotuna sahip değilsin.");
-                          }} className="bg-error text-on-error min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">SAT</button>
+
+                        <div className="bg-surface border border-outline flex flex-wrap items-center justify-between gap-3 p-2 min-h-12 rounded w-full text-sm font-data-sm">
+                          <div className="flex flex-col flex-1">
+                            <span className="font-bold text-on-surface uppercase text-blue-500">BİST100</span>
+                            <span className="text-on-surface-variant text-[10px]">Sahip: {portfoy.bist_adet} Lot</span>
+                          </div>
+                          <div className="flex flex-col items-end px-3 border-r border-outline w-24">
+                            <span className="font-bold text-on-surface text-sm">{money(fiyatlar.bist_endeks)}</span>
+                            <span className={`text-[10px] ${borsaDegisimPct >= 0 ? "text-[#34d399]" : "text-error"}`}>{borsaDegisimPct > 0 ? "+" : ""}{borsaDegisimPct}%</span>
+                          </div>
+                          <div className="flex gap-2 items-center justify-end w-full sm:w-auto sm:shrink-0">
+                            <input id="hizli_borsa_miktar" type="number" className="w-20 h-8 bg-background border border-outline px-2 rounded text-on-surface text-center text-sm" placeholder="Lot" min="1" />
+                            <button onClick={() => {
+                              const val = Number(document.getElementById("hizli_borsa_miktar").value);
+                              if (val > 0 && nakitRef.current >= val * fiyatlar.bist_endeks) {
+                                nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.bist_endeks));
+                                setPortfoy(p => ({ ...p, bist_adet: p.bist_adet + val }));
+                                document.getElementById("hizli_borsa_miktar").value = "";
+                                tutorialEyleminiTamamla("hizli_alim");
+                              } else if (val > 0) uyariGoster("BİST100 almak için yeterli nakdin yok.");
+                            }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
+                            <button onClick={() => {
+                              const val = Number(document.getElementById("hizli_borsa_miktar").value);
+                              if (val > 0 && portfoy.bist_adet >= val) {
+                                nakitiGuncelle(Math.round(nakitRef.current + val * fiyatlar.bist_endeks));
+                                setPortfoy(p => ({ ...p, bist_adet: p.bist_adet - val }));
+                                document.getElementById("hizli_borsa_miktar").value = "";
+                              } else if (val > 0) uyariGoster("Satmak istediğin miktarda BİST100 lotuna sahip değilsin.");
+                            }} className="bg-error text-on-error min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">SAT</button>
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  )
-                })()}
-              </div>
+                      </>
+                    )
+                  })()}
+                </div>
               </TutorialOdak>
             </div>
           </div>
@@ -2227,20 +2335,20 @@ const opt = prev.opsiyonlar[optIndex];
 
         {aktifSayfa === "banka" && (
           <div id="banka-sayfasi" className="flex-1 overflow-y-auto">
-          <BankaSekmesi
-            fiyatlar={fiyatlar}
-            nakit={nakit}
-            yillikGelir={yillikGelir}
-            sahipOlunanEvler={sahipOlunanEvler}
-            kredi={kredi}
-            setKredi={setKredi}
-            krediNotu={krediNotu}
-            setKrediNotu={setKrediNotu}
-            nakitiGuncelle={nakitiGuncelle}
-            universiteYili={universiteYili}
-            zorluk={zorluk}
-            setBiasMetrics={setBiasMetrics}
-          />
+            <BankaSekmesi
+              fiyatlar={fiyatlar}
+              nakit={nakit}
+              yillikGelir={yillikGelir}
+              sahipOlunanEvler={sahipOlunanEvler}
+              kredi={kredi}
+              setKredi={setKredi}
+              krediNotu={krediNotu}
+              setKrediNotu={setKrediNotu}
+              nakitiGuncelle={nakitiGuncelle}
+              universiteYili={universiteYili}
+              zorluk={zorluk}
+              setBiasMetrics={setBiasMetrics}
+            />
           </div>
         )}
 
@@ -2286,46 +2394,63 @@ const opt = prev.opsiyonlar[optIndex];
             yasamGideri={yasamGideri}
             yillikGelir={yillikGelir}
             oturulanEvVarMi={!!oturulanEvId}
+            iliskiler={iliskiler}
           />
         )}
-        
+
         {aktifSayfa === "kariyer" && (
           <div id="kariyer-sayfasi" className="flex-1 overflow-y-auto flex flex-col">
             <KariyerSayfasi
-            nakit={nakit}
-            setNakit={setNakit}
-            isYeri={isYeri}
-            setIsYeri={setIsYeri}
-            sinavPuani={sinavPuani}
-            setSinavPuani={setSinavPuani}
-            okunanBolum={okunanBolum}
-            setOkunanBolum={setOkunanBolum}
-            universiteYili={universiteYili}
-            setUniversiteYili={setUniversiteYili}
-            mezunOlunanBolum={mezunOlunanBolum}
-            calismaBari={calismaBari}
-            setCalismaBari={setCalismaBari}
-            isIlanlari={isIlanlari}
-            setIsIlanlari={setIsIlanlari}
-            bars={bars}
-            setBars={setBars}
-            mezunaKalmaSayisi={mezunaKalmaSayisi}
-            setMezunaKalmaSayisi={setMezunaKalmaSayisi}
-            buYilSinavaGirdiMi={buYilSinavaGirdiMi}
-            setBuYilSinavaGirdiMi={setBuYilSinavaGirdiMi}
-            sikiCalisAktif={sikiCalisAktif}
-            setSikiCalisAktif={setSikiCalisAktif}
-            setTemelMaas={setTemelMaas}
-            setYillikGelir={setYillikGelir}
-            setIsLevel={setIsLevel}
-            yil={yil}
-            yas={yas}
-            cvGecmisi={cvGecmisi}
-            setCvGecmisi={setCvGecmisi}
-            maasEndeksi={maasEndeksi}
-            isLevel={isLevel}
-          />
+              nakit={nakit}
+              setNakit={setNakit}
+              isYeri={isYeri}
+              setIsYeri={setIsYeri}
+              sinavPuani={sinavPuani}
+              setSinavPuani={setSinavPuani}
+              okunanBolum={okunanBolum}
+              setOkunanBolum={setOkunanBolum}
+              universiteYili={universiteYili}
+              setUniversiteYili={setUniversiteYili}
+              mezunOlunanBolum={mezunOlunanBolum}
+              calismaBari={calismaBari}
+              setCalismaBari={setCalismaBari}
+              isIlanlari={isIlanlari}
+              setIsIlanlari={setIsIlanlari}
+              bars={bars}
+              setBars={setBars}
+              mezunaKalmaSayisi={mezunaKalmaSayisi}
+              setMezunaKalmaSayisi={setMezunaKalmaSayisi}
+              buYilSinavaGirdiMi={buYilSinavaGirdiMi}
+              setBuYilSinavaGirdiMi={setBuYilSinavaGirdiMi}
+              sikiCalisAktif={sikiCalisAktif}
+              setSikiCalisAktif={setSikiCalisAktif}
+              setTemelMaas={setTemelMaas}
+              setYillikGelir={setYillikGelir}
+              setIsLevel={setIsLevel}
+              yil={yil}
+              yas={yas}
+              cvGecmisi={cvGecmisi}
+              setCvGecmisi={setCvGecmisi}
+              maasEndeksi={maasEndeksi}
+              isLevel={isLevel}
+            />
           </div>
+        )}
+
+        {aktifSayfa === "iliskiler" && (
+          <IliskilerSayfasi
+            iliskiler={iliskiler}
+            setIliskiler={setIliskiler}
+            nakit={nakit}
+            nakitiGuncelle={nakitiGuncelle}
+            yil={yil}
+            fiyatlar={fiyatlar}
+            setSonucKarti={setSonucKarti}
+            mekanaGitmeSayisi={mekanaGitmeSayisi}
+            setMekanaGitmeSayisi={setMekanaGitmeSayisi}
+            portreSirasi={portreSirasi}
+            setPortreSirasi={setPortreSirasi}
+          />
         )}
 
         {aktifSayfa === "portfoy" && (
@@ -2344,6 +2469,30 @@ const opt = prev.opsiyonlar[optIndex];
         <TutorialModal isOpen={tutorialAcik} onClose={() => setTutorialAcik(false)} page={aktifSayfa} />
         <TutorialKutusu />
         <OyunUyarisi mesaj={uyariMesaji} onKapat={() => setUyariMesaji(null)} />
+
+        {aktifIliskiEvent && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[70] p-4">
+            <div className="bg-surface border-4 border-primary p-6 max-w-md w-full shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center text-center animate-bounce-in">
+              <h2 className="font-headline-sm font-black text-primary mb-2 uppercase tracking-wide">
+                {aktifIliskiEvent.baslik}
+              </h2>
+              <p className="text-on-surface mb-6 font-body-lg text-lg">
+                {aktifIliskiEvent.mesaj}
+              </p>
+              <div className="w-full space-y-3">
+                {aktifIliskiEvent.secenekler.map((secenek, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleIliskiEventSecimi(secenek)}
+                    className={`w-full font-bold py-3 px-4 border border-outline hover:brightness-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${secenek.maliyetTl > 0 ? 'bg-primary text-on-primary' : 'bg-surface-variant text-on-surface-variant'}`}
+                  >
+                    {secenek.metin} {secenek.maliyetTl > 0 && `(Maliyet: ${secenek.maliyetTl.toLocaleString('tr-TR')} ₺)`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

@@ -46,24 +46,24 @@ export const VARSAYILAN_STANDARTLAR = {
 
 export function toplamAylikUsd(secimler, standartlar) {
   return Object.entries(standartlar).reduce((toplam, [kategori, veri]) => {
-    const secim = secimler[kategori]
-    const secenek = veri.secenekler.find(s => s.id === secim)
-    return toplam + (secenek ? secenek.aylik_usd : 0)
-  }, 0)
+    const secim = secimler[kategori] || "dusuk";
+    const secenek = veri.secenekler.find(s => s.id === secim);
+    return toplam + (secenek ? secenek.aylik_usd : 0);
+  }, 0);
 }
 
 export function yasamKalitesiEtkisi(secimler, standartlar) {
   return Object.entries(standartlar).reduce((toplam, [kategori, veri]) => {
-    const secim = secimler[kategori]
-    const secenek = veri.secenekler.find(s => s.id === secim)
+    const secim = secimler[kategori] || "dusuk";
+    const secenek = veri.secenekler.find(s => s.id === secim);
     return {
       mutluluk: toplam.mutluluk + (secenek ? secenek.mutluluk_etki : 0),
       sabir: toplam.sabir + (secenek ? secenek.sabir_etki : 0),
-    }
-  }, { mutluluk: 0, sabir: 0 })
+    };
+  }, { mutluluk: 0, sabir: 0 });
 }
 
-export function luksPuaniHesapla(secimler, sahipOlunanEvler = []) {
+export function luksPuaniHesapla(secimler, sahipOlunanEvler = [], iliskiler = []) {
   let puan = 0;
   
   // Yemek
@@ -93,5 +93,42 @@ export function luksPuaniHesapla(secimler, sahipOlunanEvler = []) {
     puan += evPuani;
   }
   
+  // Çocuk Harcamaları
+  iliskiler.filter(k => k.tip === "cocuk").forEach(cocuk => {
+    const secim = secimler[`cocuk_${cocuk.id}`] || "dusuk";
+    if (secim === "orta") puan += 1;
+    if (secim === "yuksek") puan += 3;
+  });
+  
   return puan;
+}
+
+export function getDinamikStandartlar(iliskiler = []) {
+  const dinamik = {};
+  
+  iliskiler.filter(k => k.tip === "cocuk").forEach(cocuk => {
+    if (cocuk.yas >= 0 && cocuk.yas <= 3) {
+      dinamik[`cocuk_${cocuk.id}`] = {
+        label: `${cocuk.isim} (Bebek)`,
+        icon: "🍼",
+        secenekler: [
+          { id: "dusuk", label: "Temel Bakım", aylik_usd: 100, mutluluk_etki: -1, sabir_etki: -1 },
+          { id: "orta", label: "İyi Bakım", aylik_usd: 250, mutluluk_etki: 2, sabir_etki: 1 },
+          { id: "yuksek", label: "Premium Bakım", aylik_usd: 500, mutluluk_etki: 4, sabir_etki: 2 },
+        ]
+      };
+    } else if (cocuk.yas >= 4 && cocuk.yas <= 20) {
+      dinamik[`cocuk_${cocuk.id}`] = {
+        label: `${cocuk.isim} (Eğitim)`,
+        icon: "🎒",
+        secenekler: [
+          { id: "dusuk", label: "Devlet Okulu", aylik_usd: 50, mutluluk_etki: -2, sabir_etki: -1 },
+          { id: "orta", label: "Özel Okul & Kurs", aylik_usd: 400, mutluluk_etki: 3, sabir_etki: 2 },
+          { id: "yuksek", label: "Elit Kolej", aylik_usd: 1000, mutluluk_etki: 6, sabir_etki: 3 },
+        ]
+      };
+    }
+  });
+  
+  return dinamik;
 }
