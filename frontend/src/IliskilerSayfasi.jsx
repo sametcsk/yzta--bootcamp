@@ -395,12 +395,7 @@ export default function IliskilerSayfasi({
               >
                 Görmezden Gel
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-          </div>
+            </div>          </div>
         </div>
       )}
 
