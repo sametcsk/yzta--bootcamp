@@ -111,6 +111,7 @@ export default function BitisSayfasi({
           final_year: yil,
           profile_type: finalRapor.profile_type,
           dominant_bias: finalRapor.dominant_bias,
+          full_report: finalRapor
         })
         if (error) throw error
         setKaydedildi(true)

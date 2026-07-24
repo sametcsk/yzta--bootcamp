@@ -1,5 +1,7 @@
 import IntroEkrani from "./IntroEkrani"
 import VarlikSayfasi from "./VarlikSayfasi"
+import AnaMenu from "./AnaMenu"
+import GecmisRaporlar from "./GecmisRaporlar"
 import YasamStandartlari from "./YasamStandartlari"
 import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalitesiEtkisi, luksPuaniHesapla, getDinamikStandartlar } from "./data/standartlar"
 import PortfoySayfasi from "./PortfoySayfasi"
@@ -125,6 +127,8 @@ function AppInner() {
   const [introTamamlandi, setIntroTamamlandi] = useState(false)
   const [hikayeGoruldu, setHikayeGoruldu] = useState(false)
   const [acilisGecildi, setAcilisGecildi] = useState(false)
+  const [anaMenuGecildi, setAnaMenuGecildi] = useState(false)
+  const [gecmisRaporlarAcik, setGecmisRaporlarAcik] = useState(false)
   const [karakterProfili, setKarakterProfili] = useState(null)
   const [aktifSayfa, setAktifSayfa] = useState("ana")
   const [yillikGelir, setYillikGelir] = useState(0)
@@ -203,6 +207,122 @@ function AppInner() {
 
     setYillikGelir(gelir)
   }, [temelMaas, isYeri, isLevel, yil, yasamGideri])
+
+  const saveGame = async () => {
+    if (!supabaseAktif || !oturum) return;
+    const saveData = {
+        gameState, yil, yas, iliskiler, sonuc, mekanaGitmeSayisi, portreSirasi,
+        sinavPuani, okunanBolum, universiteYili, mezunOlunanBolum, calismaBari, isIlanlari, mezunaKalmaSayisi, buYilSinavaGirdiMi, zorluk, sikiCalisAktif, cvGecmisi, maasEndeksi,
+        kredi, krediNotu, iflasSayisi, hacizUyarisiAcik, biasMetrics, bars, nakit,
+        introTamamlandi, hikayeGoruldu, karakterProfili, aktifSayfa, yillikGelir, yasamGideri, portfoy, opsiyonGecmisi, opsiyonZinciri, opsiyonMetrikleri, fiyatlar, standartlar,
+        isYeri, cinsiyet, temelMaas, isLevel, emlakPiyasasi, sahipOlunanEvler, aracPiyasasi, sahipOlunanAraclar, oturulanEvId, kiraGeliriYillik,
+        nakitGerekenEventSayisi, nakitYetersizKalanEventSayisi,
+        eventGecmisi, tetiklenenler, eventKuyrugu, eventKayitlari, coachYorumu,
+        fiyatGecmisi, portfoyGecmisi, portfoyEndeksi, enflasyonEndeksi, enflasyonGecmisi, emlakEndeksiGecmisi, varlikKatsayilari,
+        arkadasTeklifi, gecmisTemettu, oyunBitti, bitisSebebi, sonEventEtkisi, sonucKarti, redenominasyonKarti, firsatMaliyetiGecmisi
+    };
+
+    try {
+      await supabase.from("game_saves").upsert({
+        user_id: oturum.user.id,
+        save_data: saveData,
+        updated_at: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error("Save hatası:", err);
+    }
+  };
+
+  const loadGame = async () => {
+    try {
+      const { data, error } = await supabase.from("game_saves").select("save_data").eq("user_id", oturum.user.id).maybeSingle();
+      if (error && error.code !== "PGRST116") throw error;
+      if (data?.save_data) {
+        const sd = data.save_data;
+        if (sd.gameState !== undefined) setGameState(sd.gameState);
+        if (sd.yil !== undefined) setYil(sd.yil);
+        if (sd.yas !== undefined) setYas(sd.yas);
+        if (sd.iliskiler !== undefined) setIliskiler(sd.iliskiler);
+        if (sd.sonuc !== undefined) setSonuc(sd.sonuc);
+        if (sd.mekanaGitmeSayisi !== undefined) setMekanaGitmeSayisi(sd.mekanaGitmeSayisi);
+        if (sd.portreSirasi !== undefined) setPortreSirasi(sd.portreSirasi);
+        if (sd.sinavPuani !== undefined) setSinavPuani(sd.sinavPuani);
+        if (sd.okunanBolum !== undefined) setOkunanBolum(sd.okunanBolum);
+        if (sd.universiteYili !== undefined) setUniversiteYili(sd.universiteYili);
+        if (sd.mezunOlunanBolum !== undefined) setMezunOlunanBolum(sd.mezunOlunanBolum);
+        if (sd.calismaBari !== undefined) setCalismaBari(sd.calismaBari);
+        if (sd.isIlanlari !== undefined) setIsIlanlari(sd.isIlanlari);
+        if (sd.mezunaKalmaSayisi !== undefined) setMezunaKalmaSayisi(sd.mezunaKalmaSayisi);
+        if (sd.buYilSinavaGirdiMi !== undefined) setBuYilSinavaGirdiMi(sd.buYilSinavaGirdiMi);
+        if (sd.zorluk !== undefined) setZorluk(sd.zorluk);
+        if (sd.sikiCalisAktif !== undefined) setSikiCalisAktif(sd.sikiCalisAktif);
+        if (sd.cvGecmisi !== undefined) setCvGecmisi(sd.cvGecmisi);
+        if (sd.maasEndeksi !== undefined) setMaasEndeksi(sd.maasEndeksi);
+        if (sd.kredi !== undefined) setKredi(sd.kredi);
+        if (sd.krediNotu !== undefined) setKrediNotu(sd.krediNotu);
+        if (sd.iflasSayisi !== undefined) setIflasSayisi(sd.iflasSayisi);
+        if (sd.hacizUyarisiAcik !== undefined) setHacizUyarisiAcik(sd.hacizUyarisiAcik);
+        if (sd.biasMetrics !== undefined) setBiasMetrics(sd.biasMetrics);
+        if (sd.bars !== undefined) setBars(sd.bars);
+        if (sd.nakit !== undefined) { setNakit(sd.nakit); nakitRef.current = sd.nakit; }
+        if (sd.introTamamlandi !== undefined) setIntroTamamlandi(sd.introTamamlandi);
+        if (sd.hikayeGoruldu !== undefined) setHikayeGoruldu(sd.hikayeGoruldu);
+        if (sd.karakterProfili !== undefined) setKarakterProfili(sd.karakterProfili);
+        if (sd.aktifSayfa !== undefined) setAktifSayfa(sd.aktifSayfa);
+        if (sd.yillikGelir !== undefined) setYillikGelir(sd.yillikGelir);
+        if (sd.yasamGideri !== undefined) setYasamGideri(sd.yasamGideri);
+        if (sd.portfoy !== undefined) setPortfoy(sd.portfoy);
+        if (sd.opsiyonGecmisi !== undefined) setOpsiyonGecmisi(sd.opsiyonGecmisi);
+        if (sd.opsiyonZinciri !== undefined) setOpsiyonZinciri(sd.opsiyonZinciri);
+        if (sd.opsiyonMetrikleri !== undefined) setOpsiyonMetrikleri(sd.opsiyonMetrikleri);
+        if (sd.fiyatlar !== undefined) setFiyatlar(sd.fiyatlar);
+        if (sd.standartlar !== undefined) setStandartlar(sd.standartlar);
+        if (sd.isYeri !== undefined) setIsYeri(sd.isYeri);
+        if (sd.cinsiyet !== undefined) setCinsiyet(sd.cinsiyet);
+        if (sd.temelMaas !== undefined) setTemelMaas(sd.temelMaas);
+        if (sd.isLevel !== undefined) setIsLevel(sd.isLevel);
+        if (sd.emlakPiyasasi !== undefined) setEmlakPiyasasi(sd.emlakPiyasasi);
+        if (sd.sahipOlunanEvler !== undefined) setSahipOlunanEvler(sd.sahipOlunanEvler);
+        if (sd.aracPiyasasi !== undefined) setAracPiyasasi(sd.aracPiyasasi);
+        if (sd.sahipOlunanAraclar !== undefined) setSahipOlunanAraclar(sd.sahipOlunanAraclar);
+        if (sd.oturulanEvId !== undefined) setOturulanEvId(sd.oturulanEvId);
+        if (sd.kiraGeliriYillik !== undefined) setKiraGeliriYillik(sd.kiraGeliriYillik);
+        if (sd.nakitGerekenEventSayisi !== undefined) setNakitGerekenEventSayisi(sd.nakitGerekenEventSayisi);
+        if (sd.nakitYetersizKalanEventSayisi !== undefined) setNakitYetersizKalanEventSayisi(sd.nakitYetersizKalanEventSayisi);
+        if (sd.eventGecmisi !== undefined) setEventGecmisi(sd.eventGecmisi);
+        if (sd.tetiklenenler !== undefined) setTetiklenenler(sd.tetiklenenler);
+        if (sd.eventKuyrugu !== undefined) setEventKuyrugu(sd.eventKuyrugu);
+        if (sd.eventKayitlari !== undefined) setEventKayitlari(sd.eventKayitlari);
+        if (sd.coachYorumu !== undefined) setCoachYorumu(sd.coachYorumu);
+        if (sd.fiyatGecmisi !== undefined) setFiyatGecmisi(sd.fiyatGecmisi);
+        if (sd.portfoyGecmisi !== undefined) setPortfoyGecmisi(sd.portfoyGecmisi);
+        if (sd.portfoyEndeksi !== undefined) setPortfoyEndeksi(sd.portfoyEndeksi);
+        if (sd.enflasyonEndeksi !== undefined) setEnflasyonEndeksi(sd.enflasyonEndeksi);
+        if (sd.enflasyonGecmisi !== undefined) setEnflasyonGecmisi(sd.enflasyonGecmisi);
+        if (sd.emlakEndeksiGecmisi !== undefined) setEmlakEndeksiGecmisi(sd.emlakEndeksiGecmisi);
+        if (sd.varlikKatsayilari !== undefined) setVarlikKatsayilari(sd.varlikKatsayilari);
+        if (sd.arkadasTeklifi !== undefined) setArkadasTeklifi(sd.arkadasTeklifi);
+        if (sd.gecmisTemettu !== undefined) setGecmisTemettu(sd.gecmisTemettu);
+        if (sd.oyunBitti !== undefined) setOyunBitti(sd.oyunBitti);
+        if (sd.bitisSebebi !== undefined) setBitisSebebi(sd.bitisSebebi);
+        if (sd.sonEventEtkisi !== undefined) setSonEventEtkisi(sd.sonEventEtkisi);
+        if (sd.sonucKarti !== undefined) setSonucKarti(sd.sonucKarti);
+        if (sd.redenominasyonKarti !== undefined) setRedenominasyonKarti(sd.redenominasyonKarti);
+        if (sd.firsatMaliyetiGecmisi !== undefined) setFirsatMaliyetiGecmisi(sd.firsatMaliyetiGecmisi);
+        setAnaMenuGecildi(true);
+      }
+    } catch (err) {
+      console.error("Load hatası:", err);
+      alert("Kayıt yüklenirken bir hata oluştu.");
+    }
+  };
+
+  // Otomatik kaydetme (Yıl atlandığında tetiklenir)
+  useEffect(() => {
+    if (anaMenuGecildi && introTamamlandi && oturum && yil > 2025) {
+      saveGame();
+    }
+  }, [yil]);
 
   const nakitRef = useRef(nakit)
   const bekleyenSektorEkstraGetiriRef = useRef(null)
@@ -1889,6 +2009,22 @@ function AppInner() {
   if (supabaseAktif && !oturum) {
     return <GirisSayfasi onGirisBasarili={(session) => setOturum(session)} />
   }
+  
+  if (gecmisRaporlarAcik) {
+    return <GecmisRaporlar onGeri={() => setGecmisRaporlarAcik(false)} oturum={oturum} />
+  }
+  
+  if (!anaMenuGecildi) {
+    return (
+      <AnaMenu 
+        oturum={oturum}
+        onYeniOyun={() => setAnaMenuGecildi(true)}
+        onDevamEt={loadGame}
+        onGecmisRaporlar={() => setGecmisRaporlarAcik(true)}
+      />
+    )
+  }
+
   if (!introTamamlandi) {
     return <IntroEkrani onBitis={introyuBitir} />
   }
