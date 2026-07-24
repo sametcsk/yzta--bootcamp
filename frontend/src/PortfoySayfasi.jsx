@@ -25,6 +25,7 @@ const VARLIK_RENK = {
   bist_perakende: "#a855f7",
   dolar: "#60a8f0",
   mevduat: "#a78bfa",
+  opsiyon: "#f43f5e",
 }
 
 const VARLIK_AD = {
@@ -37,6 +38,7 @@ const VARLIK_AD = {
   bist_perakende: "Perakende",
   dolar: "Dolar",
   mevduat: "Mevduat",
+  opsiyon: "Opsiyon PnL",
 }
 
 function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portfoy, fiyatlar, varlikKatsayilari, nakit, onAcTutorial }) {
@@ -67,16 +69,28 @@ function PortfoySayfasi({ portfoyGecmisi, enflasyonGecmisi, portfoy, fiyatlar, v
 
   const altinDeger = Math.round(portfoy.altin_gram * fiyatlar.altin_try_gram)
   const bistDeger = Math.round(portfoy.bist_adet * fiyatlar.bist_endeks)
+  const bistBankacilikDeger = Math.round((portfoy.bist_bankacilik_adet || 0) * (fiyatlar.bist_bankacilik || 100))
+  const bistTeknolojiDeger = Math.round((portfoy.bist_teknoloji_adet || 0) * (fiyatlar.bist_teknoloji || 100))
+  const bistInsaatDeger = Math.round((portfoy.bist_insaat_adet || 0) * (fiyatlar.bist_insaat || 100))
+  const bistSaglikDeger = Math.round((portfoy.bist_saglik_adet || 0) * (fiyatlar.bist_saglik || 100))
+  const bistPerakendeDeger = Math.round((portfoy.bist_perakende_adet || 0) * (fiyatlar.bist_perakende || 100))
+  const opsiyonDeger = Math.round((portfoy.opsiyonlar || []).reduce((t, o) => t + (o.guncel_deger !== undefined ? o.guncel_deger : (o.premium_odenen || 0)), 0))
   const dolarDeger = Math.round(portfoy.dolar * fiyatlar.dolar_try)
   const mevduatDeger = portfoy.mevduat_tl
-  const toplamDeger = nakit + altinDeger + bistDeger + dolarDeger + mevduatDeger
+  const toplamDeger = nakit + altinDeger + bistDeger + bistBankacilikDeger + bistTeknolojiDeger + bistInsaatDeger + bistSaglikDeger + bistPerakendeDeger + dolarDeger + mevduatDeger + opsiyonDeger
 
   const pieData = [
     { name: "Nakit", value: nakit, renk: "#e8eaf0" },
-    { name: "Altın", value: altinDeger, renk: "#f5c842" },
-    { name: "Borsa", value: bistDeger, renk: "#34d399" },
-    { name: "Dolar", value: dolarDeger, renk: "#60a8f0" },
-    { name: "Mevduat", value: mevduatDeger, renk: "#a78bfa" },
+    { name: "Altın", value: altinDeger, renk: VARLIK_RENK.altin },
+    { name: "BİST100", value: bistDeger, renk: VARLIK_RENK.bist },
+    { name: "Banka", value: bistBankacilikDeger, renk: VARLIK_RENK.bist_bankacilik },
+    { name: "Teknoloji", value: bistTeknolojiDeger, renk: VARLIK_RENK.bist_teknoloji },
+    { name: "İnşaat", value: bistInsaatDeger, renk: VARLIK_RENK.bist_insaat },
+    { name: "Sağlık", value: bistSaglikDeger, renk: VARLIK_RENK.bist_saglik },
+    { name: "Perakende", value: bistPerakendeDeger, renk: VARLIK_RENK.bist_perakende },
+    { name: "Dolar", value: dolarDeger, renk: VARLIK_RENK.dolar },
+    { name: "Mevduat", value: mevduatDeger, renk: VARLIK_RENK.mevduat },
+    { name: "Opsiyon", value: opsiyonDeger, renk: VARLIK_RENK.opsiyon },
   ].filter(d => d.value > 0)
 
   const tooltipStyle = {

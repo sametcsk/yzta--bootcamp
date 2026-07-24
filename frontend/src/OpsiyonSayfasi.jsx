@@ -105,7 +105,7 @@ export default function OpsiyonSayfasi({
     const oncekiPnl = idx === 0 ? 0 : acc[idx - 1].kümülatifPnL;
     acc.push({
         isim: `${idx+1}. ${opt.varlik}`,
-        kümülatifPnL: oncekiPnl + opt.net_kar
+        kümülatifPnL: oncekiPnl + (opt.net_kar || 0)
     });
     return acc;
   }, []);

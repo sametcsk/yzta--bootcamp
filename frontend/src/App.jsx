@@ -358,7 +358,7 @@ function AppInner() {
     const beklenenTaksit = kredi ? kredi.yillikTaksit : 0
     const beklenenNakit = nakit + yillikGelir - yasamGideri + beklenenKira - beklenenTaksit
 
-    if (beklenenNakit < 0) {
+    if (nakit < 0 && beklenenNakit < 0) {
       setHacizUyarisiAcik(true)
     } else {
       if (tutorialAktif && TUTORIAL_ADIMLARI[tutorialAdimi]?.beklenenEylem === "yil_atla_tiklandi") {
@@ -535,7 +535,8 @@ function AppInner() {
     const bistPerakendeTL0 = (portfoy.bist_perakende_adet || 0) * (fiyatlar.bist_perakende || 100)
     const dolarTL0 = portfoy.dolar * fiyatlar.dolar_try
     const emlakTL0 = sahipOlunanEvler.reduce((t, ev) => t + evGuncelDegerHesapla(ev), 0)
-    const toplam0 = nakit0 + mevduat0 + altinTL0 + bistTL0 + bistBankacilikTL0 + bistTeknolojiTL0 + bistInsaatTL0 + bistSaglikTL0 + bistPerakendeTL0 + dolarTL0 + emlakTL0
+    const opsiyonTL0 = aktifOlanlar.reduce((t, o) => t + (o.guncel_deger !== undefined ? o.guncel_deger : (o.premium_odenen || 0)), 0)
+    const toplam0 = nakit0 + mevduat0 + altinTL0 + bistTL0 + bistBankacilikTL0 + bistTeknolojiTL0 + bistInsaatTL0 + bistSaglikTL0 + bistPerakendeTL0 + dolarTL0 + emlakTL0 + opsiyonTL0
 
     // Eğitim ve Kariyer İlerletme Mantığı
     let yeniUniversiteYili = universiteYili
@@ -696,7 +697,9 @@ function AppInner() {
       const nakitReel = data.yil_sonucu.redenominasyon ? nakitRef.current / 1000 : nakitRef.current
       const mevduatReel = data.yil_sonucu.redenominasyon ? portfoy.mevduat_tl / 1000 : portfoy.mevduat_tl
 
-      const w_appreciated = nakitReel + Math.round(
+      const opsiyonTL_End = (data.yil_sonucu.aktif_opsiyonlar || []).reduce((t, o) => t + (o.guncel_deger !== undefined ? o.guncel_deger : (o.premium_odenen || 0)), 0)
+
+      const w_appreciated = nakitReel + opsiyonTL_End + Math.round(
         portfoy.altin_gram * data.yil_sonucu.fiyatlar.altin_try_gram +
         portfoy.bist_adet * data.yil_sonucu.fiyatlar.bist_endeks +
         (portfoy.bist_bankacilik_adet || 0) * data.yil_sonucu.fiyatlar.bist_bankacilik +
@@ -976,6 +979,7 @@ function AppInner() {
           bist_perakende: prev.bist_perakende !== null ? prev.bist_perakende * (1 + (data.yil_sonucu.sektor_getirileri.perakende - data.yil_sonucu.enflasyon) / 100) : null,
           dolar: prev.dolar !== null ? prev.dolar * (1 + getiriler.dolar) : null,
           mevduat: prev.mevduat !== null ? prev.mevduat * (1 + getiriler.mevduat) : null,
+          opsiyon: (opsiyonMetrikleri.toplam_yatirim > 0) ? 1 + ((opsiyonMetrikleri.toplam_net_kar + ekNetKar) / opsiyonMetrikleri.toplam_yatirim) : null,
         }
       })
 
@@ -1757,8 +1761,13 @@ function AppInner() {
           nakitiGuncelle(nakitRef.current + opt.brut_kar);
         }
       }
+      const gecmisOpt = { ...opt, not: isErkenBozdurma ? 'Erken Satış' : 'Vade Sonu' };
+      if (isErkenBozdurma) {
+        gecmisOpt.net_kar = opt.guncel_kar_zarar;
+        gecmisOpt.brut_kar = opt.guncel_deger;
+      }
 
-      setOpsiyonGecmisi(g => [{ ...opt, not: isErkenBozdurma ? 'Erken Satış' : 'Vade Sonu' }, ...g].slice(0, 50));
+      setOpsiyonGecmisi(g => [gecmisOpt, ...g].slice(0, 50));
 
       setOpsiyonMetrikleri(m => ({
         toplam_yatirim: m.toplam_yatirim,
