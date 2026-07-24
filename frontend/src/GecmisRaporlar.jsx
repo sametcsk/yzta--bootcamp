@@ -33,8 +33,19 @@ export default function GecmisRaporlar({ onGeri, oturum }) {
     const finalRapor = rapor.full_report
     if (!finalRapor) {
       return (
-        <div className="text-on-surface-variant font-body-md p-4 bg-surface-variant border border-outline">
-          Bu oyun için yapay zeka profillemesi kaydedilmemiş (eski sürüm kaydı). Sadece skor: {money(rapor.net_worth)} - Yaş: {rapor.final_age}
+        <div className="flex flex-col gap-4 animate-in fade-in duration-300">
+          <div className="flex justify-between items-start border-b border-outline-variant pb-4">
+            <div>
+              <h2 className="font-headline-lg text-headline-lg text-primary uppercase">Eski Kayıt</h2>
+            </div>
+            <button onClick={() => setSeciliRapor(null)} className="bg-surface-variant text-on-surface font-data-md uppercase py-2 px-4 border border-outline btn-shadow hover:bg-error-container hover:text-on-error-container transition-colors flex items-center gap-2">
+              <span className="material-symbols-outlined text-lg">arrow_back</span>
+              Geri Dön
+            </button>
+          </div>
+          <div className="text-on-surface-variant font-body-md p-4 bg-surface-variant border border-outline">
+            Bu oyun için yapay zeka profillemesi kaydedilmemiş (eski sürüm kaydı). Sadece skor: {money(rapor.net_worth)} - Yaş: {rapor.final_age}
+          </div>
         </div>
       )
     }
@@ -48,8 +59,9 @@ export default function GecmisRaporlar({ onGeri, oturum }) {
               Oyun Sonu Yaşı: {rapor.final_age} • Final Servet: {money(rapor.net_worth)}
             </div>
           </div>
-          <button onClick={() => setSeciliRapor(null)} className="text-on-surface-variant hover:text-error transition-colors">
-            <span className="material-symbols-outlined text-3xl">close</span>
+          <button onClick={() => setSeciliRapor(null)} className="bg-surface-variant text-on-surface font-data-md uppercase py-2 px-4 border border-outline btn-shadow hover:bg-error-container hover:text-on-error-container transition-colors flex items-center gap-2">
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            Geri Dön
           </button>
         </div>
 

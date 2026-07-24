@@ -62,14 +62,24 @@ export default function AnaMenu({ onYeniOyun, onDevamEt, onGecmisRaporlar, oturu
             Yeni Oyun Başlat
           </button>
           
-          {saveBulundu && (
-            <button
-              onClick={onDevamEt}
-              className="bg-surface-variant text-on-surface font-headline-md text-headline-md uppercase py-4 px-6 btn-shadow border border-outline font-bold transition-transform hover:-translate-y-1"
-            >
-              Kaldığın Yerden Devam Et
-            </button>
-          )}
+          <button
+            onClick={saveBulundu ? onDevamEt : undefined}
+            disabled={!saveBulundu}
+            className={`font-headline-md text-headline-md uppercase py-4 px-6 border border-outline font-bold transition-transform flex items-center justify-center gap-2 ${
+              saveBulundu
+                ? "bg-surface-variant text-on-surface btn-shadow hover:-translate-y-1 cursor-pointer"
+                : "bg-surface text-on-surface-variant opacity-50 cursor-not-allowed"
+            }`}
+          >
+            {saveBulundu ? (
+              "Kaldığın Yerden Devam Et"
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-2xl">lock</span>
+                Kaldığın Yerden Devam Et
+              </>
+            )}
+          </button>
 
           <button
             onClick={onGecmisRaporlar}
