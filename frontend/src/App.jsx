@@ -744,17 +744,21 @@ function AppInner() {
          toplamTemettu = Math.round(toplamTemettu);
       }
 
-      let yeniNakit = nakitRef.current + yeniGelir - yeniGider + kiraGeliriToplam + toplamTemettu
-      if (kredi) {
-        yeniNakit -= kredi.yillikTaksit
-      }
+      let hesapNakit = data.yil_sonucu.redenominasyon ? nakitRef.current / 1000 : nakitRef.current;
+      let hesapGelir = data.yil_sonucu.redenominasyon ? yeniGelir / 1000 : yeniGelir;
+      let hesapGider = data.yil_sonucu.redenominasyon ? yeniGider / 1000 : yeniGider;
+      let hesapKrediTaksit = kredi ? (data.yil_sonucu.redenominasyon ? kredi.yillikTaksit / 1000 : kredi.yillikTaksit) : 0;
+      
+      let yeniNakit = Math.round(hesapNakit + hesapGelir - hesapGider + kiraGeliriToplam + toplamTemettu - hesapKrediTaksit);
 
       // HACİZ VE İFLAS LİGİĞİ
-      if (yeniNakit < 0) {
+      let iflasEtti = false;
+      if (yeniNakit < 0 && nakitRef.current < 0) {
         // Sırasıyla tasfiye
         // 1. Mevduat
         if (yeniNakit < 0 && portfoy.mevduat_tl > 0) {
-          yeniNakit += portfoy.mevduat_tl
+          let likiditeMevduat = data.yil_sonucu.redenominasyon ? portfoy.mevduat_tl / 1000 : portfoy.mevduat_tl;
+          yeniNakit += Math.round(likiditeMevduat);
           setPortfoy(p => ({ ...p, mevduat_tl: 0 }))
         }
         // 2. Altın ve Döviz
@@ -800,6 +804,7 @@ function AppInner() {
         // 6. Hala negatifse: İFLAS
         if (yeniNakit < 0) {
           yeniNakit = 0
+          iflasEtti = true
           setIflasSayisi(prev => prev + 1)
           setKredi(null)
           setKrediNotu(0)
@@ -810,19 +815,24 @@ function AppInner() {
             secenekler: [{ metin: "Her şeye sıfırdan başla.", nakit_etki_usd: 0, sabir_etki: 0, mutluluk_etki: 0 }]
           })
         }
+      } else if (yeniNakit < 0 && nakitRef.current >= 0) {
+        yeniEventler.push({
+          baslik: "Nakit Bakiyesi Eksiye Düştü!",
+          metin: "Giderleriniz ve borç taksitleriniz gelirlerinizi aştığı için bakiyeniz eksiye düştü. Bir sonraki yıla geçmeden önce varlık satarak veya kredi çekerek durumunuzu düzeltmelisiniz. Aksi takdirde seneye haciz işlemi uygulanacaktır.",
+          secenekler: [{ metin: "Dikkatli olacağım.", nakit_etki_usd: 0, sabir_etki: 0, mutluluk_etki: -10 }]
+        });
       }
 
-      if (kredi && yeniNakit >= 0) {
+      if (kredi && !iflasEtti) {
         if (kredi.kalanVade <= 1) {
           setKredi(null)
           setKrediNotu(prev => Math.min(1000, prev + 25))
         } else {
-          setKredi(prev => ({ ...prev, kalanVade: prev.kalanVade - 1, borc: prev.borc - prev.yillikTaksit }))
+          setKredi(prev => prev ? ({ ...prev, kalanVade: prev.kalanVade - 1, borc: prev.borc - prev.yillikTaksit }) : null)
         }
       }
 
       if (data.yil_sonucu.redenominasyon) {
-        yeniNakit = Math.round(yeniNakit / 1000)
         setYillikGelir(Math.round(yeniGelir / 1000))
         setYasamGideri(Math.round(yeniGider / 1000))
         setTemelMaas(Math.round(yeniTemelMaas / 1000))
