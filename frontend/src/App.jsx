@@ -249,6 +249,7 @@ function AppInner() {
     dolar: null,
     mevduat: null,
   })
+  const [arkadasTeklifi, setArkadasTeklifi] = useState(null)
   const [oyunBitti, setOyunBitti] = useState(false)
   const [bitisSebebi, setBitisSebebi] = useState(null) // "yas_siniri" | "erken_olum"
   const [oturum, setOturum] = useState(null)
@@ -346,6 +347,11 @@ function AppInner() {
 
 
   const handleYilAtlaTikla = () => {
+    if (arkadasTeklifi) {
+       uyariGoster("Arkadaşından gelen bir teklif var! Lütfen ekranın sağındaki teklifi değerlendirip kabul et veya reddet (bunu yapmadan yılı geçemezsin).");
+       return;
+    }
+    
     // Gelecek yılı kestirmeye çalış
     const beklenenKira = sahipOlunanEvler.filter(ev => ev.kirada).reduce((acc, ev) => acc + (ev.fiyat_usd_taban * (fiyatlar.dolar_try || 40) * ev.kira_orani), 0)
     const beklenenTaksit = kredi ? kredi.yillikTaksit : 0
@@ -471,10 +477,39 @@ function AppInner() {
       return yeniKisi;
     });
 
-    setIliskiler(yeniIliskiler);
     const dinamikObj = { ...YASAM_STANDARTLARI, ...getDinamikStandartlar(yeniIliskiler) };
+    
+    // Çocuk ve Eş Varlık / Eğitim / Sağlık Büyümesi
+    const sonIliskiler = yeniIliskiler.map(yeniKisi => {
+      if (yeniKisi.tip === 'cocuk') {
+         const egitimStandarti = standartlar[`cocuk_${yeniKisi.id}`] || 'dusuk';
+         const egitimPuan = egitimStandarti === 'yuksek' ? 5 : egitimStandarti === 'orta' ? 3 : 1;
+         
+         const saglikStandarti = standartlar.saglik || 'dusuk';
+         const saglikPuan = saglikStandarti === 'yuksek' ? 5 : saglikStandarti === 'orta' ? 3 : 1;
+
+         yeniKisi.egitim = Math.min(100, (yeniKisi.egitim || 0) + egitimPuan);
+         yeniKisi.saglik = Math.min(100, (yeniKisi.saglik || 0) + saglikPuan);
+
+         let baseGrowth = (fiyatlar.enflasyon || 40) / 100;
+         let egitimCarpani = 1 + (yeniKisi.egitim / 100); 
+         if (yeniKisi.yas > 18) {
+            yeniKisi.netWorth = Math.floor((yeniKisi.netWorth || 0) * (1 + baseGrowth + (Math.random() * 0.1)) + (1000 * egitimCarpani * fiyatlar.dolar_try));
+         }
+      }
+
+      if (yeniKisi.tip === 'es' && yeniKisi.statu === 'aktif') {
+         let baseGrowth = (fiyatlar.enflasyon || 40) / 100;
+         yeniKisi.netWorth = Math.floor((yeniKisi.netWorth || 10000) * (1 + baseGrowth + (Math.random() * 0.15)) + (5000 * fiyatlar.dolar_try));
+      }
+      return yeniKisi;
+    });
+
+    setIliskiler(sonIliskiler);
     setYasamGideri(Math.round(toplamAylikUsd(standartlar, dinamikObj) * fiyatlar.dolar_try * 12));
+    
     anlikNakit += mirasMiktariToplam;
+    nakitiGuncelle(anlikNakit); // Nakiti güncelle (Miras eklendi)
 
     if (olayMesaji) {
       setTimeout(() => setSonucKarti({ baslik: olayBaslik, metin: olayMesaji }), 1500);
@@ -828,18 +863,6 @@ function AppInner() {
           ...prev,
           mevduat_tl: Math.round(prev.mevduat_tl / 1000),
         }))
-        // Geçmiş fiyatları böl ki grafiklerde kopma olmasın
-        setFiyatGecmisi(prev => ({
-          altin: prev.altin.map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
-          bist: prev.bist.map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
-          bist_bankacilik: (prev.bist_bankacilik && prev.bist_bankacilik.length > 0 ? prev.bist_bankacilik : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
-          bist_teknoloji: (prev.bist_teknoloji && prev.bist_teknoloji.length > 0 ? prev.bist_teknoloji : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
-          bist_insaat: (prev.bist_insaat && prev.bist_insaat.length > 0 ? prev.bist_insaat : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
-          bist_saglik: (prev.bist_saglik && prev.bist_saglik.length > 0 ? prev.bist_saglik : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
-          bist_perakende: (prev.bist_perakende && prev.bist_perakende.length > 0 ? prev.bist_perakende : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
-          dolar: prev.dolar.map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
-          mevduat: prev.mevduat,
-        }))
         // Varlık katsayıları kümülatif performans olduğu için 1000'e BÖLÜNMEZ.
 
         setRedenominasyonKarti({
@@ -880,17 +903,35 @@ function AppInner() {
       }))
 
       setSonuc(data.yil_sonucu)
-      setFiyatGecmisi(prev => ({
-        altin: [...prev.altin, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.altin_try_gram }],
-        bist: [...prev.bist, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_endeks }],
-        bist_bankacilik: [...(prev.bist_bankacilik && prev.bist_bankacilik.length > 0 ? prev.bist_bankacilik : prev.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_bankacilik }],
-        bist_teknoloji: [...(prev.bist_teknoloji && prev.bist_teknoloji.length > 0 ? prev.bist_teknoloji : prev.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_teknoloji }],
-        bist_insaat: [...(prev.bist_insaat && prev.bist_insaat.length > 0 ? prev.bist_insaat : prev.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_insaat }],
-        bist_saglik: [...(prev.bist_saglik && prev.bist_saglik.length > 0 ? prev.bist_saglik : prev.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_saglik }],
-        bist_perakende: [...(prev.bist_perakende && prev.bist_perakende.length > 0 ? prev.bist_perakende : prev.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_perakende }],
-        dolar: [...prev.dolar, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.dolar_try }],
-        mevduat: [...prev.mevduat, { yil: yil + 1, fiyat: data.yil_sonucu.mev_faiz }],
-      }))
+      setFiyatGecmisi(prev => {
+        let yeniGecmis = { ...prev };
+        
+        if (data.yil_sonucu.redenominasyon) {
+          yeniGecmis = {
+            altin: prev.altin.map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+            bist: prev.bist.map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+            bist_bankacilik: (prev.bist_bankacilik && prev.bist_bankacilik.length > 0 ? prev.bist_bankacilik : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+            bist_teknoloji: (prev.bist_teknoloji && prev.bist_teknoloji.length > 0 ? prev.bist_teknoloji : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+            bist_insaat: (prev.bist_insaat && prev.bist_insaat.length > 0 ? prev.bist_insaat : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+            bist_saglik: (prev.bist_saglik && prev.bist_saglik.length > 0 ? prev.bist_saglik : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+            bist_perakende: (prev.bist_perakende && prev.bist_perakende.length > 0 ? prev.bist_perakende : prev.bist).map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+            dolar: prev.dolar.map(p => ({ ...p, fiyat: formatAssetPrice(p.fiyat / 1000) })),
+            mevduat: prev.mevduat,
+          };
+        }
+
+        return {
+          altin: [...yeniGecmis.altin, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.altin_try_gram }],
+          bist: [...yeniGecmis.bist, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_endeks }],
+          bist_bankacilik: [...(yeniGecmis.bist_bankacilik && yeniGecmis.bist_bankacilik.length > 0 ? yeniGecmis.bist_bankacilik : yeniGecmis.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_bankacilik }],
+          bist_teknoloji: [...(yeniGecmis.bist_teknoloji && yeniGecmis.bist_teknoloji.length > 0 ? yeniGecmis.bist_teknoloji : yeniGecmis.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_teknoloji }],
+          bist_insaat: [...(yeniGecmis.bist_insaat && yeniGecmis.bist_insaat.length > 0 ? yeniGecmis.bist_insaat : yeniGecmis.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_insaat }],
+          bist_saglik: [...(yeniGecmis.bist_saglik && yeniGecmis.bist_saglik.length > 0 ? yeniGecmis.bist_saglik : yeniGecmis.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_saglik }],
+          bist_perakende: [...(yeniGecmis.bist_perakende && yeniGecmis.bist_perakende.length > 0 ? yeniGecmis.bist_perakende : yeniGecmis.bist), { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.bist_perakende }],
+          dolar: [...yeniGecmis.dolar, { yil: yil + 1, fiyat: data.yil_sonucu.fiyatlar.dolar_try }],
+          mevduat: [...yeniGecmis.mevduat, { yil: yil + 1, fiyat: data.yil_sonucu.mev_faiz }],
+        };
+      });
       // Varlık katsayılarını güncelle
       setVarlikKatsayilari(prev => {
         const getiriler = {
@@ -912,6 +953,22 @@ function AppInner() {
         }
       })
 
+
+      // Emlakçı & Galerici Arkadaş Teklifi Check (Her Yıl %25 Şans)
+      const emlakciArkadas = sonIliskiler.find(k => k.tip === 'arkadas' && k.meslek === 'Emlakçı' && k.statu === 'aktif' && k.iliskiSeviyesi > 30);
+      const galericiArkadas = sonIliskiler.find(k => k.tip === 'arkadas' && k.meslek === 'Oto Galerici' && k.statu === 'aktif' && k.iliskiSeviyesi > 30);
+      
+      if (!arkadasTeklifi && Math.random() < 0.25) {
+         if (emlakciArkadas && data.yil_sonucu.emlak_piyasasi?.length > 0 && Math.random() < 0.5) {
+            const ev = data.yil_sonucu.emlak_piyasasi[Math.floor(Math.random() * data.yil_sonucu.emlak_piyasasi.length)];
+            const indirimliFiyat = Math.floor(ev.fiyat_tl * 0.85); // %15 indirim
+            setArkadasTeklifi({ tip: 'ev', arkadas: emlakciArkadas, urun: { ...ev, fiyat_tl: indirimliFiyat }, mesaj: `Dostum elimde kelepir '${ev.isim}' var. Sana özel piyasanın %15 altına, ${indirimliFiyat.toLocaleString('tr-TR')} ₺'ye bırakıyorum. Almak ister misin?` });
+         } else if (galericiArkadas && data.yil_sonucu.arac_piyasasi?.length > 0) {
+            const arac = data.yil_sonucu.arac_piyasasi[Math.floor(Math.random() * data.yil_sonucu.arac_piyasasi.length)];
+            const indirimliFiyat = Math.floor(arac.fiyat * 0.85); // %15 indirim
+            setArkadasTeklifi({ tip: 'araba', arkadas: galericiArkadas, urun: { ...arac, fiyat: indirimliFiyat }, mesaj: `Galeride acil nakit lazım, sana '${arac.isim}' aracını piyasanın %15 altına ${indirimliFiyat.toLocaleString('tr-TR')} ₺'ye ayarlayabilirim. Düşünür müsün?` });
+         }
+      }
 
       // Event Kuyruğu
       const yeniEventler = [];
@@ -1616,6 +1673,25 @@ function AppInner() {
       alisYili: yil,
     }])
     setAracPiyasasi(prev => prev.filter(a => a.id !== arac.id))
+    
+    // Araba alındığında ulaşım standardını otomatik güncelle
+    setStandartlar(prev => ({ ...prev, ulasim: "kendi_araci" }))
+  }
+
+  const handleArkadasTeklifiKabulEt = () => {
+    if (!arkadasTeklifi) return;
+    
+    if (arkadasTeklifi.tip === 'ev') {
+       evSatinAl(arkadasTeklifi.urun);
+       if (nakitRef.current >= arkadasTeklifi.urun.fiyat_tl) { // Successfully bought
+          setArkadasTeklifi(null);
+       }
+    } else if (arkadasTeklifi.tip === 'araba') {
+       aracSatinAl(arkadasTeklifi.urun);
+       if (nakitRef.current >= arkadasTeklifi.urun.fiyat) { // Successfully bought
+          setArkadasTeklifi(null);
+       }
+    }
   }
 
   function aracSat(aracId) {
@@ -1933,6 +2009,28 @@ function AppInner() {
                 YİNE DE YIL ATLA (RİSKİ ALIYORUM)
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Arkadaş Teklifi Pop-Up */}
+        {arkadasTeklifi && (
+          <div className="fixed top-24 right-4 w-80 bg-surface-container border-2 border-outline p-4 z-40 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-[slideInRight_0.5s_ease-out]">
+             <div className="flex justify-between items-center mb-2 border-b border-outline pb-2">
+                <span className="font-bold text-primary text-sm flex items-center gap-2">
+                   📞 {arkadasTeklifi.arkadas.isim} ({arkadasTeklifi.arkadas.meslek})
+                </span>
+             </div>
+             <div className="text-sm text-on-surface mb-4 font-medium">
+               {arkadasTeklifi.mesaj}
+             </div>
+             <div className="flex flex-col gap-2">
+                <button onClick={handleArkadasTeklifiKabulEt} className="bg-primary text-on-primary font-bold py-2 border border-outline hover:brightness-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-sm">
+                   Kabul Et ve Satın Al
+                </button>
+                <button onClick={() => setArkadasTeklifi(null)} className="bg-error text-on-error font-bold py-2 border border-outline hover:brightness-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-sm">
+                   İlgilenmiyorum (Reddet)
+                </button>
+             </div>
           </div>
         )}
 
@@ -2492,6 +2590,7 @@ function AppInner() {
               nakit={nakit}
               nakitiGuncelle={nakitiGuncelle}
               yil={yil}
+              yas={yas}
               fiyatlar={fiyatlar}
               setSonucKarti={setSonucKarti}
               mekanaGitmeSayisi={mekanaGitmeSayisi}

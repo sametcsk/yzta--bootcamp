@@ -211,7 +211,7 @@ export function getRandomIliskiEvent(iliskiler, fiyatlar, yil) {
     if (cocuk.yas >= 8 && cocuk.yas <= 14) {
       olasiOlaylar.push({
         baslik: "Sınıf Gezisi",
-        mesaj: `${cocuk.isim} okuldaki arkadaşlarıyla şehir dışı kamp gezisine gitmek için para istiyor.`,
+        mesaj: `${cocuk.isim} okuldaki arkadaşlarıyla şehir dışı eğitim ve doğa kampına gitmek için para istiyor.`,
         kisiId: cocuk.id,
         kisiIsim: cocuk.isim,
         secenekler: [
@@ -219,13 +219,15 @@ export function getRandomIliskiEvent(iliskiler, fiyatlar, yil) {
             metin: "Parayı Ver",
             maliyetTl: tlYap(300),
             iliskiDegisimi: 25,
-            sonucMesaji: `Çocuğunuz ${cocuk.isim} gezide çok eğlendi ve size teşekkür etti.`
+            ekstraGuncelleme: { egitim: Math.min(100, (cocuk.egitim || 0) + 15), saglik: Math.min(100, (cocuk.saglik || 0) + 10) },
+            sonucMesaji: `Çocuğunuz ${cocuk.isim} kampta doğayla iç içe çok şey öğrendi, sağlığı ve eğitimi olumlu etkilendi.`
           },
           {
             metin: "İzin Verme",
             maliyetTl: 0,
             iliskiDegisimi: -25,
-            sonucMesaji: `Çocuğunuz size çok küstü ve odasına kapandı.`
+            ekstraGuncelleme: { egitim: Math.max(0, (cocuk.egitim || 0) - 5) },
+            sonucMesaji: `Çocuğunuz size çok küstü ve odasına kapandı. Sosyalleşemediği için mutsuz.`
           }
         ]
       });
@@ -233,22 +235,24 @@ export function getRandomIliskiEvent(iliskiler, fiyatlar, yil) {
 
     if (cocuk.yas >= 15 && cocuk.yas <= 18) {
       olasiOlaylar.push({
-        baslik: "Yeni Telefon Krizi",
-        mesaj: `Ergenlik çağındaki çocuğunuz ${cocuk.isim}, tüm arkadaşlarında olan son model telefondan istiyor.`,
+        baslik: "Yeni Bilgisayar ve Telefon Krizi",
+        mesaj: `Ergenlik çağındaki çocuğunuz ${cocuk.isim}, okul projeleri ve arkadaş çevresi için iyi bir bilgisayar ve son model telefon istiyor.`,
         kisiId: cocuk.id,
         kisiIsim: cocuk.isim,
         secenekler: [
           {
-            metin: "Son Model Satın Al",
-            maliyetTl: tlYap(1500),
+            metin: "Hepsini Al (Tam Destek)",
+            maliyetTl: tlYap(2000),
             iliskiDegisimi: 30,
-            sonucMesaji: `Çocuğunuz sevinçten havalara uçtu, gözüne girdiniz!`
+            ekstraGuncelleme: { egitim: Math.min(100, (cocuk.egitim || 0) + 20) },
+            sonucMesaji: `Çocuğunuz sevinçten havalara uçtu, yeni bilgisayarıyla projelerinde çok başarılı oldu!`
           },
           {
             metin: "Eski Telefonu Ver",
             maliyetTl: 0,
             iliskiDegisimi: -30,
-            sonucMesaji: "Sen beni hiç anlamıyorsun! diyerek kapıyı çarpıp çıktı."
+            ekstraGuncelleme: { egitim: Math.max(0, (cocuk.egitim || 0) - 10) },
+            sonucMesaji: "Sen beni hiç anlamıyorsun! diyerek kapıyı çarpıp çıktı. Eğitim performansı düştü."
           }
         ]
       });
@@ -262,16 +266,18 @@ export function getRandomIliskiEvent(iliskiler, fiyatlar, yil) {
         kisiIsim: cocuk.isim,
         secenekler: [
           {
-            metin: "Tam Destek Ol",
-            maliyetTl: tlYap(3000),
+            metin: "Tam Destek Ol (Sermaye Ver)",
+            maliyetTl: tlYap(10000),
             iliskiDegisimi: 50,
-            sonucMesaji: `Çocuğunuz hayata 1-0 önde başladı. Sizinle bağları ömür boyu kopmayacak.`
+            ekstraGuncelleme: { egitim: 100, netWorth: (cocuk.netWorth || 0) + tlYap(10000) },
+            sonucMesaji: `Çocuğunuz hayata sizin verdiğiniz sermaye ile 1-0 önde başladı. Sizinle bağları ömür boyu kopmayacak.`
           },
           {
             metin: "Başının Çaresine Baksın",
             maliyetTl: 0,
             iliskiDegisimi: -40,
-            sonucMesaji: `Aranızda kalıcı bir soğukluk oluştu.`
+            ekstraGuncelleme: { egitim: Math.max(0, (cocuk.egitim || 0) - 20) },
+            sonucMesaji: `Aranızda kalıcı bir soğukluk oluştu, çocuğunuz hayata çok geriden başlamak zorunda kaldı.`
           }
         ]
       });
