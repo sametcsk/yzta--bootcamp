@@ -124,12 +124,12 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     redenominasyon = None
     if kur >= 1000:
         kur = round(kur / 1000, 2)
-        bist = round(bist / 1000, 2)
-        bist_bankacilik = round(bist_bankacilik / 1000, 2)
-        bist_teknoloji = round(bist_teknoloji / 1000, 2)
-        bist_insaat = round(bist_insaat / 1000, 2)
-        bist_saglik = round(bist_saglik / 1000, 2)
-        bist_perakende = round(bist_perakende / 1000, 2)
+        bist = max(0.01, round(bist / 1000, 2))
+        bist_bankacilik = max(0.01, round(bist_bankacilik / 1000, 2))
+        bist_teknoloji = max(0.01, round(bist_teknoloji / 1000, 2))
+        bist_insaat = max(0.01, round(bist_insaat / 1000, 2))
+        bist_saglik = max(0.01, round(bist_saglik / 1000, 2))
+        bist_perakende = max(0.01, round(bist_perakende / 1000, 2))
         reden_sayaci += 1
         redenominasyon = f"YENİ TL #{reden_sayaci}"
     

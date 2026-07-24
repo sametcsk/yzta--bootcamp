@@ -19,6 +19,9 @@ def black_scholes(S, K, T, r, sigma, option_type="call"):
         else:
             return max(0.0, K - S)
             
+    if S <= 0.0 or K <= 0.0:
+        return 0.0
+            
     d1 = (math.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * math.sqrt(T))
     d2 = d1 - sigma * math.sqrt(T)
     
