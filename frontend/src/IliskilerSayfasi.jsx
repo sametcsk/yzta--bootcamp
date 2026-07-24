@@ -23,6 +23,8 @@ export default function IliskilerSayfasi({
 }) {
   const [bildirim, setBildirim] = useState(null);
   const [tanismaModal, setTanismaModal] = useState(null); // { isim, cinsiyet, yas }
+  
+  const kur = fiyatlar?.dolar_try || 40;
 
   React.useEffect(() => {
     // Aile/kayınpeder olayını IliskiEventleri.js'ye taşıdığımız için burayı boş bırakıyoruz.
@@ -130,11 +132,12 @@ export default function IliskilerSayfasi({
     const sans = Math.random();
     
     if (sans < 0.6) {
-      const cinsiyetStr = Math.random() < 0.5 ? "K" : "E";
-      const isim = cinsiyetStr === "K" ? ISIMLER_KADIN[Math.floor(Math.random() * ISIMLER_KADIN.length)] : ISIMLER_ERKEK[Math.floor(Math.random() * ISIMLER_ERKEK.length)];
+      const cinsiyetStr = Math.random() < 0.5 ? "kadın" : "erkek";
+      const isim = cinsiyetStr === "kadın" ? ISIMLER_KADIN[Math.floor(Math.random() * ISIMLER_KADIN.length)] : ISIMLER_ERKEK[Math.floor(Math.random() * ISIMLER_ERKEK.length)];
       const yas = Math.floor(Math.random() * 20) + 20; 
 
-      const secilenId = siradakiPortreyiAl(cinsiyetStr, portreSirasi, setPortreSirasi);
+      const { secilenId, newSira } = siradakiPortreyiAl(cinsiyetStr, "yetiskin", portreSirasi);
+      setPortreSirasi(newSira);
       
       const beklentiPuan = Math.floor(Math.random() * (mekan.beklentiMax - mekan.beklentiMin + 1)) + mekan.beklentiMin;
 
@@ -325,7 +328,7 @@ export default function IliskilerSayfasi({
        return gosterBildirim("Zaten Bebek Var", `Bu yıl zaten bir bebeğiniz oldu!`, "info");
     }
 
-    const dogumMasrafi = 50000;
+    const dogumMasrafi = Math.floor(2500 * kur / 100) * 100; // ~2500 USD
     if (nakit < dogumMasrafi) {
       return gosterBildirim("Nakit Yetersiz", `Çocuk sahibi olmak için en az ${dogumMasrafi.toLocaleString('tr-TR')} ₺ gerekiyor.`, "error");
     }
@@ -462,7 +465,7 @@ export default function IliskilerSayfasi({
             {iliskiler.filter(i => i.tip === "aile").map(kisi => (
               <div key={kisi.id} className="bg-surface-container-low border border-outline-variant p-4 flex flex-col gap-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                 <div className="flex items-center gap-3">
-                  <div className="w-20 h-20 bg-surface-variant rounded flex items-center justify-center overflow-hidden border border-outline">
+                  <div className="w-20 h-20 shrink-0 bg-surface-variant rounded flex items-center justify-center overflow-hidden border border-outline">
                     <img src={getPortraitPath(kisi, kisi.yas)} alt={kisi.isim} className="w-full h-full object-cover" />
                   </div>
                   <div>
@@ -517,7 +520,7 @@ export default function IliskilerSayfasi({
               {iliskiler.filter(i => i.tip === "date" || i.tip === "es").map(kisi => (
                 <div key={kisi.id} className="bg-surface-container-low border border-outline-variant p-4 flex flex-col gap-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   <div className="flex items-center gap-3">
-                    <div className="w-20 h-20 bg-surface-variant rounded flex items-center justify-center overflow-hidden border border-outline">
+                    <div className="w-20 h-20 shrink-0 bg-surface-variant rounded flex items-center justify-center overflow-hidden border border-outline">
                       <img src={getPortraitPath(kisi, kisi.yas)} alt={kisi.isim} className="w-full h-full object-cover" />
                     </div>
                     <div>
@@ -584,7 +587,7 @@ export default function IliskilerSayfasi({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {iliskiler.filter(i => i.tip === "cocuk").map(kisi => (
               <div key={kisi.id} className="bg-surface-container-low border border-outline-variant p-4 flex flex-col gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] items-center text-center">
-                 <div className="w-24 h-24 bg-surface-variant rounded-full flex items-center justify-center overflow-hidden border-2 border-outline mb-2">
+                 <div className="w-24 h-24 shrink-0 bg-surface-variant rounded-full flex items-center justify-center overflow-hidden border-2 border-outline mb-2">
                     <img src={getPortraitPath(kisi, kisi.yas)} alt={kisi.isim} className="w-full h-full object-cover" />
                  </div>
                  <div className="font-title-md font-bold text-on-surface">{kisi.isim}</div>
@@ -627,7 +630,7 @@ export default function IliskilerSayfasi({
               {iliskiler.filter(i => i.tip === "arkadas").map(kisi => (
                 <div key={kisi.id} className="bg-surface-container-low border border-outline-variant p-4 flex flex-col gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 bg-surface-variant rounded-full flex items-center justify-center overflow-hidden border border-outline">
+                    <div className="w-16 h-16 shrink-0 bg-surface-variant rounded-full flex items-center justify-center overflow-hidden border border-outline">
                       <img src={getPortraitPath(kisi, kisi.yas)} alt={kisi.isim} className="w-full h-full object-cover" />
                     </div>
                     <div>
@@ -679,7 +682,7 @@ export default function IliskilerSayfasi({
             </button>
 
             <button 
-              onClick={() => handleMekanaGit({ maliyet: 1500, tip: 'restoran', beklentiMin: 3, beklentiMax: 6, meslekHavuzu: ["Öğretmen", "Mühendis", "Mimar", "Yazılımcı", "Bankacı", "Tasarımcı"] })} 
+              onClick={() => handleMekanaGit({ maliyet: Math.floor(50 * kur / 10) * 10, tip: 'restoran', beklentiMin: 3, beklentiMax: 6, meslekHavuzu: ["Öğretmen", "Mühendis", "Mimar", "Yazılımcı", "Bankacı", "Tasarımcı"] })} 
               className="bg-surface-container-high border border-outline p-0 hover:border-tertiary transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] flex flex-col group overflow-hidden"
             >
               <div className="h-32 w-full overflow-hidden border-b border-outline">
@@ -687,12 +690,12 @@ export default function IliskilerSayfasi({
               </div>
               <div className="p-3 text-left">
                 <div className="font-bold text-on-surface">Lüks Restoran</div>
-                <div className="text-xs text-on-surface-variant mt-1">1.500 ₺ • Orta Beklenti</div>
+                <div className="text-xs text-on-surface-variant mt-1">{(Math.floor(50 * kur / 10) * 10).toLocaleString('tr-TR')} ₺ • Orta Beklenti</div>
               </div>
             </button>
 
             <button 
-              onClick={() => handleMekanaGit({ maliyet: 10000, tip: 'yurtdisi', beklentiMin: 6, beklentiMax: 10, meslekHavuzu: ["Doktor", "Borsacı", "CEO", "Girişimci", "Pilot", "Manken"] })} 
+              onClick={() => handleMekanaGit({ maliyet: Math.floor(350 * kur / 100) * 100, tip: 'yurtdisi', beklentiMin: 6, beklentiMax: 10, meslekHavuzu: ["Doktor", "Borsacı", "CEO", "Girişimci", "Pilot", "Manken"] })} 
               className="bg-surface-container-high border border-outline p-0 hover:border-tertiary transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] flex flex-col group overflow-hidden"
             >
               <div className="h-32 w-full overflow-hidden border-b border-outline">
@@ -700,7 +703,7 @@ export default function IliskilerSayfasi({
               </div>
               <div className="p-3 text-left">
                 <div className="font-bold text-on-surface">Yurtdışı Tatili</div>
-                <div className="text-xs text-on-surface-variant mt-1">10.000 ₺ • Yüksek Beklenti</div>
+                <div className="text-xs text-on-surface-variant mt-1">{(Math.floor(350 * kur / 100) * 100).toLocaleString('tr-TR')} ₺ • Yüksek Beklenti</div>
               </div>
             </button>
           </div>

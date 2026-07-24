@@ -250,6 +250,7 @@ function AppInner() {
     mevduat: null,
   })
   const [arkadasTeklifi, setArkadasTeklifi] = useState(null)
+  const [gecmisTemettu, setGecmisTemettu] = useState(0)
   const [oyunBitti, setOyunBitti] = useState(false)
   const [bitisSebebi, setBitisSebebi] = useState(null) // "yas_siniri" | "erken_olum"
   const [oturum, setOturum] = useState(null)
@@ -728,7 +729,22 @@ function AppInner() {
         yeniGelir += yeniGider;
       }
 
-      let yeniNakit = nakitRef.current + yeniGelir - yeniGider + kiraGeliriToplam
+      // Temettü Hesaplaması
+      let toplamTemettu = 0;
+      if (data.yil_sonucu.temettu_oranlari) {
+         const to = data.yil_sonucu.temettu_oranlari;
+         const f = data.yil_sonucu.fiyatlar;
+         const p = portfoy;
+         toplamTemettu += (p.bist_adet || 0) * f.bist_endeks * (to.bist_endeks / 100);
+         toplamTemettu += (p.bist_bankacilik_adet || 0) * f.bist_bankacilik * (to.bankacilik / 100);
+         toplamTemettu += (p.bist_teknoloji_adet || 0) * f.bist_teknoloji * (to.teknoloji / 100);
+         toplamTemettu += (p.bist_insaat_adet || 0) * f.bist_insaat * (to.insaat / 100);
+         toplamTemettu += (p.bist_saglik_adet || 0) * f.bist_saglik * (to.saglik / 100);
+         toplamTemettu += (p.bist_perakende_adet || 0) * f.bist_perakende * (to.perakende / 100);
+         toplamTemettu = Math.round(toplamTemettu);
+      }
+
+      let yeniNakit = nakitRef.current + yeniGelir - yeniGider + kiraGeliriToplam + toplamTemettu
       if (kredi) {
         yeniNakit -= kredi.yillikTaksit
       }
@@ -969,6 +985,8 @@ function AppInner() {
             setArkadasTeklifi({ tip: 'araba', arkadas: galericiArkadas, urun: { ...arac, fiyat: indirimliFiyat }, mesaj: `Galeride acil nakit lazım, sana '${arac.isim}' aracını piyasanın %15 altına ${indirimliFiyat.toLocaleString('tr-TR')} ₺'ye ayarlayabilirim. Düşünür müsün?` });
          }
       }
+
+      setGecmisTemettu(toplamTemettu);
 
       // Event Kuyruğu
       const yeniEventler = [];
@@ -1802,7 +1820,7 @@ function AppInner() {
   const emlakToplamDeger = sahipOlunanEvler.reduce((toplam, ev) => toplam + evGuncelDegerHesapla(ev), 0)
   const toplamDeger = nakit + portfoyDegeri + emlakToplamDeger
   const krediTaksitYillik = kredi ? kredi.yillikTaksit : 0
-  const netAkis = yillikGelir + kiraGeliriYillik - yasamGideri - krediTaksitYillik
+  const netAkis = yillikGelir + kiraGeliriYillik + gecmisTemettu - yasamGideri - krediTaksitYillik
   const krizMi = gameState.enf_rejim === 1
   const riskProfili = karakterProfili?.risk_level
     ? riskEtiketi(karakterProfili.risk_level)
@@ -1839,6 +1857,7 @@ function AppInner() {
     <div className="text-xs flex flex-col gap-1 text-on-surface-variant font-bold">
       <div>Maaş Geliri: <span className="text-[#34d399]">{money(yillikGelir)}</span> / yıl</div>
       {kiraGeliriYillik > 0 && <div>Kira Geliri: <span className="text-[#34d399]">{money(kiraGeliriYillik)}</span> / yıl</div>}
+      {gecmisTemettu > 0 && <div>Temettü Geliri: <span className="text-[#34d399]">+{money(gecmisTemettu)}</span> / yıl</div>}
       <div>Yaşam Gideri: <span className="text-error">-{money(yasamGideri)}</span> / yıl</div>
       {krediTaksitYillik > 0 && <div>Kredi Ödemesi: <span className="text-error">-{money(krediTaksitYillik)}</span> / yıl</div>}
     </div>
@@ -2074,7 +2093,7 @@ function AppInner() {
               <TutorialOdak hedefId="info-kartlari">
                 <MetricCard
                   label="Yıllık Gelir"
-                  value={money(yillikGelir + kiraGeliriYillik)}
+                  value={money(yillikGelir + kiraGeliriYillik + gecmisTemettu)}
                   hint={`Net akış: ${money(netAkis)}`}
                   tooltipNodes={gelirTooltip}
                 />

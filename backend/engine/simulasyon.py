@@ -436,6 +436,16 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     else:
         fisilti_sayaci += 1
 
+    # Temettü Oranları Üretimi
+    temettu_oranlari = {
+        "bist_endeks": round(random.uniform(1.0, 3.0), 2),
+        "bankacilik": round(random.uniform(3.0, 6.0), 2),
+        "teknoloji": round(random.uniform(0.1, 1.0), 2),
+        "insaat": round(random.uniform(2.0, 5.0), 2),
+        "saglik": round(random.uniform(1.0, 2.5), 2),
+        "perakende": round(random.uniform(1.5, 3.5), 2)
+    }
+
     return {
         "enf_rejim": enf_rejim,
         "enf_sakin_yil": enf_sakin_yil,
@@ -481,6 +491,7 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
             "emlak_piyasasi": emlak_piyasasi,
             "arac_piyasasi": arac_piyasasi,
             "sektor_getirileri": sektor_getirileri,
+            "temettu_oranlari": temettu_oranlari,
             "fiyatlar": {
                 "altin_try_gram": round((altin_usd / 31.1) * kur, 2),
                 "bist_endeks": round(bist, 2),
