@@ -31,6 +31,17 @@ import { getRandomIliskiEvent } from "./IliskiEventleri"
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
 const AGENT_MEMORY_STORAGE_KEY = "finsim_agent_memory_v1"
 const AGENT_SESSION_STORAGE_KEY = "finsim_agent_session_id_v1"
+const OYUN_BASLANGIC_YILI = 2025
+const AILE_DESTEGI_SURESI_YIL = 2
+const AILE_DESTEGI_AYLIK_USD = toplamAylikUsd(VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI)
+
+function aileDestegiAktifMi(yil) {
+  return yil < OYUN_BASLANGIC_YILI + AILE_DESTEGI_SURESI_YIL
+}
+
+function yillikAileDestegiHesapla(dolarKuru) {
+  return Math.round(AILE_DESTEGI_AYLIK_USD * dolarKuru * 12)
+}
 
 function yeniAgentSessionId() {
   return `agent_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
@@ -250,16 +261,16 @@ function AppInner() {
     }
   }, [fiyatlar, opsiyonZinciri])
 
-  // Add this effect to calculate Yıllık Gelir including Aile Desteği
+  // Maaş ve ilk iki yıldaki sabit aile desteğini hesapla.
   useEffect(() => {
     let gelir = Math.round(temelMaas * levelCarpaniGetir(isYeri, isLevel))
 
-    if (yil - 2026 < 2) {
-      gelir += yasamGideri
+    if (aileDestegiAktifMi(yil)) {
+      gelir += yillikAileDestegiHesapla(fiyatlar.dolar_try || 40)
     }
 
     setYillikGelir(gelir)
-  }, [temelMaas, isYeri, isLevel, yil, yasamGideri])
+  }, [temelMaas, isYeri, isLevel, yil, fiyatlar.dolar_try])
 
   const saveGame = async () => {
     if (!supabaseAktif || !oturum) return;
@@ -922,9 +933,11 @@ function AppInner() {
         }, 0)
       setKiraGeliriYillik(kiraGeliriToplam)
 
-      // Aile Desteği (İlk 2 Yıl) - Gelire Eklenir
-      if ((yil + 1) - 2026 < 2) {
-        yeniGelir += yeniGider;
+      // İlk iki yıldaki aile desteği yaşam standardından bağımsızdır.
+      if (aileDestegiAktifMi(yil)) {
+        const enflasyonCarpani = 1 + data.yil_sonucu.enflasyon / 100;
+        const destekKuru = (fiyatlar.dolar_try || 40) * enflasyonCarpani;
+        yeniGelir += yillikAileDestegiHesapla(destekKuru);
       }
 
       // Temettü Hesaplaması
