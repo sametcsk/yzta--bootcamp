@@ -550,16 +550,17 @@ function AppInner() {
     // Gelecek yılı kestirmeye çalış
     const beklenenKira = sahipOlunanEvler.filter(ev => ev.kirada).reduce((acc, ev) => acc + (ev.fiyat_usd_taban * (fiyatlar.dolar_try || 40) * ev.kira_orani), 0)
     const beklenenTaksit = kredi ? kredi.yillikTaksit : 0
-    const beklenenNakit = nakit + yillikGelir - yasamGideri + beklenenKira - beklenenTaksit
+    const beklenenNakit = nakitRef.current + yillikGelir - yasamGideri + beklenenKira - beklenenTaksit
 
-    if (nakit < 0 && beklenenNakit < 0) {
+    if (beklenenNakit < 0) {
       setHacizUyarisiAcik(true)
-    } else {
-      if (tutorialAktif && TUTORIAL_ADIMLARI[tutorialAdimi]?.beklenenEylem === "yil_atla_tiklandi") {
-        tutorialIleriGit()
-      }
-      yilAtla()
+      return
     }
+
+    if (tutorialAktif && TUTORIAL_ADIMLARI[tutorialAdimi]?.beklenenEylem === "yil_atla_tiklandi") {
+      tutorialIleriGit()
+    }
+    yilAtla()
   }
 
   const handleIliskiEventSecimi = (secenek) => {
@@ -2359,27 +2360,21 @@ function AppInner() {
           <div className="bg-error-container border border-error card-shadow p-stack-md text-on-error-container mb-stack-lg">
             <div className="font-headline-md text-headline-md font-black uppercase flex items-center gap-2">
               <span className="material-symbols-outlined text-4xl">warning</span>
-              KRİTİK UYARI: HACİZ RİSKİ
+              YILI İLERLETEMEZSİN: NAKİT YETERSİZ
             </div>
             <p className="font-data-sm text-data-sm mt-4 mb-2 opacity-90 leading-relaxed">
-              Mevcut nakitiniz, önümüzdeki yılın tahmini giderleri ve kredi taksitlerinizi karşılamaya yetmiyor (Eksi bakiye). Eğer yılı ilerletirseniz <strong>HACİZ</strong> memurları kapınıza dayanacak.
+              Mevcut nakdiniz ve yıllık gelirleriniz, önümüzdeki yılın giderlerini ve kredi taksitlerini karşılamaya yetmiyor. Nakit bakiyeniz eksiye düşeceği için yılı ilerletemezsiniz.
             </p>
             <ul className="list-disc ml-6 text-sm mb-4 opacity-90 space-y-1">
-              <li><strong>Haciz Nedir?</strong> Banka borçlarınızı karşılamak için elinizdeki Mevduat, Altın, Borsa, Araç ve Evlerinizi sırasıyla zorla satar.</li>
-              <li><strong>İflas Nedir?</strong> Tüm mal varlığınız satılmasına rağmen borcunuz kapanmazsa iflas edersiniz. Borcunuz silinir ancak her şeyinizi kaybeder ve ağır psikolojik bunalıma girersiniz.</li>
+              <li>Psikolojik Profil bölümünden yıllık giderlerinizi azaltın.</li>
+              <li>Gelirinizi artırın, kredi kullanın veya varlıklarınızdan birini satarak nakit oluşturun.</li>
             </ul>
-            <div className="flex gap-4 mt-6">
+            <div className="flex mt-6">
               <button
                 onClick={() => setHacizUyarisiAcik(false)}
                 className="bg-background text-error px-6 py-3 font-bold uppercase border border-error btn-shadow transition-transform hover:bg-surface-container"
               >
-                İPTAL ET (VARLIK SATACAĞIM)
-              </button>
-              <button
-                onClick={yilAtla}
-                className="bg-error text-on-error px-6 py-3 font-bold uppercase border border-outline btn-shadow transition-transform hover:bg-opacity-80"
-              >
-                YİNE DE YIL ATLA (RİSKİ ALIYORUM)
+                GERİ DÖN VE BÜTÇEYİ DÜZELT
               </button>
             </div>
           </div>
