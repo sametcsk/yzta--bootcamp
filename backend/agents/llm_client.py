@@ -16,7 +16,7 @@ except ImportError:
                     os.environ[k.strip()] = v.strip()
 
 
-DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.5-flash"
 
 
 def gemini_hazir_mi() -> bool:

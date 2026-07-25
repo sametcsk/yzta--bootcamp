@@ -82,6 +82,8 @@ export default function BitisSayfasi({
   nakitGerekenEventSayisi = 0,
   nakitYetersizKalanEventSayisi = 0,
   iflasSayisi = 0,
+  liderlikKaydedildi = false,
+  onLiderlikKaydedildi,
 }) {
   const [kaydedildi, setKaydedildi] = useState(false)
   const [kayitHatasi, setKayitHatasi] = useState(null)
@@ -97,6 +99,13 @@ export default function BitisSayfasi({
   // Final rapor hazır olunca run'ı bir kez kaydet
   useEffect(() => {
     if (!finalRapor || finalRaporLoading || kayitBaslatildiRef.current || !oturum) return
+    
+    // Eğer App.jsx tarafından zaten kaydedildiği biliniyorsa, tekrar DB'ye yazma. Sadece yüklendi say.
+    if (liderlikKaydedildi) {
+      setKaydedildi(true);
+      return;
+    }
+
     kayitBaslatildiRef.current = true
 
     async function kaydet() {
@@ -115,13 +124,14 @@ export default function BitisSayfasi({
         })
         if (error) throw error
         setKaydedildi(true)
+        if (onLiderlikKaydedildi) onLiderlikKaydedildi()
       } catch (err) {
         console.error(err)
         setKayitHatasi(err.message || "Run kaydedilemedi.")
       }
     }
     kaydet()
-  }, [finalRapor, finalRaporLoading, oturum, toplamDeger, yas, yil])
+  }, [finalRapor, finalRaporLoading, oturum, toplamDeger, yas, yil, liderlikKaydedildi, onLiderlikKaydedildi])
 
 
   // Kayıt başarılı olunca leaderboard'u çek

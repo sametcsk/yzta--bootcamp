@@ -273,7 +273,7 @@ function AppInner() {
         eventGecmisi, tetiklenenler, eventKuyrugu, eventKayitlari, coachYorumu,
         fiyatGecmisi, portfoyGecmisi, portfoyEndeksi, enflasyonEndeksi, enflasyonGecmisi, emlakEndeksiGecmisi, varlikKatsayilari,
         arkadasTeklifi, gecmisTemettu, oyunBitti, bitisSebebi, sonEventEtkisi, sonucKarti, redenominasyonKarti, firsatMaliyetiGecmisi,
-        swingFirsatlari, swingTradeGecmisi, swingTradeTutorialTamamlandi
+        swingFirsatlari, swingTradeGecmisi, swingTradeTutorialTamamlandi, liderlikKaydedildi
     };
 
     try {
@@ -366,6 +366,7 @@ function AppInner() {
         if (sd.swingFirsatlari !== undefined) setSwingFirsatlari(sd.swingFirsatlari);
         if (sd.swingTradeGecmisi !== undefined) setSwingTradeGecmisi(sd.swingTradeGecmisi);
         if (sd.swingTradeTutorialTamamlandi !== undefined) setSwingTradeTutorialTamamlandi(sd.swingTradeTutorialTamamlandi);
+        if (sd.liderlikKaydedildi !== undefined) setLiderlikKaydedildi(sd.liderlikKaydedildi);
         setAnaMenuGecildi(true);
       }
     } catch (err) {
@@ -430,6 +431,7 @@ function AppInner() {
   const [arkadasTeklifi, setArkadasTeklifi] = useState(null)
   const [gecmisTemettu, setGecmisTemettu] = useState(0)
   const [oyunBitti, setOyunBitti] = useState(false)
+  const [liderlikKaydedildi, setLiderlikKaydedildi] = useState(false)
   const [bitisSebebi, setBitisSebebi] = useState(null) // "yas_siniri" | "erken_olum"
   const [oturum, setOturum] = useState(null)
   const [sonEventEtkisi, setSonEventEtkisi] = useState({ sabir: 0, mutluluk: 0 })
@@ -2238,6 +2240,8 @@ function AppInner() {
         toplamDeger={toplamDeger}
         nakit={nakit}
         oturum={oturum}
+        liderlikKaydedildi={liderlikKaydedildi}
+        onLiderlikKaydedildi={() => setLiderlikKaydedildi(true)}
         onTekrarDene={finalRaporuOlustur}
         onTekrarOyna={tekrarOyna}
         firsatMaliyetiGecmisi={firsatMaliyetiGecmisi}
