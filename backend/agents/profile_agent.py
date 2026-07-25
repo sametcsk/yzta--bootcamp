@@ -87,11 +87,15 @@ def _has_behavioral_answers(answers: list[dict]) -> bool:
 
 def _fallback_story(difficulty: str, dominant_biases: list[str], details: list[str]) -> str:
     tendency_lines = " ".join(BIAS_STORY_LINES[label] for label in dominant_biases[:2])
-    decision_lines = " ".join(f'"{detail}" seçimin bu yolun izlerinden biri oldu.' for detail in details)
-    return (
-        f"{DIFFICULTY_OPENINGS[difficulty]} {decision_lines} {tendency_lines} "
-        "Şimdi önünde uzun bir finansal yaşam var; vereceğin kararlar bu ilk eğilimi güçlendirebilir ya da dönüştürebilir."
+    epic_ending = (
+        "Bugünden itibaren piyasalara yatırım yapabilecek, kariyerinde kritik adımlar atabilecek "
+        "ve karşına çıkan sürpriz olaylarla kendi kaderini şekillendireceksin. Unutma; bu simülasyonda "
+        "alacağın her karar, hem servetini hem de gizli yatırımcı kimliğini adım adım inşa edecek. "
+        "60 yıllık bu uzun serüven sona erdiğinde; oyun sonu raporunda tüm hayatının özetini ve finansal "
+        "karakterinin gerçek yüzünü detaylıca göreceksin. Bol şans!"
     )
+    
+    return f"{DIFFICULTY_OPENINGS.get(difficulty, DIFFICULTY_OPENINGS['orta'])} {tendency_lines} {epic_ending}"
 
 
 def generate_profile(data: dict) -> dict:

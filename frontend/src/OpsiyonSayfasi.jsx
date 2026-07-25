@@ -30,6 +30,7 @@ export default function OpsiyonSayfasi({
         body: JSON.stringify({
             opsiyon_gecmisi: opsiyonGecmisi,
             aktif_opsiyonlar: aktifOpsiyonlar,
+            swing_trade_gecmisi: swingTradeGecmisi,
             net_servet: portfoy?.netWorth || nakit
         })
       });
@@ -471,7 +472,7 @@ export default function OpsiyonSayfasi({
                                       Davranışsal Finans Profilin
                                   </h2>
                                   {analizSonucu && (
-                                      <div className={`mt-2 font-bold uppercase ${analizSonucu.derece.includes('KIRMIZI') ? 'text-error' : analizSonucu.derece.includes('RİSKLİ') ? 'text-warning' : 'text-primary'}`}>
+                                      <div className={`mt-2 font-bold uppercase ${analizSonucu.derece?.includes('KIRMIZI') ? 'text-error' : analizSonucu.derece?.includes('RİSKLİ') ? 'text-warning' : 'text-primary'}`}>
                                           Seviye: {analizSonucu.derece}
                                       </div>
                                   )}

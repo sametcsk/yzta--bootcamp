@@ -66,7 +66,7 @@ export default function GecmisRaporlar({ onGeri, oturum }) {
         </div>
 
         <div className="bg-surface-variant p-6 border border-outline text-body-lg text-on-surface leading-relaxed whitespace-pre-wrap">
-          {finalRapor.rapor_metni}
+          {finalRapor.summary || finalRapor.rapor_metni}
         </div>
 
         {finalRapor.bias_scores && (

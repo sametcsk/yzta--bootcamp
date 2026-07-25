@@ -438,6 +438,7 @@ function AppInner() {
   const [tutorialAcik, setTutorialAcik] = useState(false)
   const [uyariMesaji, setUyariMesaji] = useState(null)
   const bekleyenEventKaydiRef = useRef(null)
+  const aiCacheRef = useRef({})
   const [firsatMaliyetiGecmisi, setFirsatMaliyetiGecmisi] = useState([])
 
   useEffect(() => {
@@ -1477,6 +1478,16 @@ function AppInner() {
   }
 
   async function kocYorumunuGetir(eventKaydi, eventGecmisi = eventKayitlari) {
+    const cacheKey = `${eventKaydi.event_id}_${eventKaydi.secim_id}`;
+    if (aiCacheRef.current[cacheKey]) {
+      const cachedYorum = aiCacheRef.current[cacheKey];
+      setCoachYorumu(cachedYorum.should_show === false ? null : cachedYorum);
+      if (cachedYorum.should_show !== false) {
+        setCoachKayitlari(prev => [...prev, cachedYorum].slice(-3));
+      }
+      return;
+    }
+    
     setCoachYorumu(null)
     setCoachLoading(true)
     try {
@@ -1497,6 +1508,7 @@ function AppInner() {
       setCoachYorumu(yorum.should_show === false ? null : yorum)
       if (yorum.should_show !== false) {
         setCoachKayitlari(prev => [...prev, yorum].slice(-3))
+        aiCacheRef.current[cacheKey] = yorum;
       }
     } catch (error) {
       console.error(error)
@@ -1805,7 +1817,8 @@ function AppInner() {
                 total_trades: swingTradeGecmisi.length,
                 success_rate: swingTradeGecmisi.length > 0 ? (swingTradeGecmisi.filter(t => t.basarili).length / swingTradeGecmisi.length) * 100 : 0,
                 missed_opportunities: swingTradeGecmisi.filter(t => t.kacirildi).length
-            }
+            },
+            opsiyonMetrikleri: opsiyonMetrikleri
           },
         }),
       })
@@ -2395,10 +2408,10 @@ function AppInner() {
 
             {/* TEST BUTONU - GEÇİCİ */}
             <button
-              onClick={() => { setYas(60); setYil(2062); nakitiGuncelle(nakitRef.current + 5000000); }}
+              onClick={() => { setYas(75); setYil(2077); nakitiGuncelle(nakitRef.current + 5000000); }}
               className="bg-error-container text-on-error-container font-data-sm text-data-sm py-1 px-3 uppercase border border-error btn-shadow"
             >
-              [DEV TEST] 60 YAŞINA ATLA VE PARA EKLE
+              [DEV TEST] 75 YAŞINA ATLA VE PARA EKLE
             </button>
 
             {/* Header Section */}

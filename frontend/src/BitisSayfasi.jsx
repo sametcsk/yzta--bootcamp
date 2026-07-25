@@ -109,8 +109,8 @@ export default function BitisSayfasi({
           net_worth: toplamDeger,
           final_age: yas,
           final_year: yil,
-          profile_type: finalRapor.profile_type,
-          dominant_bias: finalRapor.dominant_bias,
+          profile_type: finalRapor.profile_type || "Bilinmeyen Profil",
+          dominant_bias: finalRapor.dominant_bias || "belirsiz",
           full_report: finalRapor
         })
         if (error) throw error

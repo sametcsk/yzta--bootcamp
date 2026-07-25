@@ -1,25 +1,31 @@
-def analiz_et(opsiyon_gecmisi, aktif_opsiyonlar, net_servet):
+def analiz_et(opsiyon_gecmisi, aktif_opsiyonlar, net_servet, swing_trade_gecmisi=None):
     """
-    Kullanıcının opsiyon işlem geçmişi ve mevcut aktif kontratlarına bakarak
+    Kullanıcının opsiyon işlem geçmişi, aktif kontratları ve swing trade geçmişine bakarak
     5 davranışsal finans biasının skorunu (0-100) ve metinsel bir rapor üretir.
     """
+    if swing_trade_gecmisi is None:
+        swing_trade_gecmisi = []
+
     skorlar = {
         "disposition_effect": 0,
         "loss_aversion": 0,
         "confirmation_bias": 0,
         "mental_accounting": 0,
-        "overconfidence": 0
+        "overconfidence": 0,
+        "risk_aversion": 0
     }
     
     tum_opsiyonlar = opsiyon_gecmisi + aktif_opsiyonlar
+    tum_islemler = tum_opsiyonlar + swing_trade_gecmisi
     
-    if not tum_opsiyonlar:
+    if not tum_islemler:
         return {
             "skorlar": skorlar,
-            "yorum": "Henüz yeterli opsiyon işleminiz yok. Piyasada biraz tecrübe kazanınca profilinizi çıkarabiliriz!"
+            "derece": "YETERSİZ VERİ",
+            "yorum": "Henüz yeterli opsiyon veya swing trade işleminiz yok. Piyasada biraz tecrübe kazanınca profilinizi çıkarabiliriz!"
         }
         
-    toplam_islem = len(tum_opsiyonlar)
+    toplam_islem = len(tum_islemler)
     
     # 1. Disposition Effect (Erken Kâr / Geç Zarar)
     erken_kar_sayisi = 0
@@ -60,11 +66,22 @@ def analiz_et(opsiyon_gecmisi, aktif_opsiyonlar, net_servet):
             
     skorlar["mental_accounting"] = min(100, mental_risk_skoru)
     
-    # 5. Overconfidence (Aşırı Özgüven - Portföyün çoğunu opsiyona yatırmak)
+    # 5. Overconfidence (Aşırı Özgüven - Portföyün çoğunu riskli varlığa yatırmak)
     toplam_acik_maliyet = sum(opt.get("premium_odenen", 0) for opt in aktif_opsiyonlar)
+    # Swing tradelerde de %50'den fazla serveti bir kalemde girmek aşırı özgüvendir.
+    max_swing_islem = max([t.get("islemHacmi", 0) for t in swing_trade_gecmisi] + [0])
+    
     if net_servet > 0:
         opsiyon_orani = toplam_acik_maliyet / net_servet
-        skorlar["overconfidence"] = min(100, int(opsiyon_orani * 400)) # %25 yatırırsa skor 100 olur
+        swing_orani = max_swing_islem / net_servet
+        skorlar["overconfidence"] = min(100, int((opsiyon_orani * 400) + (swing_orani * 150)))
+        
+    # 6. Risk Aversion (Riskten Aşırı Kaçınma - Swing Trade Özel)
+    # Eğer swing tradeleri hep "kacirildi: true" ise, dipten alacağım diye fırsatları kaçırıyordur.
+    kacirilan_swing_sayisi = sum(1 for t in swing_trade_gecmisi if t.get("kacirildi") is True)
+    if len(swing_trade_gecmisi) > 0:
+        kacirma_orani = kacirilan_swing_sayisi / len(swing_trade_gecmisi)
+        skorlar["risk_aversion"] = min(100, int(kacirma_orani * 100))
     
     # Rapor Metni Oluşturma
     analiz_metni = []
@@ -82,10 +99,13 @@ def analiz_et(opsiyon_gecmisi, aktif_opsiyonlar, net_servet):
         analiz_metni.append("- **Zihinsel Muhasebe (Mental Accounting):** Büyük bir kazançtan hemen sonra, kazandığın parayı 'havadan gelmiş' gibi görüp çok daha riskli opsiyonlara saçıyorsun. Bu klasik bir kumarcı yanılgısıdır.")
         
     if skorlar["overconfidence"] > 70:
-        analiz_metni.append("- **Aşırı Özgüven (Overconfidence):** Net servetine oranla opsiyonlara ayırdığın miktar korkunç seviyelerde. Tüm varlığını yüksek kaldıraçlı bir türev piyasasına emanet ediyorsun. Patlaman yakındır!")
+        analiz_metni.append("- **Aşırı Özgüven (Overconfidence):** Net servetine oranla riskli işlemlere (Opsiyon/Swing) ayırdığın miktar çok yüksek. Tüm varlığını yüksek volatiliteye sahip piyasalara emanet ediyorsun. Patlaman yakındır!")
+        
+    if skorlar.get("risk_aversion", 0) > 60:
+        analiz_metni.append("- **Riskten Kaçınma / Fırsat Kaçırma (Risk Aversion):** Swing Trade işlemlerinde alım seviyelerini o kadar 'güvenli' (düşük) belirliyorsun ki işlemler hiç gerçekleşmeden ralli başlıyor. Sürekli dipten alma takıntın yüzünden büyük fırsatları kaçırıyorsun.")
         
     if not analiz_metni:
-        analiz_metni.append("Mükemmel bir denge! Opsiyon piyasasında duygularına yenik düşmüyor, disiplinli ve rasyonel işlemler yapıyorsun. Çoğu amatörün aksine profesyonel bir zihin yapısına sahipsin.")
+        analiz_metni.append("Mükemmel bir denge! Piyasalarda duygularına yenik düşmüyor, disiplinli ve rasyonel işlemler yapıyorsun. Çoğu amatörün aksine profesyonel bir zihin yapısına sahipsin.")
         
     # Genel Seviye
     ortalama_bias = sum(skorlar.values()) / 5

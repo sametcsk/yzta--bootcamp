@@ -20,7 +20,9 @@ FINAL_REPORT_USER_PROMPT_TEMPLATE = (
     "- Total decision count: {decision_count}\n"
     "- Combined bias scores: {scores}\n"
     "- Scoring method: when both inputs exist, approximately 30% intro profile and 70% gameplay behavior.\n"
-    "- Dominant tendency: {dominant_name}\n\n"
+    "- Dominant tendency: {dominant_name}\n"
+    "- Swing Trade Metrics: {swing_metrics}\n"
+    "- Options Metrics: {options_metrics}\n\n"
     "Session memory:\n"
     "{agent_memory}\n\n"
     "RAG source context:\n"
@@ -31,10 +33,11 @@ FINAL_REPORT_USER_PROMPT_TEMPLATE = (
     "1. Maximum 90 Turkish words.\n"
     "2. Mention that this is based on the player's in-game decisions and intro tendencies.\n"
     "3. Mention the dominant behavioral tendency naturally.\n"
-    "4. Include one educational insight about decision habits.\n"
-    "5. Do not mention exact investment actions, assets to buy/sell, or guaranteed outcomes.\n"
-    "6. Do not sound like a medical or psychological diagnosis.\n"
-    "7. Keep the tone clear, useful, and presentation-ready."
+    "4. If the player used Swing Trades or Options, add a very brief educational insight about their risk management.\n"
+    "5. Include one general educational insight about decision habits.\n"
+    "6. Do not mention exact investment actions, assets to buy/sell, or guaranteed outcomes.\n"
+    "7. Do not sound like a medical or psychological diagnosis.\n"
+    "8. Keep the tone clear, useful, and presentation-ready."
 )
 
 
@@ -64,10 +67,10 @@ def _gameplay_scores(metrics: dict, history: list[dict]) -> tuple[dict, dict]:
         label = normalize_bias_label(item.get("bias_label") or item.get("bias_etiketi") or item.get("bias"))
         if label in history_counts:
             history_counts[label] += 1
-    total_history_evidence = sum(history_counts.values())
+    max_history_evidence = max(history_counts.values()) if history_counts.values() else 0
     for label, count in history_counts.items():
-        if count and total_history_evidence:
-            totals[label] += count / total_history_evidence * 100
+        if count and max_history_evidence:
+            totals[label] += count / max_history_evidence * 100
             counts[label] += 1
     scores = {
         label: round(totals[label] / counts[label]) if counts[label] else None
@@ -108,6 +111,8 @@ def _dominant(scores: dict) -> str | None:
 def generate_final_report(data: dict) -> dict:
     profile = data.get("profile") or {}
     final_state = data.get("final_state") or data.get("son_durum") or {}
+    swing_metrics = final_state.get("swing_trade_metrics", {})
+    options_metrics = final_state.get("opsiyonMetrikleri", {})
     history = _history(data)
     agent_memory = build_agent_memory(data)
     intro_scores = {} if profile.get("bias_scores_are_neutral") else profile.get("bias_scores") or {}
@@ -163,6 +168,8 @@ def generate_final_report(data: dict) -> dict:
                 decision_count=len(history),
                 scores=scores,
                 dominant_name=dominant_name,
+                swing_metrics=swing_metrics,
+                options_metrics=options_metrics,
                 agent_memory=agent_memory,
                 rag_context=kaynak_baglamini_olustur(sources),
                 fallback_summary=fallback_summary,

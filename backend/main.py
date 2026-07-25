@@ -1,4 +1,18 @@
+import os
+try:
+    from dotenv import load_dotenv, find_dotenv
+    load_dotenv(find_dotenv(), override=True)
+except ImportError:
+    env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                if "=" in line and not line.strip().startswith("#"):
+                    k, v = line.strip().split("=", 1)
+                    os.environ[k.strip()] = v.strip()
+# pyrefly: ignore [missing-import]
 from fastapi import FastAPI, HTTPException
+# pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
 from agents.orchestrator import generate_safe_learning_plan, run_agent_flow
 from agents.llm_client import llm_zorunlu_mu
@@ -105,7 +119,8 @@ def opsiyon_bias_endpoint(req: dict):
     from engine.opsiyon_bias_analiz import analiz_et
     opsiyon_gecmisi = req.get("opsiyon_gecmisi", [])
     aktif_opsiyonlar = req.get("aktif_opsiyonlar", [])
+    swing_trade_gecmisi = req.get("swing_trade_gecmisi", [])
     net_servet = req.get("net_servet", 0)
     
-    sonuc = analiz_et(opsiyon_gecmisi, aktif_opsiyonlar, net_servet)
+    sonuc = analiz_et(opsiyon_gecmisi, aktif_opsiyonlar, net_servet, swing_trade_gecmisi)
     return sonuc

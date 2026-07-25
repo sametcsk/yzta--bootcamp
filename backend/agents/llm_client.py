@@ -4,18 +4,25 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 try:
-    from dotenv import load_dotenv
-
-    load_dotenv()
+    from dotenv import load_dotenv, find_dotenv
+    load_dotenv(find_dotenv(), override=True)
 except ImportError:
-    pass
+    env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                if "=" in line and not line.strip().startswith("#"):
+                    k, v = line.strip().split("=", 1)
+                    os.environ[k.strip()] = v.strip()
 
 
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
 
 
 def gemini_hazir_mi() -> bool:
-    return bool(os.getenv("GEMINI_API_KEY", "").strip())
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    print(f"[DEBUG] gemini_hazir_mi called. API KEY length: {len(api_key)}")
+    return bool(api_key)
 
 
 def llm_zorunlu_mu() -> bool:
