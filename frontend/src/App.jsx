@@ -2,6 +2,7 @@ import IntroEkrani from "./IntroEkrani"
 import VarlikSayfasi from "./VarlikSayfasi"
 import AnaMenu from "./AnaMenu"
 import GecmisRaporlar from "./GecmisRaporlar"
+import SwingTradeEkrani from "./SwingTradeEkrani"
 import YasamStandartlari from "./YasamStandartlari"
 import { VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI, toplamAylikUsd, yasamKalitesiEtkisi, luksPuaniHesapla, getDinamikStandartlar } from "./data/standartlar"
 import PortfoySayfasi from "./PortfoySayfasi"
@@ -150,6 +151,12 @@ function AppInner() {
   const [opsiyonGecmisi, setOpsiyonGecmisi] = useState([])
   const [opsiyonZinciri, setOpsiyonZinciri] = useState(null)
   const [opsiyonMetrikleri, setOpsiyonMetrikleri] = useState({ toplam_yatirim: 0, toplam_net_kar: 0 })
+  
+  // Swing Trade States
+  const [swingFirsatlari, setSwingFirsatlari] = useState([])
+  const [swingTradeGecmisi, setSwingTradeGecmisi] = useState([])
+  const [aktifSwingTrade, setAktifSwingTrade] = useState(null)
+  const [swingTradeTutorialTamamlandi, setSwingTradeTutorialTamamlandi] = useState(false)
 
   const [fiyatlar, setFiyatlar] = useState({
     altin_try_gram: (2600 * 40) / 31.1,
@@ -219,7 +226,8 @@ function AppInner() {
         nakitGerekenEventSayisi, nakitYetersizKalanEventSayisi,
         eventGecmisi, tetiklenenler, eventKuyrugu, eventKayitlari, coachYorumu,
         fiyatGecmisi, portfoyGecmisi, portfoyEndeksi, enflasyonEndeksi, enflasyonGecmisi, emlakEndeksiGecmisi, varlikKatsayilari,
-        arkadasTeklifi, gecmisTemettu, oyunBitti, bitisSebebi, sonEventEtkisi, sonucKarti, redenominasyonKarti, firsatMaliyetiGecmisi
+        arkadasTeklifi, gecmisTemettu, oyunBitti, bitisSebebi, sonEventEtkisi, sonucKarti, redenominasyonKarti, firsatMaliyetiGecmisi,
+        swingFirsatlari, swingTradeGecmisi, swingTradeTutorialTamamlandi
     };
 
     try {
@@ -309,6 +317,9 @@ function AppInner() {
         if (sd.sonucKarti !== undefined) setSonucKarti(sd.sonucKarti);
         if (sd.redenominasyonKarti !== undefined) setRedenominasyonKarti(sd.redenominasyonKarti);
         if (sd.firsatMaliyetiGecmisi !== undefined) setFirsatMaliyetiGecmisi(sd.firsatMaliyetiGecmisi);
+        if (sd.swingFirsatlari !== undefined) setSwingFirsatlari(sd.swingFirsatlari);
+        if (sd.swingTradeGecmisi !== undefined) setSwingTradeGecmisi(sd.swingTradeGecmisi);
+        if (sd.swingTradeTutorialTamamlandi !== undefined) setSwingTradeTutorialTamamlandi(sd.swingTradeTutorialTamamlandi);
         setAnaMenuGecildi(true);
       }
     } catch (err) {
@@ -1264,6 +1275,23 @@ function AppInner() {
         }
       }
 
+      // Swing Trade Fırsatı Üret
+      setSwingFirsatlari(prev => {
+        if (prev.length >= 3) return prev;
+        const ihtimal = 0.5; // Her yıl %50 ihtimalle yeni bir fırsat gelsin
+        if (Math.random() < ihtimal) {
+          // Dinamik import kullanımı, App.jsx'in başında import etmemek için
+          import('./data/swingStocks.js').then(module => {
+            const yeniFirsat = module.getRandomSwingStock(yil + 1);
+            setSwingFirsatlari(current => {
+              if (current.length >= 3) return current;
+              return [...current, yeniFirsat];
+            });
+          }).catch(e => console.error("Swing data load error", e));
+        }
+        return prev;
+      });
+
     } catch (e) {
       console.error(e)
     }
@@ -1649,7 +1677,12 @@ function AppInner() {
             cash: nakit,
             net_worth: toplamDeger,
             bankruptcy_count: iflasSayisi,
-            bias_metrics: biasMetrics
+            bias_metrics: biasMetrics,
+            swing_trade_metrics: {
+                total_trades: swingTradeGecmisi.length,
+                success_rate: swingTradeGecmisi.length > 0 ? (swingTradeGecmisi.filter(t => t.basarili).length / swingTradeGecmisi.length) * 100 : 0,
+                missed_opportunities: swingTradeGecmisi.filter(t => t.kacirildi).length
+            }
           },
         }),
       })
@@ -2031,6 +2064,28 @@ function AppInner() {
   if (!hikayeGoruldu) {
     return <HikayeEkrani profil={karakterProfili} onDevam={() => setHikayeGoruldu(true)} />
   }
+
+  if (aktifSwingTrade) {
+    return (
+      <SwingTradeEkrani
+        tradeData={aktifSwingTrade}
+        nakit={nakit}
+        onKapat={() => setAktifSwingTrade(null)}
+        onTradeSonucu={(sonuc) => {
+          // Nakiti güncelle
+          nakitiGuncelle(nakit + sonuc.netKarZarar);
+          // Fırsatı listeden çıkar
+          setSwingFirsatlari(prev => prev.filter(f => f.instanceId !== aktifSwingTrade.instanceId));
+          // Geçmişe ekle
+          setSwingTradeGecmisi(prev => [{ ...aktifSwingTrade, ...sonuc, tarih: yil }, ...prev]);
+          setAktifSwingTrade(null);
+        }}
+        tutorialTamamlandi={swingTradeTutorialTamamlandi}
+        setTutorialTamamlandi={setSwingTradeTutorialTamamlandi}
+      />
+    );
+  }
+
   if (oyunBitti) {
     return (
       <BitisSayfasi
@@ -2697,6 +2752,10 @@ function AppInner() {
             opsiyonMetrikleri={opsiyonMetrikleri}
             okunanBolum={okunanBolum}
             mezunOlunanBolum={mezunOlunanBolum}
+            portfoy={portfoy}
+            swingFirsatlari={swingFirsatlari}
+            swingTradeGecmisi={swingTradeGecmisi}
+            onSwingTradeBaslat={(firsat) => setAktifSwingTrade(firsat)}
             onOpsiyonAl={onOpsiyonAl}
             onOpsiyonKapat={onOpsiyonKapat}
             onOpsiyonGuncelle={onOpsiyonGuncelle}

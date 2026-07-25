@@ -104,6 +104,16 @@ def generate_final_report(data: dict) -> dict:
     decision_count = len(history)
     dominant_name = _bias_name(dominant_label) if dominant_label else None
 
+    swing_metrics = final_state.get("swing_trade_metrics", {})
+    swing_text = ""
+    if swing_metrics.get("total_trades", 0) > 0:
+        swing_text = f"""
+# AKTİF TİCARET (SWING TRADE) PERFORMANSI
+- Toplam İşlem: {swing_metrics.get('total_trades', 0)}
+- Başarı Oranı (Kâr Alma): %{swing_metrics.get('success_rate', 0):.1f}
+- Kaçırılan Fırsat (FOMO/Hatalı Limit): {swing_metrics.get('missed_opportunities', 0)}
+"""
+
     # Construct the LLM Context Prompt string that the developer can pass to a real LLM
     llm_prompt = f"""
 Sen klinik bir davranışsal finans analistisin. Aşağıdaki oyuncunun 18 yaşından ölümüne (veya iflasına) kadar olan finansal davranış verilerini analiz edip 3 maddelik keskin bir psikolojik/finansal teşhis raporu yazacaksın.
@@ -123,8 +133,8 @@ Sen klinik bir davranışsal finans analistisin. Aşağıdaki oyuncunun 18 yaş�
 
 # DETAYLI HAREKET DÖKÜMÜ (x1, x2, x3 parametreleri)
 {json.dumps(bias_analysis['details'], indent=2)}
-
-Lütfen bu verileri kullanarak, oyuncunun yüzüne gerçekleri çarpan, klinik dille yazılmış 3 maddelik kısa bir rapor oluştur.
+{swing_text}
+Lütfen bu verileri kullanarak, oyuncunun yüzüne gerçekleri çarpan, klinik dille yazılmış 3 maddelik kısa bir rapor oluştur. (Özellikle Swing Trade verisi varsa, oyuncunun risk algısını ve limit emir disiplinini de sertçe eleştir veya öv).
 """
 
     summary = (
