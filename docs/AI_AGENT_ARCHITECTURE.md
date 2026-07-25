@@ -19,7 +19,7 @@ Her metin agentı önce deterministik bir fallback hazırlar. `GEMINI_API_KEY` t
 
 `memory_agent.py`, mevcut `event_history` verisinden karar sayısını, bias tekrarlarını ve son üç kararı çıkarır. Hafıza sözleşmesi ayrıca `profile_bias_scores` ve son üç `previous_coach_insights` alanını taşır. Bu hafıza yalnızca açık oyun oturumu kapsamındadır; kişisel veri saklamaz ve oyun ekonomisini değiştirmez. Bias Coach bu deterministik özeti Gemini promptunda kullanır; Final Report aynı özeti response içinde taşır. Gemini kapalıysa özet response içinde kalır ve kural tabanlı agentlar çalışmaya devam eder.
 
-Frontend, profil ile AI karar/koç/final rapor kayıtlarını `finsim_agent_memory_v1` anahtarıyla yerel tarayıcı hafızasında saklar. Her kayıt `session_id` taşır; sayfa yenileme aynı oturumun AI kayıtlarını silmez, fakat yeni intro tamamlandığında veya "Tekrar Oyna" işleminde yeni bir session açılarak eski koç/final/event geçmişinin yeni oyuna sızması engellenir. Bu kayıt para, portföy veya ekonomi motorunun sahibi değildir.
+Frontend, profil ile AI karar/koç/final rapor kayıtlarını `finsim_agent_memory_v1` anahtarıyla yerel tarayıcı hafızasında saklar. Her kayıt `session_id` taşır; yeni intro tamamlandığında veya "Tekrar Oyna" işleminde yeni bir session açılarak eski koç/final/event geçmişinin yeni oyuna sızması engellenir. Agent memory mevcut oyun oturumu ve `session_id` üzerinden çalışır. Tüm oyun state restore edilmediği için sayfa yenileme sonrası eski oyuna otomatik dönme hedeflenmez. Bu kayıt para, portföy veya ekonomi motorunun sahibi değildir.
 
 `backend/agents/orchestrator.py`, küçük LangChain `RunnableLambda` zincirleriyle bir agentın çıktısını sıradaki adıma aktarır. LangGraph kullanılmaz; Sprint 3 sunumunda takip edilebilecek üç açık akış vardır:
 
@@ -58,6 +58,7 @@ Kanonik etiketler `backend/agents/bias_catalog.py` içinde tek yerde tutulur. Ö
 - `status_quo` -> `status_quo_bias`
 - `batik_maliyet` -> `sunk_cost`
 - `ahlaki_tehlike` -> `moral_hazard`
+- `dogrulama_yanliligi` -> `confirmation_bias`
 
 Bu normalizasyon koç ve final raporda aynı davranışın farklı adlarla bölünmesini önler.
 
@@ -65,15 +66,35 @@ Bu normalizasyon koç ve final raporda aynı davranışın farklı adlarla böl�
 
 `backend/agents/data/rag_sources.json`, davranışsal finans çalışmalarının kısa Türkçe kaynak kartlarını içerir. Her kartta kimlik, bias etiketi, başlık, yazar, yıl, URL/dosya adı, özet, kullanan agentlar ve oyun içi kullanım alanı bulunur.
 
-`rag_service.py`, bias etiketi, agent adı ve anahtar kelimelerle ilgili kartları seçer. İlk sürüm deterministik tag/keyword retrieval kullanır; ham PDF metni runtime'a veya repoya alınmaz. Yerel PDF klasörleri `.gitignore` içindedir. Kaynak bulunamazsa agent fallback ile çalışır.
+`rag_service.py`, ignore edilen `research/pdfs/` klasöründeki PDF'leri `pypdf` ile sayfa sayfa okur. Metin yaklaşık 1200 karakterlik ve 180 karakter örtüşmeli parçalara ayrılır. Her parçada kaynak kimliği, sayfa numarası, bias etiketleri ve agent kullanım alanı korunur.
 
-Bias Coach en fazla iki, Final Report ve Learning Plan en fazla üç kaynak kartı kullanır.
+Embedding katmanı `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` modelini kullanır. Bu model Türkçe sorgular için çok dilli semantik temsil üretir. Model yerelde yoksa ve indirmeye izin verilmemişse aynı akış deterministik `hash_embedding` fallback'iyle çalışır; testler daima bu çevrimdışı yolu kullanır. `FINSIM_ALLOW_MODEL_DOWNLOAD=true` yalnız modeli ilk kez lokal cache'e almak istendiğinde açılmalıdır.
+
+Chunk metinleri ve embedding vektörleri `.rag_cache/rag_index.json` içinde yerel bir indeks olarak saklanır. PDF değişikliklerinin dosya boyutu ve değiştirilme zamanı fingerprint'e katıldığı için kaynaklar değişince indeks yeniden oluşturulur. Hem PDF klasörü hem indeks `.gitignore` içindedir; ham PDF veya çıkarılmış uzun metin commitlenmez.
+
+Sorgu sırasında bias etiketi, event başlığı, seçilen seçenek, Decision Analyst kanıtı ve session memory birlikte embedding'e çevrilir. Cosine similarity ile sıralanan sonuçlara kanonik bias eşleşmesi küçük bir öncelik puanı ekler. Agent adı filtresi kaynakların yanlış akışta kullanılmasını engeller. Bias Coach en fazla iki farklı kaynaktan, Final Report ve Learning Plan en fazla üç farklı kaynaktan passage alır.
+
+PDF, `pypdf`, embedding modeli veya yerel indeks kullanılamazsa `rag_sources.json` içindeki doğrulanmış kısa Türkçe kaynak kartları devreye girer. Böylece RAG kalitesi düşse bile oyun ve agent endpointleri kırılmaz.
+
+Kaynak seti genel davranışsal finans çalışmalarına ek olarak batık maliyet için Arkes-Blumer (1985), statüko yanlılığı için Samuelson-Zeckhauser (1988), bugünü tercih etme için Laibson (1997), ahlaki tehlike için Holmström (1979) ve doğrulama yanlılığı için Nickerson (1998) çalışmalarını içerir. Nickerson kaydı doğrulanmış kaynak kartı olarak kullanılır; ilgili ham PDF yerelde yoksa başka bir PDF yanlış etiketlenmez.
+
+Yerel yapılandırma:
+
+```dotenv
+FINSIM_RAG_DIR=research/pdfs
+FINSIM_RAG_CACHE=.rag_cache/rag_index.json
+FINSIM_EMBEDDING_BACKEND=sentence_transformers
+FINSIM_EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+FINSIM_EMBEDDING_BATCH_SIZE=8
+FINSIM_EMBEDDING_GROUP_SIZE=1
+FINSIM_ALLOW_MODEL_DOWNLOAD=false
+```
 
 ## Agentlar
 
 ### Profile Agent
 
-Altı intro sorusundaki `bias_skor` değerlerini beş boyutlu başlangıç vektörüne çevirir. Baskın başlangıç eğilimi intro hikayesini kişiselleştirir. `0` değerleri geçerli veri kabul edilir ve varsayılanla değiştirilmez.
+Altı intro sorusundaki `bias_skor` değerlerini beş boyutlu başlangıç vektörüne çevirir. Baskın başlangıç eğilimi intro hikayesini kişiselleştirir. `0` değerleri geçerli veri kabul edilir ve varsayılanla değiştirilmez. Boş cevap listesinde nötr skorlar korunur ve `bias_scores_are_neutral: true` ile işaretlenir; bu skorlar Final Report'ta intro kanıtı sayılmaz. Baskın bias seçilmez, hayali karar detayı üretilmez ve Gemini çağrısı yapılmaz.
 
 ### Bias Coach
 
@@ -90,6 +111,8 @@ birleşik skor = başlangıç skoru * 0.30 + oyun skoru * 0.70
 ```
 
 Yalnızca bir veri türü varsa mevcut skor doğrudan kullanılır. Hiç veri yoksa `dominant_bias: null` ve `dominant_bias_name_tr: "Yeterli veri yok"` döner. Rapor başlığı `Davranışsal Finans Değerlendirmesi`dir; klinik veya psikolojik tanı iddiası yoktur.
+
+Intro anketi ölçtüğü beş temel eğilim için başlangıç skoru üretir. Final Report ise bias kataloğundaki on bir eğilimin tamamını oyun geçmişinden değerlendirebilir; introda ölçülmeyen `overconfidence`, `herd_behavior`, `status_quo_bias`, `sunk_cost`, `moral_hazard` ve `confirmation_bias` yalnız gerçek oyun kanıtı varsa skora girer.
 
 ### Learning Plan
 

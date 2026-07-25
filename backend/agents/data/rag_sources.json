@@ -82,5 +82,101 @@
     "summary_tr": "Gelecekteki gelir artışlarıyla tasarrufu önceden planlamanın kısa vadeli tercihleri ve ertelemeyi yönetmeye yardımcı olabileceğini gösterir.",
     "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
     "game_usage": "Bugünkü tüketim ile gelecekteki hedefler arasındaki dengeyi düşündürmek."
+  },
+  {
+    "id": "barber_odean_1999",
+    "bias_labels": ["overconfidence"],
+    "title": "The Courage of Misguided Convictions: The Trading Behavior of Individual Investors",
+    "authors": "Brad M. Barber; Terrance Odean",
+    "year": 1999,
+    "source": "04_overconfidence_odean_1998.pdf",
+    "source_url": "https://faculty.haas.berkeley.edu/odean/papers/returns/Individual_Investor_Performance_Final.pdf",
+    "summary_tr": "Bireysel yatırımcıların yoğun işlem davranışını ve kendi değerlendirmelerine aşırı güvenmenin karar kalitesiyle ilişkisini inceler.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Kullanıcının belirsizliği küçümseyerek sık veya yüksek güvenli kararlar verdiği anları açıklamak."
+  },
+  {
+    "id": "lusardi_mitchell_2013",
+    "bias_labels": ["present_bias", "status_quo_bias"],
+    "title": "The Economic Importance of Financial Literacy: Theory and Evidence",
+    "authors": "Annamaria Lusardi; Olivia S. Mitchell",
+    "year": 2013,
+    "source": "08_financial_literacy_lusardi_mitchell_2013.pdf",
+    "source_url": "https://www.nber.org/papers/w18952",
+    "summary_tr": "Finansal bilginin yaşam boyu planlama, tasarruf ve belirsizlik altındaki kararlarla ilişkisini kuramsal ve ampirik bulgularla değerlendirir.",
+    "used_by": ["final_report_agent", "learning_plan_agent"],
+    "game_usage": "Final değerlendirmeyi kısa vadeli kararların ötesinde finansal okuryazarlık ve planlama çerçevesine bağlamak."
+  },
+  {
+    "id": "markowitz_1952",
+    "bias_labels": ["diversification"],
+    "title": "Portfolio Selection",
+    "authors": "Harry Markowitz",
+    "year": 1952,
+    "source": "10_portfolio_selection_markowitz_1952.pdf",
+    "source_url": "https://doi.org/10.1111/j.1540-6261.1952.tb01525.x",
+    "summary_tr": "Belirsizlik altında kararları tek bir sonuca değil, beklenen sonuçlar ile sonuçların değişkenliğine birlikte bakarak değerlendiren temel çerçeveyi sunar.",
+    "used_by": ["final_report_agent", "learning_plan_agent"],
+    "game_usage": "Tek bir sonuca aşırı odaklanmak yerine alternatif sonuçları ve belirsizliği birlikte düşünmeyi öğretmek."
+  },
+  {
+    "id": "arkes_blumer_1985",
+    "bias_labels": ["sunk_cost"],
+    "title": "The Psychology of Sunk Cost",
+    "authors": "Hal R. Arkes; Catherine Blumer",
+    "year": 1985,
+    "source": "13_sunk_cost_arkes_blumer_1985.pdf",
+    "source_url": "https://doi.org/10.1016/0749-5978(85)90049-4",
+    "summary_tr": "Para, zaman veya emek harcanmış olmasının, gelecekteki yararı düşük olsa bile bir kararı sürdürme eğilimini nasıl güçlendirdiğini deneylerle inceler.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Geçmiş maliyeti geri kazanma isteğiyle sürdürülen oyun kararlarını, gelecekteki sonuçlardan ayrı değerlendirmeyi öğretmek."
+  },
+  {
+    "id": "samuelson_zeckhauser_1988",
+    "bias_labels": ["status_quo_bias"],
+    "title": "Status Quo Bias in Decision Making",
+    "authors": "William Samuelson; Richard Zeckhauser",
+    "year": 1988,
+    "source": "14_status_quo_samuelson_zeckhauser_1988.pdf",
+    "source_url": "https://doi.org/10.1007/BF00055564",
+    "summary_tr": "İnsanların hiçbir değişiklik yapmama veya mevcut seçeneği koruma eğilimini deneysel ve gerçek yaşam kararları üzerinden açıklar.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Kullanıcının koşullar değişmesine rağmen varsayılan seçenekte kalma gerekçesini sorgulamasına yardımcı olmak."
+  },
+  {
+    "id": "laibson_1997",
+    "bias_labels": ["present_bias"],
+    "title": "Golden Eggs and Hyperbolic Discounting",
+    "authors": "David Laibson",
+    "year": 1997,
+    "source": "15_present_bias_laibson_1997.pdf",
+    "source_url": "https://doi.org/10.1162/003355397555253",
+    "summary_tr": "Bugünkü ödüllerin gelecekteki faydalara göre orantısız biçimde öne çıkmasını ve kişilerin gelecekteki seçimlerini sınırlayan taahhüt mekanizmalarına neden ihtiyaç duyabildiğini açıklar.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Anlık rahatlık veya tüketim uğruna uzun vadeli planın geri plana atıldığı oyun kararlarını açıklamak."
+  },
+  {
+    "id": "holmstrom_1979",
+    "bias_labels": ["moral_hazard"],
+    "title": "Moral Hazard and Observability",
+    "authors": "Bengt Holmström",
+    "year": 1979,
+    "source": "16_moral_hazard_holmstrom_1979.pdf",
+    "source_url": "https://doi.org/10.2307/3003320",
+    "summary_tr": "Bir kişinin eylemleri tam gözlenemediğinde ve kararın sonuçları başkalarıyla paylaşıldığında teşviklerin risk alma davranışını nasıl değiştirebildiğini inceler.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Kararın maliyetini başkasının üstlenmesinin kullanıcının algıladığı riski değiştirip değiştirmediğini düşündürmek."
+  },
+  {
+    "id": "nickerson_1998_confirmation_bias",
+    "bias_labels": ["confirmation_bias"],
+    "title": "Confirmation Bias: A Ubiquitous Phenomenon in Many Guises",
+    "authors": "Raymond S. Nickerson",
+    "year": 1998,
+    "source": "nickerson_1998_confirmation_bias.pdf",
+    "source_url": "https://doi.org/10.1037/1089-2680.2.2.175",
+    "summary_tr": "Kişinin kendi fikrini destekleyen bilgileri daha güçlü görüp, ters kanıtları zayıf değerlendirme eğilimini ve bunun karar değerlendirmelerini nasıl etkileyebildiğini açıklar.",
+    "used_by": ["bias_coach_agent", "final_report_agent", "learning_plan_agent"],
+    "game_usage": "Kullanıcının mevcut görüşünü destekleyen kanıtlarla çelişen kanıtlara aynı ağırlığı verip vermediğini sorgulamasına yardımcı olmak."
   }
 ]

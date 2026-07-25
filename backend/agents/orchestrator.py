@@ -58,7 +58,22 @@ def _decision_step(state: dict) -> dict:
 
 def _coach_rag_step(state: dict) -> dict:
     analysis = state["decision_analysis"]
-    sources = ilgili_kaynaklari_getir(analysis["detected_bias"], "bias_coach_agent", limit=2)
+    request = state["request"]
+    query = " ".join(
+        value
+        for value in (
+            request.get("event_title") or request.get("event_baslik"),
+            request.get("selected_option") or request.get("secim_metin"),
+            analysis.get("evidence"),
+        )
+        if value
+    )
+    sources = ilgili_kaynaklari_getir(
+        analysis["detected_bias"],
+        "bias_coach_agent",
+        query=query,
+        limit=2,
+    )
     return {**state, "rag_sources": sources}
 
 

@@ -5,7 +5,22 @@ from .rag_service import ilgili_kaynaklari_getir
 def generate_learning_plan(data: dict) -> dict:
     report = data.get("report") or data.get("rapor") or data
     dominant = normalize_bias_label(report.get("dominant_bias")) if report.get("dominant_bias") else None
-    sources = ilgili_kaynaklari_getir(dominant, "learning_plan_agent", limit=3) if dominant else []
+    query = " ".join(
+        [
+            str(report.get("summary") or ""),
+            *[str(item) for item in report.get("growth_areas", [])],
+        ]
+    )
+    sources = (
+        ilgili_kaynaklari_getir(
+            dominant,
+            "learning_plan_agent",
+            query=query,
+            limit=3,
+        )
+        if dominant
+        else []
+    )
     topics = [source["summary_tr"] for source in sources]
     if not topics:
         topics = ["Karar gerekçesini kaydetme", "Belirsizlik altında alternatif senaryoları karşılaştırma"]

@@ -9,6 +9,7 @@ BIAS_DEFINITIONS = {
     "status_quo_bias": {"name_tr": "Mevcut Durumu Koruma Eğilimi", "title": "Değişimden Kaçınma Sinyali"},
     "sunk_cost": {"name_tr": "Batık Maliyet Yanılgısı", "title": "Geçmiş Maliyete Takılma Sinyali"},
     "moral_hazard": {"name_tr": "Ahlaki Tehlike", "title": "Riskin Sonucunu Başkasına Yükleme Sinyali"},
+    "confirmation_bias": {"name_tr": "Doğrulama Yanlılığı", "title": "Seçici Kanıt Sinyali"},
 }
 
 BIAS_ALIASES = {
@@ -19,6 +20,8 @@ BIAS_ALIASES = {
     "disposition": "disposition_effect",
     "batik_maliyet": "sunk_cost",
     "ahlaki_tehlike": "moral_hazard",
+    "confirmation": "confirmation_bias",
+    "dogrulama_yanliligi": "confirmation_bias",
 }
 
 CORE_BIASES = (
@@ -28,6 +31,8 @@ CORE_BIASES = (
     "disposition_effect",
     "present_bias",
 )
+
+REPORT_BIASES = tuple(BIAS_DEFINITIONS)
 
 
 def normalize_bias_label(label: str | None) -> str:

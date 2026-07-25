@@ -4,17 +4,25 @@ from urllib.error import HTTPError
 
 import pytest
 
-from agents.bias_catalog import normalize_bias_label
+from agents.bias_catalog import bias_name_tr, normalize_bias_label
 from agents.bias_coach_agent import generate_coach_comment
 from agents.final_report_agent import calculate_bias_scores, generate_final_report
 from agents.llm_client import DEFAULT_GEMINI_MODEL, metin_uret
 from agents.memory_agent import build_agent_memory
 from agents.profile_agent import generate_profile
-from agents.rag_service import ilgili_kaynaklari_getir
+from agents.embedding_service import metinleri_embeddinge_cevir
+from agents.rag_service import ilgili_kaynaklari_getir, metni_chunklara_bol
 from agents.safety_agent import guvenlik_kontrolu
 from agents.decision_analyst_agent import analyze_decision
 from agents import orchestrator
 from agents import llm_client
+from agents import rag_service
+
+
+PROFILE_ANSWERS = [
+    {"question_id": 1, "selected_text": "Orta başlangıç", "bias_skor": {"zorluk": "orta"}},
+    {"question_id": 2, "selected_text": "Kesin ödülü seçtim", "bias_skor": {"loss_aversion": 80}},
+]
 
 
 @pytest.fixture(autouse=True)
@@ -28,8 +36,12 @@ def agent_testlerini_agdan_yalit(monkeypatch):
         "LANGCHAIN_TRACING",
         "LANGSMITH_API_KEY",
         "LANGSMITH_TRACING",
+        "FINSIM_RAG_DIR",
+        "FINSIM_RAG_CACHE",
+        "FINSIM_ALLOW_MODEL_DOWNLOAD",
     ):
         monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("FINSIM_EMBEDDING_BACKEND", "hash_embedding")
 
     def unexpected_network_call(*args, **kwargs):
         raise AssertionError("Agent testinde gerçek ağ çağrısı yapılmamalı.")
@@ -68,7 +80,7 @@ def test_api_key_varken_llm_hatasi_acikca_isaretlenir(monkeypatch):
         raise HTTPError("https://example.invalid", 404, "Not Found", None, None)
 
     monkeypatch.setattr(llm_client, "urlopen", model_not_found)
-    result = generate_profile({"answers": []})
+    result = generate_profile({"answers": PROFILE_ANSWERS})
     assert result["llm_enabled"] is True
     assert result["generation_source"] == "llm_error"
     assert result["llm_error_type"] == "model_not_found"
@@ -85,7 +97,7 @@ def test_require_llm_false_hata_bilgisiyle_fallback_doner(monkeypatch):
     monkeypatch.setattr(llm_client, "urlopen", rate_limited)
     from main import _agent_response
 
-    result = _agent_response("profile", {"answers": []})
+    result = _agent_response("profile", {"answers": PROFILE_ANSWERS})
     assert result["generation_source"] == "llm_error"
     assert result["llm_error_type"] == "rate_limit"
     assert result["intro_story"]
@@ -103,7 +115,7 @@ def test_require_llm_true_kontrollu_503_doner(monkeypatch):
     from main import _agent_response
 
     with pytest.raises(HTTPException) as error:
-        _agent_response("profile", {"answers": []})
+        _agent_response("profile", {"answers": PROFILE_ANSWERS})
     assert error.value.status_code == 503
     assert error.value.detail["llm_error_type"] == "auth_error"
     assert error.value.detail["fallback_response"]["intro_story"]
@@ -113,10 +125,16 @@ def test_bias_aliaslari_kanonik_etikete_donusur():
     assert normalize_bias_label("herding") == "herd_behavior"
     assert normalize_bias_label("status_quo") == "status_quo_bias"
     assert normalize_bias_label("batik_maliyet") == "sunk_cost"
+    assert normalize_bias_label("dogrulama_yanliligi") == "confirmation_bias"
+    assert bias_name_tr("confirmation_bias") == "Doğrulama Yanlılığı"
 
 
 def test_coach_extended_biaslari_bosa_dusurmez():
-    for label, expected in (("sunk_cost", "Batık Maliyet Yanılgısı"), ("moral_hazard", "Ahlaki Tehlike")):
+    for label, expected in (
+        ("sunk_cost", "Batık Maliyet Yanılgısı"),
+        ("moral_hazard", "Ahlaki Tehlike"),
+        ("confirmation_bias", "Doğrulama Yanlılığı"),
+    ):
         result = generate_coach_comment({"bias_label": label, "event_history": [{"bias_label": label}]})
         assert result["bias_name_tr"] == expected
         assert result["should_show"] is True
@@ -155,6 +173,38 @@ def test_agent_hafizasi_tekrarlari_ve_son_kararlari_ozetler():
     assert len(memory["recent_decisions"]) == 3
     assert memory["profile_bias_scores"]["present_bias"] == 85
     assert memory["previous_coach_insights"][0]["coach_comment"] == "İlk yorum"
+
+
+def test_agent_hafizasi_farkli_session_kayitlarini_karistirmaz():
+    memory = build_agent_memory({
+        "session_id": "new-session",
+        "event_history": [
+            {"session_id": "old-session", "bias_label": "loss_aversion"},
+            {"session_id": "new-session", "bias_label": "confirmation_bias"},
+        ],
+        "agent_memory": {
+            "session_id": "old-session",
+            "previous_coach_insights": [{"coach_comment": "Eski oyun yorumu"}],
+        },
+    })
+    assert memory["session_id"] == "new-session"
+    assert memory["decision_count"] == 1
+    assert memory["bias_counts"] == {"confirmation_bias": 1}
+    assert memory["previous_coach_insights"] == []
+
+
+def test_profile_bos_cevapta_baskin_bias_ve_karar_uydurmaz():
+    result = generate_profile({"answers": []})
+    assert result["dominant_bias"] is None
+    assert result["dominant_bias_name_tr"] == "Yeterli veri yok"
+    assert result["story_biases"] == []
+    assert result["story_details"] == []
+    assert result["bias_scores_are_neutral"] is True
+    assert "karar kaydı oluşmadı" in result["intro_story"]
+    assert "seçimin" not in result["intro_story"].lower()
+    assert result["generation_source"] == "rule_based_fallback"
+    report = generate_final_report({"profile": result, "event_history": [], "final_state": {}})
+    assert report["dominant_bias"] is None
 
 
 def test_profile_fallback_hikayesi_somut_intro_detaylarini_kullanir():
@@ -212,6 +262,39 @@ def test_oyun_gecmisinde_daha_sik_bias_daha_yuksek_skorlanir():
     assert analysis["scores"]["loss_aversion"] > analysis["scores"]["anchoring"]
 
 
+def test_final_report_genisletilmis_biaslari_oyun_gecmisinden_hesaplar():
+    history = [
+        {"bias_label": "sunk_cost"},
+        {"bias_label": "sunk_cost"},
+        {"bias_label": "moral_hazard"},
+    ]
+    analysis = calculate_bias_scores({}, {}, history)
+    assert analysis["scores"]["sunk_cost"] > analysis["scores"]["moral_hazard"]
+    assert analysis["scores"]["herd_behavior"] is None
+
+    report = generate_final_report(
+        {
+            "profile": {},
+            "event_history": history,
+            "final_state": {},
+        }
+    )
+    assert report["dominant_bias"] == "sunk_cost"
+    assert report["dominant_bias_name_tr"] == "Batık Maliyet Yanılgısı"
+
+
+def test_confirmation_bias_final_raporda_skorlanir():
+    history = [
+        {"bias_label": "confirmation_bias"},
+        {"bias_label": "dogrulama_yanliligi"},
+    ]
+    analysis = calculate_bias_scores({}, {}, history)
+    assert analysis["scores"]["confirmation_bias"] == 100
+    report = generate_final_report({"profile": {}, "event_history": history, "final_state": {}})
+    assert report["dominant_bias"] == "confirmation_bias"
+    assert report["dominant_bias_name_tr"] == "Doğrulama Yanlılığı"
+
+
 def test_final_report_veri_yokken_bias_uydurmaz():
     result = generate_final_report({"profile": {}, "event_history": [], "final_state": {}})
     assert result["dominant_bias"] is None
@@ -223,6 +306,130 @@ def test_rag_ilgili_kaynagi_secer():
     sources = ilgili_kaynaklari_getir("mental_accounting", "bias_coach_agent")
     assert sources
     assert "mental_accounting" in sources[0]["bias_labels"]
+
+
+def test_rag_pdf_metnini_overlapli_chunklara_boler():
+    text = " ".join(f"karar{i}" for i in range(300))
+    chunks = metni_chunklara_bol(text, chunk_size=240, overlap=40)
+    assert len(chunks) > 2
+    assert all(0 < len(chunk) <= 240 for chunk in chunks)
+    assert chunks[0][-20:] in chunks[1]
+
+
+def test_rag_embedding_ile_en_ilgili_pdf_pasajini_secer(monkeypatch):
+    cards = [
+        {
+            "id": "suruklenme",
+            "bias_labels": ["herd_behavior"],
+            "title": "Kalabalık Kararları",
+            "authors": "Test",
+            "year": 2020,
+            "source": "herd.pdf",
+            "source_url": "",
+            "summary_tr": "Kalabalığı izleme davranışı.",
+            "used_by": ["bias_coach_agent"],
+            "game_usage": "Sürü davranışı.",
+        },
+        {
+            "id": "kayip",
+            "bias_labels": ["loss_aversion"],
+            "title": "Kayıp Kararları",
+            "authors": "Test",
+            "year": 2021,
+            "source": "loss.pdf",
+            "source_url": "",
+            "summary_tr": "Kayıptan kaçınma davranışı.",
+            "used_by": ["bias_coach_agent"],
+            "game_usage": "Kayıp farkındalığı.",
+        },
+    ]
+    texts = [
+        "Kalabalığı takip etmek kişinin kendi bilgisini ikinci plana atmasına yol açabilir.",
+        "Kayıplar eşdeğer kazançlardan daha güçlü hissedilebilir.",
+    ]
+    embeddings, backend = metinleri_embeddinge_cevir(texts)
+    monkeypatch.setattr(rag_service, "kaynaklari_yukle", lambda: cards)
+    monkeypatch.setattr(
+        rag_service,
+        "rag_indeksini_yukle",
+        lambda: {
+            "embedding_backend": backend,
+            "chunks": [
+                {
+                    "chunk_id": "suruklenme:p1:c1",
+                    "source_id": "suruklenme",
+                    "page": 1,
+                    "text": texts[0],
+                    "bias_labels": ["herd_behavior"],
+                    "used_by": ["bias_coach_agent"],
+                },
+                {
+                    "chunk_id": "kayip:p1:c1",
+                    "source_id": "kayip",
+                    "page": 1,
+                    "text": texts[1],
+                    "bias_labels": ["loss_aversion"],
+                    "used_by": ["bias_coach_agent"],
+                },
+            ],
+            "embeddings": embeddings,
+        },
+    )
+    sources = ilgili_kaynaklari_getir(
+        "herding",
+        "bias_coach_agent",
+        query="Kalabalığı takip ettim",
+        limit=1,
+    )
+    assert sources[0]["id"] == "suruklenme"
+    assert sources[0]["page"] == 1
+    assert sources[0]["retrieval_backend"] == "hash_embedding"
+
+
+def test_rag_pdf_ve_embedding_yokken_kaynak_karti_fallback_doner(monkeypatch):
+    monkeypatch.setattr(
+        rag_service,
+        "rag_indeksini_yukle",
+        lambda: {
+            "embedding_backend": "hash_embedding",
+            "chunks": [],
+            "embeddings": [],
+        },
+    )
+    sources = ilgili_kaynaklari_getir(
+        "mental_accounting",
+        "bias_coach_agent",
+        query="Parayı ayrı hesaplarda düşündüm",
+        limit=1,
+    )
+    assert sources[0]["retrieval_backend"] == "source_card_fallback"
+    assert sources[0]["summary_tr"]
+
+
+def test_rag_genisletilmis_biaslar_icin_dogrudan_kaynak_secer(monkeypatch):
+    monkeypatch.setattr(
+        rag_service,
+        "rag_indeksini_yukle",
+        lambda: {
+            "embedding_backend": "hash_embedding",
+            "chunks": [],
+            "embeddings": [],
+        },
+    )
+    expected_sources = {
+        "sunk_cost": "arkes_blumer_1985",
+        "status_quo": "samuelson_zeckhauser_1988",
+        "present_bias": "laibson_1997",
+        "moral_hazard": "holmstrom_1979",
+        "confirmation_bias": "nickerson_1998_confirmation_bias",
+    }
+    for bias_label, source_id in expected_sources.items():
+        sources = ilgili_kaynaklari_getir(
+            bias_label,
+            "bias_coach_agent",
+            limit=1,
+        )
+        assert sources[0]["id"] == source_id
 
 
 def test_safety_riskli_dili_yakalar():
@@ -239,6 +446,9 @@ def test_safety_riskli_dili_yakalar():
     assert all(not guvenlik_kontrolu(text)["approved"] for text in risky_texts)
     assert guvenlik_kontrolu("Bu karardan ders al ve not al.")["approved"] is True
     assert guvenlik_kontrolu("Karar almadan önce gerekçeni düşün.")["approved"] is True
+    assert guvenlik_kontrolu("Karar al.")["approved"] is True
+    assert guvenlik_kontrolu("Ders al.")["approved"] is True
+    assert guvenlik_kontrolu("Not al.")["approved"] is True
 
 
 def test_safety_yarim_llm_cumlesini_reddeder():

@@ -24,7 +24,7 @@ RISKY_PATTERNS = {
 def guvenlik_kontrolu(text: str | None) -> dict:
     content = (text or "").strip()
     violations = [name for name, pattern in RISKY_PATTERNS.items() if pattern.search(content)]
-    if content and (len(content) < 30 or not re.search(r"[.!?][\"')\]]?$", content)):
+    if content and not re.search(r"[.!?][\"')\]]?$", content):
         violations.append("eksik_veya_yarim_metin")
     return {"approved": bool(content) and not violations, "violations": violations}
 

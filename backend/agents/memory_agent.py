@@ -7,9 +7,23 @@ def _event_history(data: dict) -> list[dict]:
     return data.get("event_history") or data.get("event_gecmisi") or data.get("event_kayitlari") or []
 
 
+def _session_id(data: dict, supplied_memory: dict) -> str | None:
+    profile = data.get("profile") or {}
+    return data.get("session_id") or profile.get("session_id") or supplied_memory.get("session_id")
+
+
 def build_agent_memory(data: dict) -> dict:
     """Build a small, session-scoped memory summary from deterministic game data."""
-    history = _event_history(data)
+    supplied_memory = data.get("agent_memory") or {}
+    current_session_id = _session_id(data, supplied_memory)
+    supplied_session_id = supplied_memory.get("session_id")
+    if current_session_id and supplied_session_id and current_session_id != supplied_session_id:
+        supplied_memory = {}
+    history = [
+        item
+        for item in _event_history(data)
+        if not current_session_id or not item.get("session_id") or item.get("session_id") == current_session_id
+    ]
     labels = [
         normalize_bias_label(item.get("bias_label") or item.get("bias_etiketi") or item.get("bias"))
         for item in history
@@ -31,7 +45,6 @@ def build_agent_memory(data: dict) -> dict:
         }
         for item in history[-3:]
     ]
-    supplied_memory = data.get("agent_memory") or {}
     profile = data.get("profile") or {}
     profile_bias_scores = (
         data.get("bias_scores")
@@ -46,6 +59,7 @@ def build_agent_memory(data: dict) -> dict:
     )[-3:]
     return {
         "scope": "current_game_session",
+        "session_id": current_session_id,
         "decision_count": len(history),
         "bias_counts": dict(counts),
         "repeated_biases": repeated_biases,

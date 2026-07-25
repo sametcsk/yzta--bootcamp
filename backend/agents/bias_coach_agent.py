@@ -46,6 +46,10 @@ COACH_CONTENT = {
         "Bir kararın sonucunu başkası üstlendiğinde risk daha küçük algılanabilir.",
         "Sonucun tamamını sen üstlenseydin aynı riski alır mıydın?",
     ),
+    "confirmation_bias": (
+        "Kendi fikrini destekleyen bilgileri daha güçlü görüp ters kanıtları zayıf değerlendirmiş olabilirsin.",
+        "Bu karara ters düşen bilgiyi de aynı ağırlıkla değerlendirdin mi?",
+    ),
 }
 
 BIAS_LIBRARY = {
@@ -136,8 +140,24 @@ def generate_coach_comment(data: dict) -> dict:
         if event_title and selected_option
         else content[0]
     )
+    rag_query = " ".join(
+        value
+        for value in (
+            event_title,
+            selected_option,
+            decision_analysis.get("evidence"),
+            memory_summary,
+        )
+        if value
+    )
     sources = (
-        data.get("rag_sources") or ilgili_kaynaklari_getir(label, "bias_coach_agent", limit=2)
+        data.get("rag_sources")
+        or ilgili_kaynaklari_getir(
+            label,
+            "bias_coach_agent",
+            query=rag_query,
+            limit=2,
+        )
     ) if should_show else []
     llm_result = {"status": "not_requested", "text": None, "llm_enabled": gemini_hazir_mi(), "error_type": None}
     llm_safe = False

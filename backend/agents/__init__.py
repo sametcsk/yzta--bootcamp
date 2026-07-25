@@ -5,7 +5,13 @@ from .learning_plan_agent import generate_learning_plan, ogrenme_plani_uret
 from .memory_agent import ajan_hafizasi_olustur, build_agent_memory
 from .decision_analyst_agent import analyze_decision, karar_analizi_yap
 from .orchestrator import generate_safe_learning_plan, run_agent_flow, ajan_akisini_calistir
-from .rag_service import ilgili_kaynaklari_getir, kaynaklari_getir
+from .rag_service import (
+    ilgili_kaynaklari_getir,
+    kaynaklari_getir,
+    metni_chunklara_bol,
+    rag_durumunu_getir,
+    rag_indeksini_yukle,
+)
 from .safety_agent import guvenlik_kontrolu, guvenlik_kontrolu_yap
 
 __all__ = [
@@ -26,6 +32,9 @@ __all__ = [
     "generate_safe_learning_plan",
     "ilgili_kaynaklari_getir",
     "kaynaklari_getir",
+    "metni_chunklara_bol",
+    "rag_durumunu_getir",
+    "rag_indeksini_yukle",
     "guvenlik_kontrolu",
     "guvenlik_kontrolu_yap",
 ]

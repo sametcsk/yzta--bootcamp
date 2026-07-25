@@ -11,3 +11,4 @@ frontend/dist/
 # Academic PDFs are kept locally; the repository contains only source summaries.
 research/pdfs/
 rag/
+.rag_cache/

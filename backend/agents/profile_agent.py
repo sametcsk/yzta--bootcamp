@@ -76,6 +76,15 @@ def _story_details(answers: list[dict]) -> list[str]:
     return details[:3]
 
 
+def _has_behavioral_answers(answers: list[dict]) -> bool:
+    for answer in answers:
+        raw_scores = answer.get("bias_skor") or answer.get("bias_scores") or {}
+        for raw_label, value in raw_scores.items():
+            if normalize_bias_label(raw_label) in CORE_BIASES and isinstance(value, (int, float)):
+                return True
+    return False
+
+
 def _fallback_story(difficulty: str, dominant_biases: list[str], details: list[str]) -> str:
     tendency_lines = " ".join(BIAS_STORY_LINES[label] for label in dominant_biases[:2])
     decision_lines = " ".join(f'"{detail}" seçimin bu yolun izlerinden biri oldu.' for detail in details)
@@ -92,20 +101,37 @@ def generate_profile(data: dict) -> dict:
     happiness = int(_value(data, "mutluluk", "happiness", default=50))
     annual_income = int(_value(data, "yillik_gelir", "yillikGelir", default=216000))
     bias_scores, difficulty = _extract_bias_scores(answers)
-    ranked_biases = sorted(bias_scores, key=lambda label: bias_scores[label], reverse=True)
-    dominant_bias = ranked_biases[0]
-    story_biases = ranked_biases[:2]
-    selected_details = _story_details(answers)
-    fallback_story = _fallback_story(difficulty, story_biases, selected_details)
-    llm_result = metin_uret(
-        PROFILE_STORY_SYSTEM_PROMPT,
-        PROFILE_STORY_USER_PROMPT_TEMPLATE.format(
-            difficulty=difficulty,
-            bias_names=", ".join(bias_name_tr(label) for label in story_biases),
-            selected_details=selected_details,
-            fallback_story=fallback_story,
-        ),
-    )
+    has_behavioral_answers = _has_behavioral_answers(answers)
+    if has_behavioral_answers:
+        ranked_biases = sorted(bias_scores, key=lambda label: bias_scores[label], reverse=True)
+        dominant_bias = ranked_biases[0]
+        story_biases = ranked_biases[:2]
+        selected_details = _story_details(answers)
+        fallback_story = _fallback_story(difficulty, story_biases, selected_details)
+        llm_result = metin_uret(
+            PROFILE_STORY_SYSTEM_PROMPT,
+            PROFILE_STORY_USER_PROMPT_TEMPLATE.format(
+                difficulty=difficulty,
+                bias_names=", ".join(bias_name_tr(label) for label in story_biases),
+                selected_details=selected_details,
+                fallback_story=fallback_story,
+            ),
+        )
+    else:
+        dominant_bias = None
+        story_biases = []
+        selected_details = []
+        fallback_story = (
+            "18 yaşında finansal yolculuğunun başındasın. Henüz davranışsal eğilimlerini "
+            "gösterecek bir karar kaydı oluşmadı. Oyun ilerledikçe karar alışkanlıklarının "
+            "nasıl şekillendiğini gözlemleyebileceksin."
+        )
+        llm_result = {
+            "status": "not_requested",
+            "text": None,
+            "llm_enabled": False,
+            "error_type": None,
+        }
     intro_story, llm_safe = guvenli_metin_veya_fallback(llm_result.get("text"), fallback_story)
     llm_metadata = llm_response_metadata(llm_result, llm_safe)
 
@@ -122,8 +148,9 @@ def generate_profile(data: dict) -> dict:
         "patience": patience,
         "happiness": happiness,
         "bias_scores": bias_scores,
+        "bias_scores_are_neutral": not has_behavioral_answers,
         "dominant_bias": dominant_bias,
-        "dominant_bias_name_tr": bias_name_tr(dominant_bias),
+        "dominant_bias_name_tr": bias_name_tr(dominant_bias) if dominant_bias else "Yeterli veri yok",
         "story_biases": story_biases,
         "story_details": selected_details,
         "intro_story": intro_story,

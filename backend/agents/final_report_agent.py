@@ -1,4 +1,4 @@
-from .bias_catalog import CORE_BIASES, bias_name_tr, normalize_bias_label
+from .bias_catalog import REPORT_BIASES, bias_name_tr, normalize_bias_label
 from .llm_client import gemini_hazir_mi, llm_response_metadata, metin_uret
 from .memory_agent import build_agent_memory
 from .rag_service import ilgili_kaynaklari_getir, kaynak_baglamini_olustur
@@ -50,8 +50,8 @@ def _clamp(value) -> float:
 
 
 def _gameplay_scores(metrics: dict, history: list[dict]) -> tuple[dict, dict]:
-    totals = {label: 0.0 for label in CORE_BIASES}
-    counts = {label: 0 for label in CORE_BIASES}
+    totals = {label: 0.0 for label in REPORT_BIASES}
+    counts = {label: 0 for label in REPORT_BIASES}
     event_scores = metrics.get("eventSkorlari") or {}
     event_counts = metrics.get("eventSayilari") or {}
     for raw_label, count in event_counts.items():
@@ -59,7 +59,7 @@ def _gameplay_scores(metrics: dict, history: list[dict]) -> tuple[dict, dict]:
         if label in totals and count:
             totals[label] += _clamp(event_scores.get(raw_label, 0) / count * (100 / 15))
             counts[label] += 1
-    history_counts = {label: 0 for label in CORE_BIASES}
+    history_counts = {label: 0 for label in REPORT_BIASES}
     for item in history:
         label = normalize_bias_label(item.get("bias_label") or item.get("bias_etiketi") or item.get("bias"))
         if label in history_counts:
@@ -69,7 +69,10 @@ def _gameplay_scores(metrics: dict, history: list[dict]) -> tuple[dict, dict]:
         if count and total_history_evidence:
             totals[label] += count / total_history_evidence * 100
             counts[label] += 1
-    scores = {label: round(totals[label] / counts[label]) if counts[label] else None for label in CORE_BIASES}
+    scores = {
+        label: round(totals[label] / counts[label]) if counts[label] else None
+        for label in REPORT_BIASES
+    }
     return scores, counts
 
 
@@ -77,7 +80,7 @@ def calculate_bias_scores(metrics: dict, intro_scores: dict | None = None, histo
     gameplay, evidence = _gameplay_scores(metrics or {}, history or [])
     intro = {normalize_bias_label(key): _clamp(value) for key, value in (intro_scores or {}).items()}
     combined = {}
-    for label in CORE_BIASES:
+    for label in REPORT_BIASES:
         has_intro = label in intro
         has_gameplay = evidence[label] > 0
         if has_intro and has_gameplay:
@@ -107,12 +110,31 @@ def generate_final_report(data: dict) -> dict:
     final_state = data.get("final_state") or data.get("son_durum") or {}
     history = _history(data)
     agent_memory = build_agent_memory(data)
-    analysis = calculate_bias_scores(final_state.get("bias_metrics") or {}, profile.get("bias_scores") or {}, history)
+    intro_scores = {} if profile.get("bias_scores_are_neutral") else profile.get("bias_scores") or {}
+    analysis = calculate_bias_scores(final_state.get("bias_metrics") or {}, intro_scores, history)
     scores = analysis["scores"]
     dominant = _dominant(scores)
     profile_name = profile.get("profile_name") or profile.get("profile_type") or "Belirsiz Profil"
     dominant_name = bias_name_tr(dominant) if dominant else "Yeterli veri yok"
-    sources = ilgili_kaynaklari_getir(dominant, "final_report_agent", limit=3) if dominant else []
+    rag_query = " ".join(
+        [
+            dominant_name,
+            *[
+                str(item.get("event_title") or item.get("event_baslik") or "")
+                for item in history[-5:]
+            ],
+        ]
+    )
+    sources = (
+        ilgili_kaynaklari_getir(
+            dominant,
+            "final_report_agent",
+            query=rag_query,
+            limit=3,
+        )
+        if dominant
+        else []
+    )
     if dominant:
         fallback_summary = (
             f"{len(history)} oyun kararın ve başlangıç eğilimlerin birlikte değerlendirildi. "

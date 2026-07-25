@@ -245,9 +245,15 @@ export default function BitisSayfasi({
                       { key: 'anchoring', label: 'Çıpalama (Fiyata Bağlılık)' },
                       { key: 'disposition_effect', label: 'Elden Çıkarma (Kârı Erken Kesme)' },
                       { key: 'mental_accounting', label: 'Zihinsel Muhasebe (Havadan Gelen Parayı Harcama)' },
-                      { key: 'present_bias', label: 'Anlık Haz Eğilimi (Borçla Lüks)' }
+                      { key: 'present_bias', label: 'Anlık Haz Eğilimi (Borçla Lüks)' },
+                      { key: 'overconfidence', label: 'Aşırı Özgüven' },
+                      { key: 'herd_behavior', label: 'Sürü Davranışı' },
+                      { key: 'status_quo_bias', label: 'Mevcut Durumu Koruma' },
+                      { key: 'sunk_cost', label: 'Batık Maliyet Yanılgısı' },
+                      { key: 'moral_hazard', label: 'Ahlaki Tehlike' },
+                      { key: 'confirmation_bias', label: 'Doğrulama Yanlılığı' }
                     ].map(bias => {
-                      const score = finalRapor.bias_scores[bias.key] || 0;
+                      const score = finalRapor.bias_scores[bias.key] ?? 0;
                       return (
                         <div key={bias.key} className="flex flex-col gap-1">
                           <div className="flex justify-between text-[10px] uppercase font-bold text-on-surface-variant">
