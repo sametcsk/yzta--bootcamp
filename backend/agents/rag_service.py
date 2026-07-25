@@ -217,7 +217,6 @@ def _cache_write(payload: dict) -> None:
         pass
 
 
-@lru_cache(maxsize=1)
 def rag_indeksini_yukle() -> dict:
     pdf_dir = pdf_klasorunu_bul()
     fingerprint = _pdf_fingerprint(pdf_dir)

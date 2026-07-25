@@ -89,6 +89,16 @@ function BorsaKart({
     }
   }
 
+  let temettuOrani = null
+  if (sonuc && sonuc.temettu_oranlari) {
+    if (varlikKey === "bist") {
+      temettuOrani = sonuc.temettu_oranlari.bist_endeks
+    } else {
+      const sektorKisaAd = varlikKey.replace("bist_", "")
+      temettuOrani = sonuc.temettu_oranlari[sektorKisaAd]
+    }
+  }
+
   const maxAlinabilir = Math.floor((nakit || 0) / (anlikFiyat || 1))
 
   return (
@@ -100,7 +110,12 @@ function BorsaKart({
             {ad}
           </div>
           <div className="font-data-sm text-data-sm text-on-surface-variant uppercase mt-1">
-            {varlikKey === "bist" ? "Ana Endeks" : "Sektörel Endeks"} · endeks
+            {varlikKey === "bist" ? "Ana Endeks" : "Sektörel Endeks"} 
+            {temettuOrani !== null && (
+              <span className="text-secondary ml-2 border border-secondary px-1 py-0.5 rounded-sm text-[10px]">
+                 Temettü: %{temettuOrani.toFixed(2)}
+              </span>
+            )}
           </div>
         </div>
         {Number.isFinite(sonFiyat) && (

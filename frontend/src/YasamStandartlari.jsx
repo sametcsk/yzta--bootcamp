@@ -1,10 +1,11 @@
-import { YASAM_STANDARTLARI, yasamKalitesiEtkisi } from "./data/standartlar"
+import { YASAM_STANDARTLARI, yasamKalitesiEtkisi, getDinamikStandartlar } from "./data/standartlar"
 import { TutorialOdak } from "./TutorialComponents"
 
-export default function YasamStandartlari({ secimler, onSecimDegis, portfoy, dolarKuru = 40, yasamGideri = 0, yillikGelir = 0, oturulanEvVarMi = false, sahipOlunanAraclar = [] }) {
+export default function YasamStandartlari({ secimler, onSecimDegis, portfoy, dolarKuru = 40, yasamGideri = 0, yillikGelir = 0, oturulanEvVarMi = false, sahipOlunanAraclar = [], iliskiler = [] }) {
+  const birlesikStandartlar = { ...YASAM_STANDARTLARI, ...getDinamikStandartlar(iliskiler) }
   const aylikTl = Math.round(yasamGideri / 12)
   const aylikGelir = Math.round(yillikGelir / 12)
-  const kalite = yasamKalitesiEtkisi(secimler, YASAM_STANDARTLARI)
+  const kalite = yasamKalitesiEtkisi(secimler, birlesikStandartlar)
   const aracVarMi = sahipOlunanAraclar && sahipOlunanAraclar.length > 0;
 
   // En lüks araca göre çarpan bul
@@ -51,7 +52,7 @@ export default function YasamStandartlari({ secimler, onSecimDegis, portfoy, dol
 
       <TutorialOdak hedefId="standartlar-kategoriler">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
-          {Object.entries(YASAM_STANDARTLARI).map(([kategoriId, kategori]) => (
+          {Object.entries(birlesikStandartlar).map(([kategoriId, kategori]) => (
             <section className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col" key={kategoriId}>
               <div className="flex justify-between items-center border-b border-outline-variant pb-2 mb-4">
                 <div className="flex items-center gap-2">

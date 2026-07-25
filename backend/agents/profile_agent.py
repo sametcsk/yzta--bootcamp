@@ -113,7 +113,7 @@ def generate_profile(data: dict) -> dict:
             PROFILE_STORY_USER_PROMPT_TEMPLATE.format(
                 difficulty=difficulty,
                 bias_names=", ".join(bias_name_tr(label) for label in story_biases),
-                selected_details=selected_details,
+                selected_details="; ".join(selected_details) if selected_details else "Somut seçim detayı yok",
                 fallback_story=fallback_story,
             ),
         )
@@ -137,7 +137,7 @@ def generate_profile(data: dict) -> dict:
 
     return {
         "agent": "profile_agent",
-        "profile_type": "Davranissal Profil",
+        "profile_type": "Davranışsal Profil",
         "classification_model": "rule_based_v3",
         "profile_name": "Davranışlarını Keşfeden Oyuncu",
         "risk_level": "orta",

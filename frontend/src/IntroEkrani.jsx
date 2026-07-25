@@ -27,9 +27,7 @@ export default function IntroEkrani({ onBitis }) {
   const ilerlemeKilitliRef = useRef(false)
   const meslekRef = useRef(null)
 
-  const [tutorialGoster, setTutorialGoster] = useState(
-    !localStorage.getItem("finsim_tutorial_tamamlandi")
-  )
+  const [tutorialGoster, setTutorialGoster] = useState(true)
   const [gecisEkraniGoster, setGecisEkraniGoster] = useState(false)
 
   const soru = SORULAR[soruIndex]
@@ -326,4 +324,3 @@ function kilitMetni(kilit) {
   if (kilit.tur === "gelistirilmemis") return kilit.mesaj?.toUpperCase() || "YAKINDA"
   return "KİLİTLİ"
 }
-

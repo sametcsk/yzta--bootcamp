@@ -124,12 +124,12 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     redenominasyon = None
     if kur >= 1000:
         kur = round(kur / 1000, 2)
-        bist = round(bist / 1000, 2)
-        bist_bankacilik = round(bist_bankacilik / 1000, 2)
-        bist_teknoloji = round(bist_teknoloji / 1000, 2)
-        bist_insaat = round(bist_insaat / 1000, 2)
-        bist_saglik = round(bist_saglik / 1000, 2)
-        bist_perakende = round(bist_perakende / 1000, 2)
+        bist = max(0.01, round(bist / 1000, 2))
+        bist_bankacilik = max(0.01, round(bist_bankacilik / 1000, 2))
+        bist_teknoloji = max(0.01, round(bist_teknoloji / 1000, 2))
+        bist_insaat = max(0.01, round(bist_insaat / 1000, 2))
+        bist_saglik = max(0.01, round(bist_saglik / 1000, 2))
+        bist_perakende = max(0.01, round(bist_perakende / 1000, 2))
         reden_sayaci += 1
         redenominasyon = f"YENİ TL #{reden_sayaci}"
     
@@ -436,6 +436,16 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
     else:
         fisilti_sayaci += 1
 
+    # Temettü Oranları Üretimi
+    temettu_oranlari = {
+        "bist_endeks": round(random.uniform(1.0, 3.0), 2),
+        "bankacilik": round(random.uniform(3.0, 6.0), 2),
+        "teknoloji": round(random.uniform(0.1, 1.0), 2),
+        "insaat": round(random.uniform(2.0, 5.0), 2),
+        "saglik": round(random.uniform(1.0, 2.5), 2),
+        "perakende": round(random.uniform(1.5, 3.5), 2)
+    }
+
     return {
         "enf_rejim": enf_rejim,
         "enf_sakin_yil": enf_sakin_yil,
@@ -481,6 +491,7 @@ def yil_hesapla(state: dict, mevcut_yil: int = 2025, event_gecmisi: dict = None,
             "emlak_piyasasi": emlak_piyasasi,
             "arac_piyasasi": arac_piyasasi,
             "sektor_getirileri": sektor_getirileri,
+            "temettu_oranlari": temettu_oranlari,
             "fiyatlar": {
                 "altin_try_gram": round((altin_usd / 31.1) * kur, 2),
                 "bist_endeks": round(bist, 2),

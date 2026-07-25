@@ -66,18 +66,27 @@ export const TUTORIAL_ADIMLARI = [
     metin: "Şu an her şey en düşük seviyede. İleride maaşın arttıkça lüks yaşamak seni mutlu eder ama eksiye düşüp iflas etmemek için harcamalarına dikkat et!"
   },
   {
+    hedef: "sidebar-iliskiler",
+    ilerlemeTipi: "eylem",
+    beklenenEylem: "sayfa:iliskiler",
+    metin: "Paradan bahsettik, peki ya sosyal hayatın? Sol menüden 'İlişkiler' sayfasına tıkla."
+  },
+  {
+    hedef: "iliskiler-sayfasi",
+    ilerlemeTipi: "buton",
+    metin: "Ailenle vakit geçirebilir, tavsiye isteyebilir veya yeni insanlarla tanışıp evlenebilirsin. Seçim senin!"
+  },
+  {
     hedef: "sidebar-ana",
     ilerlemeTipi: "eylem",
     beklenenEylem: "sayfa:ana",
     metin: "Artık hazırsın. İlk yılımızı yaşamak için 'Ana Defter'e dönelim."
   },
   {
-    hedefId: "nav-opsiyon",
-    pozisyon: "right",
-    baslik: "Türev Piyasalar (Yüksek Risk)",
-    icerik: "En büyük kaldıraç fırsatları ve batış hikayeleri buradadır. Zaman erimesi (Time Decay) konsepti geçerlidir ve oldukça karmaşıktır. NOT: Sadece 'Finans' mezunları erişebilir!",
-    beklenenEylem: "menu_tiklama",
-    beklenenSayfa: "opsiyon"
+    hedef: "hizli-al-sat",
+    ilerlemeTipi: "gorev",
+    beklenenEylem: "hizli_alim",
+    metin: "Ana ekrandaki Al-Sat Kısayolu ile hızlıca Altın, Dolar veya BİST100 alabilirsin. Devam etmek için bu varlıklardan en az bir kez başarılı bir alım yap."
   },
   {
     hedef: "yil-calistir-butonu",
