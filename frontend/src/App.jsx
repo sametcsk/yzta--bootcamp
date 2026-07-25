@@ -263,7 +263,10 @@ function AppInner() {
 
   // Maaş ve ilk iki yıldaki sabit aile desteğini hesapla.
   useEffect(() => {
-    let gelir = Math.round(temelMaas * levelCarpaniGetir(isYeri, isLevel))
+    const calisiyor = isYeri && isYeri !== "lise_mezunu"
+    let gelir = calisiyor
+      ? Math.round(temelMaas * levelCarpaniGetir(isYeri, isLevel))
+      : 0
 
     if (aileDestegiAktifMi(yil)) {
       gelir += yillikAileDestegiHesapla(fiyatlar.dolar_try || 40)
@@ -865,8 +868,13 @@ function AppInner() {
         gelecek_makro: data.gelecek_makro,
       })
 
-      const yeniTemelMaas = Math.round(temelMaas * (1 + data.yil_sonucu.enflasyon / 100))
-      let yeniGelir = Math.round(yeniTemelMaas * levelCarpaniGetir(isYeri, isLevel))
+      const calisiyor = isYeri && isYeri !== "lise_mezunu"
+      const yeniTemelMaas = calisiyor
+        ? Math.round(temelMaas * (1 + data.yil_sonucu.enflasyon / 100))
+        : 0
+      let yeniGelir = calisiyor
+        ? Math.round(yeniTemelMaas * levelCarpaniGetir(isYeri, isLevel))
+        : 0
       const yeniGider = Math.round(yasamGideri * (1 + data.yil_sonucu.enflasyon / 100))
       setTemelMaas(yeniTemelMaas)
       setYasamGideri(yeniGider)
@@ -1115,6 +1123,32 @@ function AppInner() {
 
       const yeniYil = yil + 1
       const yeniYas = yas + 1
+
+      if (isYeri && isYeri !== "lise_mezunu" && isYeri !== "emekli") {
+        const tamamlananUnvan = pozisyonAdiGetir(isYeri, isLevel)
+        const tamamlananIsYeri = MESLEKLER[isYeri]?.ad || isYeri
+
+        setCvGecmisi(eskiCv => {
+          const pozisyonZatenKayitli = eskiCv.some(kayit =>
+            kayit.tamamlananPozisyon === true &&
+            kayit.isKey === isYeri &&
+            kayit.seviye === isLevel
+          )
+
+          if (pozisyonZatenKayitli) return eskiCv
+
+          return [{
+            yil: yeniYil,
+            yas: yeniYas,
+            isKey: isYeri,
+            seviye: isLevel,
+            isYeri: tamamlananIsYeri,
+            unvan: tamamlananUnvan,
+            tamamlananPozisyon: true
+          }, ...eskiCv]
+        })
+      }
+
       setYil(yeniYil)
       setYas(yeniYas)
 
@@ -1393,11 +1427,16 @@ function AppInner() {
     setCoachKayitlari([])
     setFinalRapor(null)
 
+    const baslangicMeslegi = sonuc.meslek || null
+    const baslangicMaasi = baslangicMeslegi && baslangicMeslegi !== "lise_mezunu"
+      ? sonuc.yillikGelir
+      : 0
+
     setBars({ sabir: sonuc.sabir, mutluluk: sonuc.mutluluk })
     nakitiGuncelle(sonuc.nakit)
-    setYillikGelir(sonuc.yillikGelir)
-    setTemelMaas(sonuc.yillikGelir)
-    setIsYeri(sonuc.meslek || null)
+    setYillikGelir(baslangicMaasi)
+    setTemelMaas(baslangicMaasi)
+    setIsYeri(baslangicMeslegi)
     setTutorialAktif(!!sonuc.tutorialGoster)
     if (sonuc.cinsiyet) setCinsiyet(sonuc.cinsiyet)
 
@@ -1783,7 +1822,6 @@ function AppInner() {
         if (cikanDal.terfi_sonucu === "kabul") {
           setIsLevel(prev => {
             const newLevel = Math.min(prev + 1, 5)
-            setCvGecmisi(oldCv => [{ yil: yil + 1, yas: yas + 1, unvan: pozisyonAdiGetir(isYeri, newLevel), isYeri: MESLEKLER[isYeri]?.ad }, ...oldCv])
             return newLevel
           })
           setCalismaBari(0)
@@ -2978,10 +3016,7 @@ function AppInner() {
               yillikGelir={yillikGelir}
               setYillikGelir={setYillikGelir}
               setIsLevel={setIsLevel}
-              yil={yil}
-              yas={yas}
               cvGecmisi={cvGecmisi}
-              setCvGecmisi={setCvGecmisi}
               maasEndeksi={maasEndeksi}
               isLevel={isLevel}
             />

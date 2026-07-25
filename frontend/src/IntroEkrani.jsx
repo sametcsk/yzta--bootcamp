@@ -20,7 +20,6 @@ export default function IntroEkrani({ onBitis }) {
   const [nakit, setNakit] = useState(BASLANGIC.nakit)
   const [sabir, setSabir] = useState(BASLANGIC.sabir)
   const [mutluluk, setMutluluk] = useState(BASLANGIC.mutluluk)
-  const [gelir, setGelir] = useState(0)
   const [universiteGitti, setUniversiteGitti] = useState(true)
   const [cinsiyet, setCinsiyet] = useState(null)
   const cevaplarRef = useRef([])
@@ -42,11 +41,8 @@ export default function IntroEkrani({ onBitis }) {
     ilerlemeKilitliRef.current = true
     const s = soru.secenekler[secim]
 
-    // Zorluk seçimi (Soru 1) bittiyse gelir ve meslek belirle
+    // Zorluk seçimi başlangıç nakdini belirler; oyuncu işe girene kadar maaşı yoktur.
     if (soru.id === 1) {
-      if (s.bias_skor?.zorluk === "Kolay") setGelir(120000)
-      else if (s.bias_skor?.zorluk === "Orta") setGelir(60000)
-      else setGelir(0)
       meslekRef.current = "lise_mezunu"
     }
 
@@ -72,14 +68,12 @@ export default function IntroEkrani({ onBitis }) {
     setSabir(yeniSabir)
     setMutluluk(yeniMutluluk)
 
-    if (s.gelir) setGelir(s.gelir)
-
     if (soruIndex + 1 >= SORULAR.length) {
       onBitis({
         nakit: yeniNakit,
         sabir: yeniSabir,
         mutluluk: yeniMutluluk,
-        yillikGelir: gelir || 0,
+        yillikGelir: 0,
         answers: yeniCevaplar,
         meslek: meslekRef.current,
         cinsiyet: cinsiyet,

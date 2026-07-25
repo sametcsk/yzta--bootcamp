@@ -10,7 +10,7 @@ export default function IslerSekmesi({
   bars, setBars,
   sikiCalisAktif, setSikiCalisAktif,
   setTemelMaas, yillikGelir, setYillikGelir, isLevel, setIsLevel,
-  yil, yas, cvGecmisi, setCvGecmisi
+  cvGecmisi
 }) {
 
   // Sadece ilk montajda ilan yoksa ilan üret
@@ -33,14 +33,6 @@ export default function IslerSekmesi({
     setTemelMaas(ilan.maas);
     setYillikGelir(ilan.maas); // Seviye 1 olduğu için çarpan 1.00
     setSikiCalisAktif(false);
-    
-    // CV'ye ekle
-    setCvGecmisi(prev => [{
-      yil,
-      yas,
-      isYeri: MESLEKLER[ilan.isKey]?.ad || ilan.ad,
-      unvan: pozisyonAdiGetir(ilan.isKey, 1)
-    }, ...prev]);
   };
 
   const sikiCalisToggle = () => {
@@ -49,11 +41,14 @@ export default function IslerSekmesi({
 
   const ayril = () => {
     setIsYeri("lise_mezunu");
+    setTemelMaas(0);
+    setIsLevel(1);
     setCalismaBari(0);
     setSikiCalisAktif(false);
   }
 
   const isMevcutIs = isYeri && isYeri !== "lise_mezunu";
+  const tamamlananCvKayitlari = (cvGecmisi || []).filter(kayit => kayit.tamamlananPozisyon === true);
 
   return (
     <div className="flex flex-col gap-stack-lg">
@@ -229,9 +224,9 @@ export default function IslerSekmesi({
 
         <div>
           <div className="font-data-md text-on-surface-variant uppercase mb-2">İş Deneyimi</div>
-          {cvGecmisi && cvGecmisi.length > 0 ? (
+          {tamamlananCvKayitlari.length > 0 ? (
             <div className="flex flex-col gap-3">
-              {cvGecmisi.map((cvItem, index) => (
+              {tamamlananCvKayitlari.map((cvItem, index) => (
                 <div key={index} className="flex gap-4 items-start relative pl-4 border-l-2 border-primary">
                   <div className="absolute w-3 h-3 bg-primary rounded-full -left-[7px] top-1.5 border-2 border-background"></div>
                   <div>

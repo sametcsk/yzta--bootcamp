@@ -16,7 +16,7 @@ export default function KariyerSayfasi({
   buYilSinavaGirdiMi, setBuYilSinavaGirdiMi,
   sikiCalisAktif, setSikiCalisAktif,
   setTemelMaas, yillikGelir, setYillikGelir, isLevel, setIsLevel,
-  yil, yas, cvGecmisi, setCvGecmisi, maasEndeksi
+  cvGecmisi, maasEndeksi
 }) {
   const [aktifTab, setAktifTab] = useState("isler");
 
@@ -71,7 +71,7 @@ export default function KariyerSayfasi({
             sikiCalisAktif={sikiCalisAktif} setSikiCalisAktif={setSikiCalisAktif}
             setTemelMaas={setTemelMaas} yillikGelir={yillikGelir} setYillikGelir={setYillikGelir}
             isLevel={isLevel} setIsLevel={setIsLevel}
-            yil={yil} yas={yas} cvGecmisi={cvGecmisi} setCvGecmisi={setCvGecmisi}
+            cvGecmisi={cvGecmisi}
           />
         )}
       </div>
