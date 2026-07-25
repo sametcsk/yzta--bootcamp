@@ -12,6 +12,7 @@ export default function IliskilerSayfasi({
   nakitiGuncelle, 
   yil,
   yas,
+  cinsiyet,
   fiyatlar,
   setSonucKarti,
   mekanaGitmeSayisi,
@@ -40,12 +41,48 @@ export default function IliskilerSayfasi({
     setIliskiler(prev => prev.map(k => k.id === id ? { ...k, ...updates } : k));
   };
 
+  const cinsiyetiNormallestir = (deger) => deger === "kadın" ? "kadin" : deger;
+
+  const romantikEtkilesimeUygunMu = (kisi) => {
+    const oyuncuCinsiyeti = cinsiyetiNormallestir(cinsiyet);
+    const kisiCinsiyeti = cinsiyetiNormallestir(kisi?.cinsiyet);
+
+    return (
+      ["kadin", "erkek"].includes(oyuncuCinsiyeti) &&
+      ["kadin", "erkek"].includes(kisiCinsiyeti) &&
+      oyuncuCinsiyeti !== kisiCinsiyeti
+    );
+  };
+
+  const aileEtkilesimineUygunMu = (kisi) => {
+    if (kisi.statu === "aktif") return true;
+
+    if (kisi.statu === "vefat") {
+      gosterBildirim(
+        "Etkileşim Kullanılamıyor",
+        `${kisi.isim} vefat ettiği için bu aktiviteyi yapamazsın.`,
+        "error"
+      );
+      return false;
+    }
+
+    if (kisi.statu === "küs") {
+      gosterBildirim("Küs", `${kisi.isim} seninle konuşmuyor.`, "error");
+      return false;
+    }
+
+    gosterBildirim(
+      "Etkileşim Kullanılamıyor",
+      `${kisi.isim} ile şu anda bu aktiviteyi yapamazsın.`,
+      "error"
+    );
+    return false;
+  };
+
   // 1. Aile Mekanikleri
   const handleParaIste = (kisi) => {
-    if (kisi.statu === "küs") {
-        gosterBildirim("Küs", `${kisi.isim} seninle konuşmuyor.`, "error");
-        return;
-    }
+    if (!aileEtkilesimineUygunMu(kisi)) return;
+
     if (kisi.sonParaIstenenYil === yil) {
       gosterBildirim("Zaten İstedin", `Bu yıl ${kisi.isim} karakterinden zaten para istedin.`, "error");
       return;
@@ -76,10 +113,8 @@ export default function IliskilerSayfasi({
   };
 
   const handleDisariCik = (kisi) => {
-    if (kisi.statu === "küs") {
-        gosterBildirim("Küs", `${kisi.isim} seninle konuşmuyor.`, "error");
-        return;
-    }
+    if (!aileEtkilesimineUygunMu(kisi)) return;
+
     if (kisi.sonDisariCikilanYil === yil) {
       gosterBildirim("Zaten Gezdiniz", `Bu yıl ${kisi.isim} ile yeterince vakit geçirdin.`, "error");
       return;
@@ -103,7 +138,7 @@ export default function IliskilerSayfasi({
   };
 
   const handleYatirimTavsiyesi = (kisi) => {
-    if (kisi.statu === "küs") return gosterBildirim("Küs", `${kisi.isim} seninle konuşmuyor.`, "error");
+    if (!aileEtkilesimineUygunMu(kisi)) return;
     if (kisi.sonTavsiyeIstenenYil === yil) return gosterBildirim("Zaten Konuştunuz", `Bu yıl ${kisi.isim} ile yatırımları zaten konuştunuz.`, "error");
 
     updateKisi(kisi.id, { sonTavsiyeIstenenYil: yil, sonEtkilesimYili: yil });
@@ -185,6 +220,14 @@ export default function IliskilerSayfasi({
     }
 
     if (secim === "date_cagir") {
+      if (!romantikEtkilesimeUygunMu(tanismaModal)) {
+        return gosterBildirim(
+          "Sadece Arkadaşlık",
+          `${tanismaModal.isim} ile yalnızca arkadaş olabilirsin.`,
+          "info"
+        );
+      }
+
       if (myLuks < tanismaModal.beklentiPuan + 2) {
          setTanismaModal(null);
          return gosterBildirim("Reddedildin", `Date teklifini geri çevirdi. Kıyafetlerin, anlattıkların ve yaşam tarzın onu etkilememiş gibi görünüyor. Belki de yaşam standartlarını yükseltmelisin.`, "error");
@@ -264,6 +307,14 @@ export default function IliskilerSayfasi({
   };
 
   const handleEvlen = (kisi) => {
+    if (!romantikEtkilesimeUygunMu(kisi)) {
+      return gosterBildirim(
+        "Evlilik Kullanılamıyor",
+        `${kisi.isim} ile yalnızca arkadaş olabilirsin.`,
+        "error"
+      );
+    }
+
     const kur = fiyatlar?.dolar_try || 40;
     const dugunMaliyeti = Math.floor(5000 * kur / 100) * 100; // Düğün masrafı ~5000 USD
 
@@ -319,6 +370,14 @@ export default function IliskilerSayfasi({
   const handleCocukYap = () => {
     const es = iliskiler.find(k => k.tip === "es" && k.statu === "aktif");
     if (!es) return;
+
+    if (!romantikEtkilesimeUygunMu(es)) {
+      return gosterBildirim(
+        "Çocuk Sahibi Olamazsınız",
+        "Bu eşleşmede çocuk sahibi olma aktivitesi kullanılamaz.",
+        "error"
+      );
+    }
 
     if (yas > 50 || es.yas > 50) {
        return gosterBildirim("Yaş Sınırı", `Çocuk yapmak için ebeveynlerden en az birinin yaşı uygun olmalı (Maks 50).`, "error");
@@ -433,12 +492,14 @@ export default function IliskilerSayfasi({
             </div>
 
             <div className="space-y-3">
-              <button 
-                onClick={() => handleTanismaSecim("date_cagir")}
-                className="w-full bg-secondary text-on-secondary font-bold py-3 border border-outline hover:brightness-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-              >
-                💕 Date'e Çağır
-              </button>
+              {romantikEtkilesimeUygunMu(tanismaModal) && (
+                <button
+                  onClick={() => handleTanismaSecim("date_cagir")}
+                  className="w-full bg-secondary text-on-secondary font-bold py-3 border border-outline hover:brightness-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                >
+                  💕 Date'e Çağır
+                </button>
+              )}
               <button 
                 onClick={() => handleTanismaSecim("arkadas_ol")}
                 className="w-full bg-surface-variant text-on-surface font-bold py-3 border border-outline hover:bg-surface-container shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
@@ -484,22 +545,25 @@ export default function IliskilerSayfasi({
                 <div className="flex gap-2 flex-wrap mt-2">
                   <button 
                     onClick={() => handleParaIste(kisi)}
-                    disabled={kisi.statu === 'küs'}
-                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50"
+                    disabled={kisi.statu !== 'aktif'}
+                    title={kisi.statu === 'aktif' ? undefined : 'Bu aktivite yalnızca aktif aile üyeleriyle yapılabilir.'}
+                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Para İste
                   </button>
                   <button 
                     onClick={() => handleDisariCik(kisi)}
-                    disabled={kisi.statu === 'küs'}
-                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50"
+                    disabled={kisi.statu !== 'aktif'}
+                    title={kisi.statu === 'aktif' ? undefined : 'Bu aktivite yalnızca aktif aile üyeleriyle yapılabilir.'}
+                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Dışarı Çık
                   </button>
                   <button 
                     onClick={() => handleYatirimTavsiyesi(kisi)}
-                    disabled={kisi.statu === 'küs'}
-                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50"
+                    disabled={kisi.statu !== 'aktif'}
+                    title={kisi.statu === 'aktif' ? undefined : 'Bu aktivite yalnızca aktif aile üyeleriyle yapılabilir.'}
+                    className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Tavsiye İste
                   </button>
@@ -547,7 +611,7 @@ export default function IliskilerSayfasi({
                       <button onClick={() => handleHediyeAl(kisi)} className="flex-1 bg-surface-container-high border border-outline text-on-surface font-label-md py-1 px-2 hover:bg-secondary hover:text-on-secondary transition-colors">
                         Hediye Al
                       </button>
-                      {kisi.tip === "date" && kisi.iliskiSeviyesi >= 100 && (
+                      {kisi.tip === "date" && kisi.iliskiSeviyesi >= 100 && romantikEtkilesimeUygunMu(kisi) && (
                          <button onClick={() => handleEvlen(kisi)} className="w-full mt-2 bg-secondary text-on-secondary font-bold py-2 hover:brightness-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                            💍 Evlenme Teklifi Et
                          </button>
@@ -567,7 +631,7 @@ export default function IliskilerSayfasi({
                 </div>
               ))}
               
-              {iliskiler.some(i => i.tip === "es" && i.statu === "aktif") && (
+              {iliskiler.some(i => i.tip === "es" && i.statu === "aktif" && romantikEtkilesimeUygunMu(i)) && (
                  <div className="col-span-1 md:col-span-2 flex justify-center mt-4 border-t border-outline pt-4">
                     <button onClick={handleCocukYap} className="bg-primary text-on-primary font-bold py-3 px-8 hover:brightness-110 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center gap-2">
                        👶 Çocuk Yap

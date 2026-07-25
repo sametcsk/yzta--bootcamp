@@ -2967,6 +2967,7 @@ function AppInner() {
               sikiCalisAktif={sikiCalisAktif}
               setSikiCalisAktif={setSikiCalisAktif}
               setTemelMaas={setTemelMaas}
+              yillikGelir={yillikGelir}
               setYillikGelir={setYillikGelir}
               setIsLevel={setIsLevel}
               yil={yil}
@@ -2988,6 +2989,7 @@ function AppInner() {
               nakitiGuncelle={nakitiGuncelle}
               yil={yil}
               yas={yas}
+              cinsiyet={cinsiyet}
               fiyatlar={fiyatlar}
               setSonucKarti={setSonucKarti}
               mekanaGitmeSayisi={mekanaGitmeSayisi}

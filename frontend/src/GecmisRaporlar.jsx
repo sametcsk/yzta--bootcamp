@@ -9,7 +9,10 @@ export default function GecmisRaporlar({ onGeri, oturum }) {
 
   useEffect(() => {
     async function raporlariCek() {
-      if (!oturum) return
+        if (!oturum) {
+        setYukleniyor(false)
+        return
+      }
       try {
         const { data, error } = await supabase
           .from("runs")

@@ -8,7 +8,10 @@ export default function AnaMenu({ onYeniOyun, onDevamEt, onGecmisRaporlar, oturu
 
   useEffect(() => {
     async function checkSave() {
-      if (!oturum) return
+      if (!oturum) {
+        setLoading(false)
+        return
+      }
       try {
         const { data, error } = await supabase
           .from("game_saves")
