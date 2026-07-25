@@ -42,21 +42,7 @@ export default function OpsiyonSayfasi({
     setAnalizYukleniyor(false)
   }
 
-  const isFinans = okunanBolum === "finans" || mezunOlunanBolum === "finans";
 
-  if (!isFinans) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 text-center animate-fade-in">
-        <span className="material-symbols-outlined text-6xl text-error mb-4">lock</span>
-        <h2 className="font-headline-lg font-black text-on-surface mb-2">Erişim Reddedildi</h2>
-        <p className="font-data-md text-on-surface-variant max-w-lg bg-surface-container p-6 rounded border border-outline shadow-sm">
-          Opsiyon piyasası son derece riskli bir türev piyasasıdır. Ciddi kaldıraç ve zaman erimesi içerir. 
-          <br/><br/>
-          Sermaye Piyasası kuralları gereği bu platformda <strong>sadece Finans öğrencileri veya mezunları</strong> işlem yapabilir.
-        </p>
-      </div>
-    )
-  }
 
   const varlikIsimleri = {
     bist_endeks: "BİST 100",
@@ -135,8 +121,19 @@ export default function OpsiyonSayfasi({
           timestamp: trade.instanceId
       }))
   ];
-  // Sort reverse to keep newest on top (assuming arrays are appended with unshift normally)
+  // Tarihe göre sırala (En yeni en üstte)
+  ortakGecmis.sort((a, b) => b.timestamp - a.timestamp);
 
+  // Grafik verisini hesapla (Kronolojik sıra: En eski -> En yeni)
+  const chartVerisi = [...ortakGecmis].reverse().reduce((acc, curr, index) => {
+      const prevTotal = index > 0 ? acc[index - 1].kumulatifKar : 0;
+      acc.push({
+          isim: curr.isim,
+          net_kar: curr.net_kar,
+          kumulatifKar: prevTotal + curr.net_kar
+      });
+      return acc;
+  }, []);
   return (
     <div className="flex flex-col gap-6 font-body-md animate-fade-in pb-12">
       
@@ -538,6 +535,86 @@ export default function OpsiyonSayfasi({
               )}
           </div>
       </div>
+
+      {/* Kümülatif Kâr Grafiği */}
+      {chartVerisi.length > 0 && (
+          <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col">
+              <div className="text-on-surface-variant font-data-sm uppercase font-bold mb-4">Kümülatif Risk Kârı Eğrisi</div>
+              <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartVerisi} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                          <XAxis dataKey="isim" hide />
+                          <YAxis 
+                              tickFormatter={(val) => money(val)} 
+                              width={80} 
+                              stroke="#6B7280" 
+                              fontSize={12} 
+                          />
+                          <Tooltip 
+                              formatter={(value) => [money(value), "Kümülatif Kâr"]} 
+                              labelFormatter={(label) => `İşlem: ${label}`}
+                              contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
+                          />
+                          <Line 
+                              type="monotone" 
+                              dataKey="kumulatifKar" 
+                              stroke="#60A5FA" 
+                              strokeWidth={3} 
+                              dot={false}
+                              activeDot={{ r: 6, fill: "#60A5FA", stroke: "#1F2937", strokeWidth: 2 }}
+                          />
+                      </LineChart>
+                  </ResponsiveContainer>
+              </div>
+          </div>
+      )}
+
+      {/* Grid: Sol taraf form (Opsiyon Satın Al), Sağ taraf Aktif Pozisyonlar */}
+      {infoAcik && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
+            <div className="bg-surface-container border border-outline w-full max-w-2xl max-h-[90vh] overflow-y-auto card-shadow animate-in zoom-in duration-200">
+                <div className="bg-surface p-4 border-b border-outline flex justify-between items-center sticky top-0">
+                    <h3 className="font-headline-sm font-black uppercase text-primary flex items-center gap-2">
+                        <span className="material-symbols-outlined">school</span>
+                        Opsiyon Sözleşmeleri Nasıl Çalışır?
+                    </h3>
+                    <button onClick={() => setInfoAcik(false)} className="text-on-surface hover:text-error transition-colors">
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div className="p-6 space-y-6 text-on-surface text-sm">
+                    <div className="bg-surface p-4 rounded border-l-4 border-l-primary">
+                        <h4 className="font-bold text-base mb-2 uppercase">Temel Kavramlar</h4>
+                        <ul className="list-disc pl-5 space-y-2 opacity-90">
+                            <li><strong>ALIM (Call) Opsiyonu:</strong> Dayanak varlığın fiyatının yükseleceğini düşünüyorsanız alırsınız. Varlık fiyatı "Kullanım Fiyatı"nı geçerse kâra geçersiniz.</li>
+                            <li><strong>SATIM (Put) Opsiyonu:</strong> Dayanak varlığın fiyatının düşeceğini düşünüyorsanız alırsınız. Varlık fiyatı "Kullanım Fiyatı"nın altına inerse kâra geçersiniz.</li>
+                            <li><strong>Kullanım Fiyatı (Strike):</strong> Opsiyonun vade sonunda dikkate alınacağı sınır fiyattır.</li>
+                            <li><strong>Premium (Maliyet):</strong> Bu kontratı satın almak için ödediğiniz peşin ve iade edilmez ücrettir. Bütün riskiniz bu ödediğiniz tutarla sınırlıdır.</li>
+                        </ul>
+                    </div>
+
+                    <div className="bg-surface p-4 rounded border-l-4 border-l-warning">
+                        <h4 className="font-bold text-base mb-2 uppercase">Zaman Erimesi (Theta Decay)</h4>
+                        <p className="opacity-90 leading-relaxed">
+                            Opsiyonların bir son kullanma tarihi (vadesi) vardır. Vadeye yaklaşıldıkça, opsiyonun "Zaman Değeri" hızla erir. Eğer dayanak varlığın fiyatı sizin lehinize hareket etmezse, opsiyonunuzun güncel değeri her geçen yıl eriyecek ve sıfırlanacaktır.
+                        </p>
+                    </div>
+
+                    <div className="bg-surface p-4 rounded border-l-4 border-l-error">
+                        <h4 className="font-bold text-base mb-2 uppercase">Likidasyon ve Kâr/Zarar</h4>
+                        <p className="opacity-90 leading-relaxed">
+                            Aktif kontratlarınızı dilediğiniz yıl (vade dolmadan önce) "Bozdur" diyerek güncel değerinden satabilirsiniz. Vade dolduğunda ise otomatik olarak bozdurulur. Kontrat kârda ("In the Money") değilse güncel değeri sıfırlanır ve yatırdığınız Premium'un tamamını zarar yazarsınız.
+                        </p>
+                    </div>
+                </div>
+                <div className="p-4 border-t border-outline text-right bg-surface sticky bottom-0">
+                    <button onClick={() => setInfoAcik(false)} className="bg-primary text-on-primary px-6 py-2 font-bold uppercase hover:-translate-y-1 transition-transform">
+                        Anladım
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   )
 }

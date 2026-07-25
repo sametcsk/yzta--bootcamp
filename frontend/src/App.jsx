@@ -1023,6 +1023,11 @@ function AppInner() {
           ...prev,
           mevduat_tl: Math.round(prev.mevduat_tl / 1000),
         }))
+        setOpsiyonMetrikleri(prev => ({
+          ...prev,
+          toplam_yatirim: prev.toplam_yatirim / 1000,
+          toplam_net_kar: prev.toplam_net_kar / 1000
+        }))
         // Varlık katsayıları kümülatif performans olduğu için 1000'e BÖLÜNMEZ.
 
         setRedenominasyonKarti({
@@ -1277,18 +1282,20 @@ function AppInner() {
 
       // Swing Trade Fırsatı Üret
       setSwingFirsatlari(prev => {
-        if (prev.length >= 3) return prev;
-        const ihtimal = 0.5; // Her yıl %50 ihtimalle yeni bir fırsat gelsin
-        if (Math.random() < ihtimal) {
-          // Dinamik import kullanımı, App.jsx'in başında import etmemek için
-          import('./data/swingStocks.js').then(module => {
-            const yeniFirsat = module.getRandomSwingStock(yil + 1);
-            setSwingFirsatlari(current => {
-              if (current.length >= 3) return current;
-              return [...current, yeniFirsat];
-            });
-          }).catch(e => console.error("Swing data load error", e));
-        }
+        if (prev.length >= 4) return prev;
+        // Dinamik import kullanımı, App.jsx'in başında import etmemek için
+        import('./data/swingStocks.js').then(module => {
+          setSwingFirsatlari(current => {
+            let nextState = [...current];
+            for (let k = 0; k < 2; k++) {
+              if (nextState.length >= 4) break;
+              if (Math.random() < 0.5) { // Her tur %50 ihtimal
+                nextState.push(module.getRandomSwingStock(yil + 1 + "_" + k));
+              }
+            }
+            return nextState;
+          });
+        }).catch(e => console.error("Swing data load error", e));
         return prev;
       });
 

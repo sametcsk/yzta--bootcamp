@@ -17,6 +17,10 @@ export default function SwingTradeEkrani({
   const [hedefMumlar, setHedefMumlar] = useState([]);
   const [bitisMesaji, setBitisMesaji] = useState(null);
   
+  // Destek ve Direnç State'leri
+  const [direncSeviyesi, setDirencSeviyesi] = useState(null);
+  const [destekSeviyesi, setDestekSeviyesi] = useState(null);
+  
   // Y-Ekseni Sınırları (Dinamik)
   const [yMin, setYMin] = useState(tradeData.basePrice * 0.5);
   const [yMax, setYMax] = useState(tradeData.basePrice * 1.5);
@@ -25,62 +29,152 @@ export default function SwingTradeEkrani({
   const [draggingLine, setDraggingLine] = useState(null); // 'buy' | 'sell' | null
   
   const containerRef = useRef(null);
+  const chartAreaRef = useRef(null);
   const frameRef = useRef(null);
   
-  // Matematiksel Sabitler
-  const GRAFIK_HEIGHT = 400; // px
-  const Y_SCALE = GRAFIK_HEIGHT / (yMax - yMin);
+  const [grafikHeight, setGrafikHeight] = useState(400);
+
+  useEffect(() => {
+      const updateHeight = () => {
+          if (chartAreaRef.current) {
+              setGrafikHeight(chartAreaRef.current.clientHeight);
+          }
+      };
+      // Timeout ensures flex layout has settled before measuring
+      setTimeout(updateHeight, 100);
+      window.addEventListener('resize', updateHeight);
+      return () => window.removeEventListener('resize', updateHeight);
+  }, []);
   
-  const priceToY = (price) => Math.max(0, Math.min(GRAFIK_HEIGHT, GRAFIK_HEIGHT - ((price - yMin) * Y_SCALE)));
-  const yToPrice = (y) => yMin + ((GRAFIK_HEIGHT - Math.max(0, Math.min(GRAFIK_HEIGHT, y))) / Y_SCALE);
+  // Matematiksel Sabitler
+  const Y_SCALE = grafikHeight / (yMax - yMin);
+  
+  const priceToY = (price) => Math.max(0, Math.min(grafikHeight, grafikHeight - ((price - yMin) * Y_SCALE)));
+  const yToPrice = (y) => yMin + ((grafikHeight - Math.max(0, Math.min(grafikHeight, y))) / Y_SCALE);
 
   // Tutorial State
   const [tutorialAdim, setTutorialAdim] = useState(tutorialTamamlandi ? -1 : 0);
+  const [infoAcik, setInfoAcik] = useState(false);
 
   useEffect(() => {
     let globalMin = tradeData.basePrice;
     let globalMax = tradeData.basePrice;
+    let pastMin = Number.MAX_VALUE;
+    let pastMax = Number.MIN_VALUE;
 
-    // Geçmiş 5 Mum Üret
-    let currentPrice = tradeData.basePrice * (1 - (Math.random() * 0.2 * tradeData.beta)); // Daha düşük bir fiyattan başlasın ki yükselip gelmiş olsun
-    const past = [];
-    for(let i=0; i<5; i++) {
-        const getiri = (Math.random() - 0.4) * 0.05 * tradeData.beta;
-        const close = currentPrice * (1 + getiri);
-        const maxB = Math.max(currentPrice, close);
-        const minB = Math.min(currentPrice, close);
+    // Geçmiş 37 Mum Üret (Geriye doğru üret ki son fiyat basePrice'a tam otursun, devasa mum oluşmasın)
+    const past = new Array(37);
+    let currentClose = tradeData.basePrice;
+    
+    for(let i=36; i>=0; i--) {
+        const getiri = (Math.random() - 0.48) * 0.05 * tradeData.beta;
+        const currentOpen = currentClose / (1 + getiri);
+        
+        const maxB = Math.max(currentOpen, currentClose);
+        const minB = Math.min(currentOpen, currentClose);
         const high = maxB * (1 + Math.random() * 0.02 * tradeData.beta);
         const low = minB * (1 - Math.random() * 0.02 * tradeData.beta);
-        past.push({ open: currentPrice, close, high, low });
-        currentPrice = close;
+        
+        past[i] = { open: currentOpen, close: currentClose, high, low };
+        
+        // Bir önceki mumun kapanışı bu mumun açılışı olacak (Geriye doğru)
+        currentClose = currentOpen;
+        
         globalMin = Math.min(globalMin, low);
         globalMax = Math.max(globalMax, high);
+        
+        // Destek/Direnç hesaplamasına sadece geçmiş 30 mumu dahil et (Son 7 mum güncel trenddir)
+        if (i < 30) {
+            pastMin = Math.min(pastMin, low);
+            pastMax = Math.max(pastMax, high);
+        }
     }
-    // Son mumu basePrice'a eşitle
-    past[4].close = tradeData.basePrice;
-    past[4].high = Math.max(past[4].high, tradeData.basePrice);
-    globalMax = Math.max(globalMax, past[4].high);
     setGecmisMumlar(past);
     
-    // Gelecek 12 Mumu Üret (Sadece hedefler)
+    // Destek ve Direnç Seviyelerini Kaydet
+    let direnc = pastMax;
+    let destek = pastMin;
+    setDirencSeviyesi(direnc);
+    setDestekSeviyesi(destek);
+    
+    // Gelecek 15 Mumu Üret (Psikolojik Destek/Direnç Motoru)
     const future = [];
-    currentPrice = tradeData.basePrice;
-    for(let i=0; i<12; i++) {
-        const getiri = (Math.random() - 0.45) * 0.08 * tradeData.beta; // Biraz daha volatil
+    let currentPrice = tradeData.basePrice;
+    
+    for(let i=0; i<15; i++) {
+        // Normal volatilite
+        let volatilite = 0.08 * tradeData.beta;
+        let egilim = 0.50; // 0.50 = nötr
+        
+        // Destek/Direnç'e yakınlık kontrolü (%3 bandı)
+        // Polarite İlkesi: Kırılan direnç desteğe, kırılan destek dirence dönüşür.
+        const direncFarki = (direnc - currentPrice) / currentPrice;
+        const destekFarki = (currentPrice - destek) / currentPrice;
+        
+        if (Math.abs(direncFarki) < 0.03) {
+            // Sarı Çizgiye (Direnç) Yakın
+            const kirilim = Math.random() > 0.5; // %50 ihtimal
+            
+            if (direncFarki > 0) {
+                // Aşağıdan Geliyor (Klasik Direnç)
+                if(kirilim) {
+                    egilim = 0.9; // Breakout (Yukarı kırdı)
+                    volatilite *= 2;
+                } else {
+                    egilim = 0.1; // Bounce (Dirençten ret yedi)
+                }
+            } else {
+                // Yukarıdan Geliyor (Kırılmış Direnç artık Destek oldu)
+                if(kirilim) {
+                    egilim = 0.1; // Breakdown (Desteği aşağı kırdı)
+                    volatilite *= 2;
+                } else {
+                    egilim = 0.9; // Bounce (Destekten yukarı sekti)
+                }
+            }
+        } 
+        else if (Math.abs(destekFarki) < 0.03) {
+            // Mavi Çizgiye (Destek) Yakın
+            const kirilim = Math.random() > 0.5; // %50 ihtimal
+            
+            if (destekFarki > 0) {
+                // Yukarıdan Geliyor (Klasik Destek)
+                if(kirilim) {
+                    egilim = 0.1; // Breakdown (Aşağı kırdı)
+                    volatilite *= 2;
+                } else {
+                    egilim = 0.9; // Bounce (Destekten sekti)
+                }
+            } else {
+                // Aşağıdan Geliyor (Kırılmış Destek artık Direnç oldu)
+                if(kirilim) {
+                    egilim = 0.9; // Breakout (Direnci yukarı kırdı)
+                    volatilite *= 2;
+                } else {
+                    egilim = 0.1; // Bounce (Dirençten ret yedi)
+                }
+            }
+        }
+        
+        const getiri = (Math.random() - (1 - egilim)) * volatilite; 
+        
         const close = currentPrice * (1 + getiri);
         const maxB = Math.max(currentPrice, close);
         const minB = Math.min(currentPrice, close);
+        
+        // Fitiller
         const high = maxB * (1 + Math.random() * 0.03 * tradeData.beta);
         const low = minB * (1 - Math.random() * 0.03 * tradeData.beta);
-        future.push({ open: currentPrice, close, high, low, maxTick: 30 }); // Her mum 30 frame (tick) sürecek
+        
+        future.push({ open: currentPrice, close, high, low, maxTick: 30 });
         currentPrice = close;
         globalMin = Math.min(globalMin, low);
         globalMax = Math.max(globalMax, high);
     }
     setHedefMumlar(future);
 
-    // Y Ekseni Sınırlarını Dinamik Ayarla (Alttan ve üstten %10 boşluk)
-    const padding = (globalMax - globalMin) * 0.1;
+    // Y Ekseni Sınırlarını Dinamik Ayarla (Alttan ve üstten %25 boşluk - Emir koyma alanı için genişletildi)
+    const padding = (globalMax - globalMin) * 0.25;
     setYMax(globalMax + padding);
     setYMin(Math.max(0.1, globalMin - padding));
 
@@ -127,9 +221,12 @@ export default function SwingTradeEkrani({
     // State'lere bağımlı kalmamak için let ile track ediyoruz
     let eldeHisseVar = false;
     let alinanAdet = 0;
+    
+    // Alış noktası şu anki fiyatın üstündeyse Stop-Buy (kırılım alımı), altındaysa Limit-Buy (dipten alma)
+    const isStopBuy = alisCizgisi > tradeData.basePrice;
 
     const animate = () => {
-        if(aktifMumIndex >= 12) {
+        if(aktifMumIndex >= 15) {
             // Yıl sonu likidasyonu
             if (eldeHisseVar) {
                 const karZarar = (alinanAdet * currentAnlikFiyat) - islemHacmi;
@@ -168,11 +265,17 @@ export default function SwingTradeEkrani({
         setMumlar([...cizilenMumlar, { ...currentMum }]);
 
         // Çarpışma Kontrolü (Trigger Logic)
-        if (!eldeHisseVar && currentAnlikFiyat <= alisCizgisi) {
-            eldeHisseVar = true;
-            alinanAdet = islemHacmi / alisCizgisi;
-            setBakiye(prev => prev - islemHacmi);
-            setAktifDurum('HİSSEDE');
+        if (!eldeHisseVar) {
+            const alimSartiSaglandi = isStopBuy 
+                ? (currentAnlikFiyat >= alisCizgisi) // Yukarı kırılım bekliyor
+                : (currentAnlikFiyat <= alisCizgisi); // Düşüş bekliyor
+
+            if (alimSartiSaglandi) {
+                eldeHisseVar = true;
+                alinanAdet = islemHacmi / alisCizgisi;
+                setBakiye(prev => prev - islemHacmi);
+                setAktifDurum('HİSSEDE');
+            }
         }
         
         if (eldeHisseVar && currentAnlikFiyat >= satisCizgisi) {
@@ -188,7 +291,7 @@ export default function SwingTradeEkrani({
             cizilenMumlar.push({ ...currentMum });
             aktifMumIndex++;
             tickCount = 0;
-            if(aktifMumIndex < 12) {
+            if(aktifMumIndex < 15) {
                 currentMum = { open: currentAnlikFiyat, close: currentAnlikFiyat, high: currentAnlikFiyat, low: currentAnlikFiyat };
             }
         }
@@ -206,8 +309,8 @@ export default function SwingTradeEkrani({
 
   // Drag logic
   const handleMouseMove = (e) => {
-      if(!draggingLine || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
+      if(!draggingLine || !chartAreaRef.current) return;
+      const rect = chartAreaRef.current.getBoundingClientRect();
       const y = e.clientY - rect.top;
       const price = Math.round(yToPrice(y) * 10) / 10;
       
@@ -237,8 +340,8 @@ export default function SwingTradeEkrani({
 
   // Çizim Yardımcısı
   const renderMum = (m, index, isFuture = false) => {
-      // Toplam 17 mum var (5 geçmiş + 12 gelecek). %5 ile %95 arasına dağıtıyoruz.
-      const pct = 5 + (index * (90 / 16));
+      // Toplam 52 mum var (37 geçmiş + 15 gelecek). %5 ile %95 arasına dağıtıyoruz. (Aralık 90 birim, 51 boşluk var)
+      const pct = 5 + (index * (90 / 51));
       
       const openY = priceToY(m.open);
       const closeY = priceToY(m.close);
@@ -319,6 +422,10 @@ export default function SwingTradeEkrani({
             </div>
             
             <div className="flex gap-6 items-center">
+                <button onClick={() => setInfoAcik(true)} className="flex items-center gap-1 bg-surface text-on-surface px-4 py-2 border border-outline btn-shadow font-bold uppercase text-sm hover:bg-surface-dim transition-colors mr-2">
+                    <span className="material-symbols-outlined">help</span>
+                    Nasıl Çalışır?
+                </button>
                 <div className="text-right">
                     <div className="text-[10px] uppercase text-on-surface-variant font-bold">Durum</div>
                     <div className={`font-black text-sm uppercase ${aktifDurum === 'HİSSEDE' ? 'text-warning' : (aktifDurum === 'KÂR ALINDI' ? 'text-primary' : 'text-on-surface')}`}>{aktifDurum}</div>
@@ -341,28 +448,42 @@ export default function SwingTradeEkrani({
                     </div>
                 </div>
 
-                <div className="flex-1 w-full h-full relative cursor-crosshair">
-                    <svg width="100%" height={GRAFIK_HEIGHT} className="absolute inset-0 pointer-events-none" style={{overflow: 'visible'}}>
+                <div className="flex-1 w-full h-full relative cursor-crosshair" ref={chartAreaRef}>
+                    <svg width="100%" height={grafikHeight} className="absolute inset-0 pointer-events-none" style={{overflow: 'visible'}}>
                         {/* Grid Lines */}
-                        <line x1="0" y1={GRAFIK_HEIGHT/4} x2="100%" y2={GRAFIK_HEIGHT/4} stroke="#374151" strokeDasharray="4 4" />
-                        <line x1="0" y1={GRAFIK_HEIGHT/2} x2="100%" y2={GRAFIK_HEIGHT/2} stroke="#374151" strokeDasharray="4 4" />
-                        <line x1="0" y1={(GRAFIK_HEIGHT/4)*3} x2="100%" y2={(GRAFIK_HEIGHT/4)*3} stroke="#374151" strokeDasharray="4 4" />
+                        <line x1="0" y1={grafikHeight/4} x2="100%" y2={grafikHeight/4} stroke="#374151" strokeDasharray="4 4" />
+                        <line x1="0" y1={grafikHeight/2} x2="100%" y2={grafikHeight/2} stroke="#374151" strokeDasharray="4 4" />
+                        <line x1="0" y1={(grafikHeight/4)*3} x2="100%" y2={(grafikHeight/4)*3} stroke="#374151" strokeDasharray="4 4" />
 
                         {/* Fiyat Eksen Etiketleri */}
-                        <text x="10" y={GRAFIK_HEIGHT/4 - 5} fill="#9CA3AF" fontSize="14" fontWeight="bold">{money(yToPrice(GRAFIK_HEIGHT/4))}</text>
-                        <text x="10" y={GRAFIK_HEIGHT/2 - 5} fill="#9CA3AF" fontSize="14" fontWeight="bold">{money(yToPrice(GRAFIK_HEIGHT/2))}</text>
-                        <text x="10" y={(GRAFIK_HEIGHT/4)*3 - 5} fill="#9CA3AF" fontSize="14" fontWeight="bold">{money(yToPrice((GRAFIK_HEIGHT/4)*3))}</text>
+                        <text x="10" y={grafikHeight/4 - 5} fill="#9CA3AF" fontSize="16" fontWeight="bold">{money(yToPrice(grafikHeight/4))}</text>
+                        <text x="10" y={grafikHeight/2 - 5} fill="#9CA3AF" fontSize="16" fontWeight="bold">{money(yToPrice(grafikHeight/2))}</text>
+                        <text x="10" y={(grafikHeight/4)*3 - 5} fill="#9CA3AF" fontSize="16" fontWeight="bold">{money(yToPrice((grafikHeight/4)*3))}</text>
                         
+                        {/* Destek ve Direnç Çizgileri */}
+                        {direncSeviyesi && (
+                            <>
+                                <line x1="0" y1={priceToY(direncSeviyesi)} x2="100%" y2={priceToY(direncSeviyesi)} stroke="#FBBF24" strokeDasharray="4 4" strokeWidth={1} opacity={0.6} />
+                                <text x="10" y={priceToY(direncSeviyesi) - 5} fill="#FBBF24" fontSize="14" fontWeight="bold" opacity={0.8}>DİRENÇ ({money(direncSeviyesi)})</text>
+                            </>
+                        )}
+                        {destekSeviyesi && (
+                            <>
+                                <line x1="0" y1={priceToY(destekSeviyesi)} x2="100%" y2={priceToY(destekSeviyesi)} stroke="#60A5FA" strokeDasharray="4 4" strokeWidth={1} opacity={0.6} />
+                                <text x="10" y={priceToY(destekSeviyesi) - 5} fill="#60A5FA" fontSize="14" fontWeight="bold" opacity={0.8}>DESTEK ({money(destekSeviyesi)})</text>
+                            </>
+                        )}
+
                         {/* Geçmiş Mumlar */}
                         {gecmisMumlar.map((m, i) => renderMum(m, i, false))}
                         
-                        {/* Ayrım Çizgisi (Index 4.5) */}
-                        <line x1={`${5 + (4.5 * (90 / 16))}%`} y1="0" x2={`${5 + (4.5 * (90 / 16))}%`} y2={GRAFIK_HEIGHT} stroke="#6B7280" strokeDasharray="2 2" strokeWidth={2} />
-                        <text x={`${5 + (3 * (90 / 16))}%`} y={GRAFIK_HEIGHT + 20} fill="#9CA3AF" fontSize="12" fontWeight="bold">Geçmiş</text>
-                        <text x={`${5 + (5.5 * (90 / 16))}%`} y={GRAFIK_HEIGHT + 20} fill="#9CA3AF" fontSize="12" fontWeight="bold">Simülasyon (12 Ay)</text>
+                        {/* Ayrım Çizgisi (Index 36.5) */}
+                        <line x1={`${5 + (36.5 * (90 / 51))}%`} y1="0" x2={`${5 + (36.5 * (90 / 51))}%`} y2={grafikHeight} stroke="#6B7280" strokeDasharray="2 2" strokeWidth={2} />
+                        <text x={`${5 + (33 * (90 / 51))}%`} y={grafikHeight + 20} fill="#9CA3AF" fontSize="14" fontWeight="bold">Geçmiş</text>
+                        <text x={`${5 + (38 * (90 / 51))}%`} y={grafikHeight + 20} fill="#9CA3AF" fontSize="14" fontWeight="bold">Simülasyon (15 Ay)</text>
 
                         {/* Simüle Edilen Mumlar */}
-                        {mumlar.map((m, i) => renderMum(m, i + 5, true))}
+                        {mumlar.map((m, i) => renderMum(m, i + 37, true))}
                     </svg>
 
                     {/* Satis (Take Profit) Cizgisi */}
@@ -454,6 +575,61 @@ export default function SwingTradeEkrani({
                 </button>
             </div>
         </div>
+        
+        {/* Swing Info Modal */}
+        {infoAcik && (
+          <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
+              <div className="bg-surface-container border border-outline w-full max-w-2xl max-h-[90vh] overflow-y-auto card-shadow animate-in zoom-in duration-200">
+                  <div className="bg-surface p-4 border-b border-outline flex justify-between items-center sticky top-0">
+                      <h3 className="font-headline-sm font-black uppercase text-primary flex items-center gap-2">
+                          <span className="material-symbols-outlined">school</span>
+                          Swing Trade Nasıl Çalışır?
+                      </h3>
+                      <button onClick={() => setInfoAcik(false)} className="text-on-surface hover:text-error transition-colors">
+                          <span className="material-symbols-outlined">close</span>
+                      </button>
+                  </div>
+                  <div className="p-6 space-y-6 text-on-surface text-sm">
+                      <div className="bg-surface p-4 rounded border-l-4 border-l-primary">
+                          <h4 className="font-bold text-base mb-2 uppercase">Akıllı Emir Sistemi</h4>
+                          <p className="opacity-90 leading-relaxed">
+                              Grafikte <strong>YEŞİL</strong> çizgiyi sürükleyerek "Alış", <strong>KIRMIZI</strong> çizgiyi sürükleyerek "Satış" noktanızı belirlersiniz.
+                              <br/><br/>
+                              📉 <strong>Limit Alım:</strong> Yeşil çizgiyi şu anki fiyatın <i>altına</i> koyarsanız sistem, fiyatın oraya kadar <strong>düşmesini</strong> bekler.<br/>
+                              📈 <strong>Stop Alım (Breakout):</strong> Yeşil çizgiyi fiyatın <i>üstüne</i> koyarsanız sistem, fiyatın yükselip o direnci <strong>kırmasını</strong> bekler.
+                              <br/><br/>
+                              Eğer fiyat yeşil çizginize çarparsa alım gerçekleşir. Sonrasında kırmızı çizginize (Kâr Al) çarparsa işlem başarıyla kapanır!
+                          </p>
+                      </div>
+
+                      <div className="bg-surface p-4 rounded border-l-4 border-l-warning">
+                          <h4 className="font-bold text-base mb-2 uppercase flex items-center gap-2">
+                              Destek ve Direnç <span className="text-xs bg-warning text-background px-2 py-0.5 rounded">ÖNEMLİ</span>
+                          </h4>
+                          <p className="opacity-90 leading-relaxed mb-2">
+                              Geçmiş fiyat hareketlerine göre grafikte iki önemli nokta oluşur:
+                          </p>
+                          <ul className="list-disc pl-5 space-y-2 opacity-90">
+                              <li><strong>DİRENÇ (Sarı Kesik Çizgi):</strong> Geçmişin zirvesi. Fiyat aşağıdan buraya çarparsa ret yer (Bounce) veya yukarı kırar (Breakout). Yukarı kırdıktan sonra fiyat düşüp tekrar bu çizgiye gelirse, artık burası bir <strong>Destek</strong> noktası olarak çalışır!</li>
+                              <li><strong>DESTEK (Mavi Kesik Çizgi):</strong> Geçmişin dibi. Fiyat yukarıdan buraya çarparsa genelde seker. Ancak aşağı kırarsa sert düşüş başlar. Eğer düştükten sonra fiyat tekrar bu çizgiye tırmanırsa, artık bu çizgi bir <strong>Direnç</strong> görevi görür.</li>
+                          </ul>
+                      </div>
+
+                      <div className="bg-surface p-4 rounded border-l-4 border-l-error">
+                          <h4 className="font-bold text-base mb-2 uppercase">Likidasyon Kuralları</h4>
+                          <p className="opacity-90 leading-relaxed">
+                              Simülasyon 15 mumluk bir süreçtir (1.5 yıl). Fiyat alış çizginize çarparsa işlemi başlatırsınız. Daha sonra satış (kâr al) çizginize çarpmasını beklersiniz. Eğer vade sonunda satılmamış (veya zararda) bir hisseniz varsa, 15. mumun kapanışından zorunlu olarak likide edilirsiniz.
+                          </p>
+                      </div>
+                  </div>
+                  <div className="p-4 border-t border-outline text-right bg-surface sticky bottom-0">
+                      <button onClick={() => setInfoAcik(false)} className="bg-primary text-on-primary px-6 py-2 font-bold uppercase hover:-translate-y-1 transition-transform">
+                          Anladım
+                      </button>
+                  </div>
+              </div>
+          </div>
+        )}
     </div>
   );
 }
