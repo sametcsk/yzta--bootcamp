@@ -91,9 +91,10 @@ export default function BitisSayfasi({
   const [liderlikYukleniyor, setLiderlikYukleniyor] = useState(false)
   const kayitBaslatildiRef = useRef(false)
 
-  const sebepMetni =
-    bitisSebebi === "yas_siniri"
-      ? "85 yaşına ulaştın. Uzun bir hayat sürdün."
+  const sebepMetni = bitisSebebi === "yas_siniri"
+    ? "95 yaşına ulaştın. Uzun bir hayat sürdün."
+    : bitisSebebi === "iflas"
+      ? "Nakit rezervin ve satılabilir varlıkların tükendiği için finansal olarak iflas ettin."
       : "Beklenmedik bir şekilde hayatın sona erdi."
 
   // Final rapor hazır olunca run'ı bir kez kaydet

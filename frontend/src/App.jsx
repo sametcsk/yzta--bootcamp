@@ -27,6 +27,16 @@ import OpsiyonSayfasi from "./OpsiyonSayfasi"
 import { formatAssetPrice, money } from "./utils"
 import IliskilerSayfasi from "./IliskilerSayfasi"
 import { getRandomIliskiEvent } from "./IliskiEventleri"
+import {
+  TERFI_SINAVI_EVENT_ID,
+  emeklilikteTerfiEventleriniTemizle,
+  terfiSinavinaUygunMu,
+} from "./utils/kariyerEventleri"
+import {
+  emekliMaasiHesapla,
+  iflaslaBitmeliMi,
+  satilabilirVarlikVarMi,
+} from "./utils/finans"
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
 const AGENT_MEMORY_STORAGE_KEY = "finsim_agent_memory_v1"
@@ -34,6 +44,7 @@ const AGENT_SESSION_STORAGE_KEY = "finsim_agent_session_id_v1"
 const OYUN_BASLANGIC_YILI = 2025
 const AILE_DESTEGI_SURESI_YIL = 2
 const AILE_DESTEGI_AYLIK_USD = toplamAylikUsd(VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI)
+const ASGARI_AYLIK_YASAM_GIDERI_USD = toplamAylikUsd(VARSAYILAN_STANDARTLAR, YASAM_STANDARTLARI)
 
 function aileDestegiAktifMi(yil) {
   return yil < OYUN_BASLANGIC_YILI + AILE_DESTEGI_SURESI_YIL
@@ -41,6 +52,10 @@ function aileDestegiAktifMi(yil) {
 
 function yillikAileDestegiHesapla(dolarKuru) {
   return Math.round(AILE_DESTEGI_AYLIK_USD * dolarKuru * 12)
+}
+
+function asgariYillikYasamGideriHesapla(dolarKuru) {
+  return Math.round(ASGARI_AYLIK_YASAM_GIDERI_USD * dolarKuru * 12)
 }
 
 function yeniAgentSessionId() {
@@ -307,6 +322,12 @@ function AppInner() {
       if (error && error.code !== "PGRST116") throw error;
       if (data?.save_data) {
         const sd = data.save_data;
+        const kayitliEmekliMaasi = sd.isYeri === "emekli"
+          ? emekliMaasiHesapla(
+            sd.yillikGelir ?? sd.temelMaas ?? 0,
+            asgariYillikYasamGideriHesapla(sd.fiyatlar?.dolar_try || 40)
+          )
+          : null;
         if (sd.gameState !== undefined) setGameState(sd.gameState);
         if (sd.yil !== undefined) setYil(sd.yil);
         if (sd.yas !== undefined) setYas(sd.yas);
@@ -337,7 +358,9 @@ function AppInner() {
         if (sd.hikayeGoruldu !== undefined) setHikayeGoruldu(sd.hikayeGoruldu);
         if (sd.karakterProfili !== undefined) setKarakterProfili(sd.karakterProfili);
         if (sd.aktifSayfa !== undefined) setAktifSayfa(sd.aktifSayfa);
-        if (sd.yillikGelir !== undefined) setYillikGelir(sd.yillikGelir);
+        if (sd.yillikGelir !== undefined || kayitliEmekliMaasi !== null) {
+          setYillikGelir(kayitliEmekliMaasi ?? sd.yillikGelir);
+        }
         if (sd.yasamGideri !== undefined) setYasamGideri(sd.yasamGideri);
         if (sd.portfoy !== undefined) setPortfoy(sd.portfoy);
         if (sd.opsiyonGecmisi !== undefined) setOpsiyonGecmisi(sd.opsiyonGecmisi);
@@ -347,7 +370,9 @@ function AppInner() {
         if (sd.standartlar !== undefined) setStandartlar(sd.standartlar);
         if (sd.isYeri !== undefined) setIsYeri(sd.isYeri);
         if (sd.cinsiyet !== undefined) setCinsiyet(sd.cinsiyet);
-        if (sd.temelMaas !== undefined) setTemelMaas(sd.temelMaas);
+        if (sd.temelMaas !== undefined || kayitliEmekliMaasi !== null) {
+          setTemelMaas(kayitliEmekliMaasi ?? sd.temelMaas);
+        }
         if (sd.isLevel !== undefined) setIsLevel(sd.isLevel);
         if (sd.emlakPiyasasi !== undefined) setEmlakPiyasasi(sd.emlakPiyasasi);
         if (sd.sahipOlunanEvler !== undefined) setSahipOlunanEvler(sd.sahipOlunanEvler);
@@ -359,7 +384,10 @@ function AppInner() {
         if (sd.nakitYetersizKalanEventSayisi !== undefined) setNakitYetersizKalanEventSayisi(sd.nakitYetersizKalanEventSayisi);
         if (sd.eventGecmisi !== undefined) setEventGecmisi(sd.eventGecmisi);
         if (sd.tetiklenenler !== undefined) setTetiklenenler(sd.tetiklenenler);
-        if (sd.eventKuyrugu !== undefined) setEventKuyrugu(sd.eventKuyrugu);
+        if (sd.eventKuyrugu !== undefined) {
+          const eventKuyrugu = emeklilikteTerfiEventleriniTemizle(sd.eventKuyrugu, sd.isYeri);
+          setEventKuyrugu(eventKuyrugu);
+        }
         if (sd.eventKayitlari !== undefined) setEventKayitlari(sd.eventKayitlari);
         if (sd.coachYorumu !== undefined) setCoachYorumu(sd.coachYorumu);
         if (sd.fiyatGecmisi !== undefined) setFiyatGecmisi(sd.fiyatGecmisi);
@@ -446,7 +474,7 @@ function AppInner() {
   const [gecmisTemettu, setGecmisTemettu] = useState(0)
   const [oyunBitti, setOyunBitti] = useState(false)
   const [liderlikKaydedildi, setLiderlikKaydedildi] = useState(false)
-  const [bitisSebebi, setBitisSebebi] = useState(null) // "yas_siniri" | "erken_olum"
+  const [bitisSebebi, setBitisSebebi] = useState(null) // "yas_siniri" | "erken_olum" | "iflas"
   const [oturum, setOturum] = useState(null)
   const [sonEventEtkisi, setSonEventEtkisi] = useState({ sabir: 0, mutluluk: 0 })
   const [sonucKarti, setSonucKarti] = useState(null) // { baslik, metin } | null
@@ -555,6 +583,17 @@ function AppInner() {
   }, [])
 
 
+  const oyunuIflaslaBitir = () => {
+    setHacizUyarisiAcik(false)
+    nakitiGuncelle(0)
+    setKredi(null)
+    setKrediNotu(0)
+    setBars({ sabir: 0, mutluluk: 0 })
+    setIflasSayisi(prev => prev + 1)
+    setBitisSebebi("iflas")
+    setOyunBitti(true)
+  }
+
   const handleYilAtlaTikla = () => {
     if (arkadasTeklifi) {
        uyariGoster("Arkadaşından gelen bir teklif var! Lütfen ekranın sağındaki teklifi değerlendirip kabul et veya reddet (bunu yapmadan yılı geçemezsin).");
@@ -567,6 +606,19 @@ function AppInner() {
     const beklenenNakit = nakitRef.current + yillikGelir - yasamGideri + beklenenKira - beklenenTaksit
 
     if (beklenenNakit < 0) {
+      const satilabilirVarlikVar = satilabilirVarlikVarMi({
+        portfoy,
+        sahipOlunanEvler,
+        sahipOlunanAraclar,
+      })
+      if (iflaslaBitmeliMi({
+        beklenenNakit,
+        nakit: nakitRef.current,
+        satilabilirVarlikVar,
+      })) {
+        oyunuIflaslaBitir()
+        return
+      }
       setHacizUyarisiAcik(true)
       return
     }
@@ -764,7 +816,7 @@ function AppInner() {
 
     // Çalışma Barı Artışı
     let yeniCalismaBari = calismaBari
-    if (isYeri && isYeri !== "lise_mezunu") {
+    if (isYeri && isYeri !== "lise_mezunu" && isYeri !== "emekli") {
       const isVasifsiz = MESLEKLER[isYeri] && !MESLEKLER[isYeri].gereksinim;
       if (isVasifsiz) {
         yeniCalismaBari += sikiCalisAktif ? 3 : 2
@@ -868,14 +920,29 @@ function AppInner() {
         gelecek_makro: data.gelecek_makro,
       })
 
+      const yeniDolarKuru = data.yil_sonucu.fiyatlar.dolar_try
+      const parasalBirimCarpani = data.yil_sonucu.redenominasyon ? 1000 : 1
+      const yeniBirimYasamGideri = Math.round(
+        toplamAylikUsd(
+          standartlar,
+          { ...YASAM_STANDARTLARI, ...getDinamikStandartlar(iliskiler) }
+        ) * yeniDolarKuru * 12
+      )
+      const yeniGider = yeniBirimYasamGideri * parasalBirimCarpani
+
       const calisiyor = isYeri && isYeri !== "lise_mezunu"
-      const yeniTemelMaas = calisiyor
+      const enflasyonluTemelMaas = calisiyor
         ? Math.round(temelMaas * (1 + data.yil_sonucu.enflasyon / 100))
         : 0
+      const yeniTemelMaas = isYeri === "emekli"
+        ? Math.max(
+          enflasyonluTemelMaas,
+          asgariYillikYasamGideriHesapla(yeniDolarKuru) * parasalBirimCarpani
+        )
+        : enflasyonluTemelMaas
       let yeniGelir = calisiyor
         ? Math.round(yeniTemelMaas * levelCarpaniGetir(isYeri, isLevel))
         : 0
-      const yeniGider = Math.round(yasamGideri * (1 + data.yil_sonucu.enflasyon / 100))
       setTemelMaas(yeniTemelMaas)
       setYasamGideri(yeniGider)
 
@@ -887,9 +954,6 @@ function AppInner() {
 
       // İş ilanlarını yenile
       setIsIlanlari(yeniIlanlarUret(yeniMaasEndeksi))
-
-      const yeniDolarKuru = data.yil_sonucu.fiyatlar.dolar_try
-      setYasamGideri(Math.round(toplamAylikUsd(standartlar, { ...YASAM_STANDARTLARI, ...getDinamikStandartlar(iliskiler) }) * yeniDolarKuru * 12))
 
       // Portföy Getirisi Hesaplama (Sıfır Atma Durumunu Göze Alarak)
       let w_start_gercek = nakitRef.current + Math.round(
@@ -1168,7 +1232,7 @@ function AppInner() {
 
       // Sıkı Çalış Debuff
       let sikiCalisDebuff = { mutluluk: 0, sabir: 0 }
-      if (sikiCalisAktif && isYeri && isYeri !== "lise_mezunu") {
+      if (sikiCalisAktif && isYeri && isYeri !== "lise_mezunu" && isYeri !== "emekli") {
         sikiCalisDebuff = { mutluluk: -7, sabir: -7 }
       }
 
@@ -1258,10 +1322,15 @@ function AppInner() {
         yeniEventler.push(...data.yil_sonucu.yan_eventler);
       }
       // Terfi Eventi Intercept (Side Event Olarak Kuyruğa Ekle)
-      if (yeniCalismaBari >= 10 && isYeri && isYeri !== "lise_mezunu" && isLevel < 5) {
+      if (terfiSinavinaUygunMu({
+        calismaBari: yeniCalismaBari,
+        isYeri,
+        isLevel,
+        eventler: yeniEventler,
+      })) {
         // %70 başarı şansı arka planda hesaplanacak
         yeniEventler.push({
-          id: "ev_terfi_sinavi",
+          id: TERFI_SINAVI_EVENT_ID,
           baslik: "Terfi Fırsatı: Yönetici Pozisyonu",
           metin: "Sıkı çalışman sonuç verdi. Yönetim, performansını takdir etti ve sana bir üst pozisyon için terfi sınavına girme hakkı tanıdı.",
           secenekler: [
@@ -1676,6 +1745,16 @@ function AppInner() {
         setIsYeri(yeni_is)
         setIsLevel(1)
         setCalismaBari(0)
+        if (yeni_is === "emekli") {
+          const emekliMaasi = emekliMaasiHesapla(
+            yillikGelir,
+            asgariYillikYasamGideriHesapla(fiyatlar.dolar_try || 40)
+          )
+          setTemelMaas(emekliMaasi)
+          setYillikGelir(emekliMaasi)
+          setSikiCalisAktif(false)
+          setEventKuyrugu(prev => emeklilikteTerfiEventleriniTemizle(prev, yeni_is))
+        }
       } else {
         const adetKey = `bist_${sektor}_adet`
         const fiyatKey = `bist_${sektor}`
@@ -2184,6 +2263,11 @@ function AppInner() {
   )
   const emlakToplamDeger = sahipOlunanEvler.reduce((toplam, ev) => toplam + evGuncelDegerHesapla(ev), 0)
   const toplamDeger = nakit + portfoyDegeri + emlakToplamDeger
+  const satilabilirVarlikVar = satilabilirVarlikVarMi({
+    portfoy,
+    sahipOlunanEvler,
+    sahipOlunanAraclar,
+  })
   const krediTaksitYillik = kredi ? kredi.yillikTaksit : 0
   const netAkis = yillikGelir + kiraGeliriYillik + gecmisTemettu - yasamGideri - krediTaksitYillik
   const krizMi = gameState.enf_rejim === 1
@@ -2396,7 +2480,11 @@ function AppInner() {
           <div className="bg-primary-container border border-outline card-shadow p-stack-md text-background mb-stack-lg">
             <div className="font-headline-md text-headline-md font-black uppercase">Oyun Sona Erdi</div>
             <p className="font-data-sm text-data-sm uppercase mt-1 mb-4">
-              {bitisSebebi === "yas_siniri" ? "95 yaşına ulaştın." : "Beklenmedik bir şekilde hayatın sona erdi."}
+              {bitisSebebi === "yas_siniri"
+                ? "95 yaşına ulaştın."
+                : bitisSebebi === "iflas"
+                  ? "Nakit ve satılabilir varlıkların tükendi."
+                  : "Beklenmedik bir şekilde hayatın sona erdi."}
             </p>
             <button
               onClick={tekrarOyna}
@@ -2418,15 +2506,27 @@ function AppInner() {
             </p>
             <ul className="list-disc ml-6 text-sm mb-4 opacity-90 space-y-1">
               <li>Psikolojik Profil bölümünden yıllık giderlerinizi azaltın.</li>
-              <li>Gelirinizi artırın, kredi kullanın veya varlıklarınızdan birini satarak nakit oluşturun.</li>
+              {satilabilirVarlikVar ? (
+                <li>Gelirinizi artırın, kredi kullanın veya varlıklarınızdan birini satarak nakit oluşturun.</li>
+              ) : (
+                <li>Satılabilir varlığınız kalmadı. Giderinizi azaltamıyor veya kredi kullanamıyorsanız oyunu iflasla sonlandırabilirsiniz.</li>
+              )}
             </ul>
-            <div className="flex mt-6">
+            <div className="flex flex-wrap gap-3 mt-6">
               <button
                 onClick={() => setHacizUyarisiAcik(false)}
                 className="bg-background text-error px-6 py-3 font-bold uppercase border border-error btn-shadow transition-transform hover:bg-surface-container"
               >
                 GERİ DÖN VE BÜTÇEYİ DÜZELT
               </button>
+              {!satilabilirVarlikVar && (
+                <button
+                  onClick={oyunuIflaslaBitir}
+                  className="bg-error text-on-error px-6 py-3 font-bold uppercase border border-outline btn-shadow transition-transform hover:opacity-90"
+                >
+                  İFLASI KABUL ET VE OYUNU BİTİR
+                </button>
+              )}
             </div>
           </div>
         )}
