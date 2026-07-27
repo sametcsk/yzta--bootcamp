@@ -2896,21 +2896,23 @@ function AppInner() {
                           <div className="flex gap-2 items-center justify-end w-full sm:w-auto sm:shrink-0">
                             <input id="hizli_altin_miktar" type="number" className="w-20 h-8 bg-background border border-outline px-2 rounded text-on-surface text-center text-sm" placeholder="gr" min="1" />
                             <button onClick={() => {
-                              const val = Number(document.getElementById("hizli_altin_miktar").value);
+                              const miktarInput = document.getElementById("hizli_altin_miktar");
+                              const val = Number(miktarInput.value);
                               if (val > 0 && nakitRef.current >= val * fiyatlar.altin_try_gram) {
                                 nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.altin_try_gram));
                                 setPortfoy(p => ({ ...p, altin_gram: p.altin_gram + val }));
-                                document.getElementById("hizli_altin_miktar").value = "";
                                 tutorialEyleminiTamamla("hizli_alim");
                               } else if (val > 0) uyariGoster("Altın almak için yeterli nakdin yok.");
+                              miktarInput.value = "";
                             }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
                             <button onClick={() => {
-                              const val = Number(document.getElementById("hizli_altin_miktar").value);
+                              const miktarInput = document.getElementById("hizli_altin_miktar");
+                              const val = Number(miktarInput.value);
                               if (val > 0 && portfoy.altin_gram >= val) {
                                 nakitiGuncelle(Math.round(nakitRef.current + val * fiyatlar.altin_try_gram));
                                 setPortfoy(p => ({ ...p, altin_gram: p.altin_gram - val }));
-                                document.getElementById("hizli_altin_miktar").value = "";
                               } else if (val > 0) uyariGoster("Satmak istediğin miktarda altına sahip değilsin.");
+                              miktarInput.value = "";
                             }} className="bg-error text-on-error min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">SAT</button>
                           </div>
                         </div>
@@ -2927,21 +2929,23 @@ function AppInner() {
                           <div className="flex gap-2 items-center justify-end w-full sm:w-auto sm:shrink-0">
                             <input id="hizli_dolar_miktar" type="number" className="w-20 h-8 bg-background border border-outline px-2 rounded text-on-surface text-center text-sm" placeholder="$" min="1" />
                             <button onClick={() => {
-                              const val = Number(document.getElementById("hizli_dolar_miktar").value);
+                              const miktarInput = document.getElementById("hizli_dolar_miktar");
+                              const val = Number(miktarInput.value);
                               if (val > 0 && nakitRef.current >= val * fiyatlar.dolar_try) {
                                 nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.dolar_try));
                                 setPortfoy(p => ({ ...p, dolar: p.dolar + val }));
-                                document.getElementById("hizli_dolar_miktar").value = "";
                                 tutorialEyleminiTamamla("hizli_alim");
                               } else if (val > 0) uyariGoster("Dolar almak için yeterli nakdin yok.");
+                              miktarInput.value = "";
                             }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
                             <button onClick={() => {
-                              const val = Number(document.getElementById("hizli_dolar_miktar").value);
+                              const miktarInput = document.getElementById("hizli_dolar_miktar");
+                              const val = Number(miktarInput.value);
                               if (val > 0 && portfoy.dolar >= val) {
                                 nakitiGuncelle(Math.round(nakitRef.current + val * fiyatlar.dolar_try));
                                 setPortfoy(p => ({ ...p, dolar: p.dolar - val }));
-                                document.getElementById("hizli_dolar_miktar").value = "";
                               } else if (val > 0) uyariGoster("Satmak istediğin miktarda dolara sahip değilsin.");
+                              miktarInput.value = "";
                             }} className="bg-error text-on-error min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">SAT</button>
                           </div>
                         </div>
@@ -2958,21 +2962,23 @@ function AppInner() {
                           <div className="flex gap-2 items-center justify-end w-full sm:w-auto sm:shrink-0">
                             <input id="hizli_borsa_miktar" type="number" className="w-20 h-8 bg-background border border-outline px-2 rounded text-on-surface text-center text-sm" placeholder="Lot" min="1" />
                             <button onClick={() => {
-                              const val = Number(document.getElementById("hizli_borsa_miktar").value);
+                              const miktarInput = document.getElementById("hizli_borsa_miktar");
+                              const val = Number(miktarInput.value);
                               if (val > 0 && nakitRef.current >= val * fiyatlar.bist_endeks) {
                                 nakitiGuncelle(Math.round(nakitRef.current - val * fiyatlar.bist_endeks));
                                 setPortfoy(p => ({ ...p, bist_adet: p.bist_adet + val }));
-                                document.getElementById("hizli_borsa_miktar").value = "";
                                 tutorialEyleminiTamamla("hizli_alim");
                               } else if (val > 0) uyariGoster("BİST100 almak için yeterli nakdin yok.");
+                              miktarInput.value = "";
                             }} className="bg-primary text-background min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">AL</button>
                             <button onClick={() => {
-                              const val = Number(document.getElementById("hizli_borsa_miktar").value);
+                              const miktarInput = document.getElementById("hizli_borsa_miktar");
+                              const val = Number(miktarInput.value);
                               if (val > 0 && portfoy.bist_adet >= val) {
                                 nakitiGuncelle(Math.round(nakitRef.current + val * fiyatlar.bist_endeks));
                                 setPortfoy(p => ({ ...p, bist_adet: p.bist_adet - val }));
-                                document.getElementById("hizli_borsa_miktar").value = "";
                               } else if (val > 0) uyariGoster("Satmak istediğin miktarda BİST100 lotuna sahip değilsin.");
+                              miktarInput.value = "";
                             }} className="bg-error text-on-error min-w-12 h-8 px-3 rounded font-bold hover:bg-opacity-80 text-xs">SAT</button>
                           </div>
                         </div>
