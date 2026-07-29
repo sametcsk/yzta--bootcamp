@@ -37,7 +37,7 @@ Lokal `.env` dosyası commitlenmez:
 
 ```dotenv
 GEMINI_API_KEY=
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.5-flash
 REQUIRE_LLM=false
 
 LANGCHAIN_API_KEY=
@@ -47,7 +47,7 @@ LANGCHAIN_PROJECT=finsim-ai-agents
 
 `backend/agents/llm_client.py`, Gemini REST `generateContent` çağrısını yapar. Anahtar hiçbir response, log veya prompt alanında döndürülmez. Testler ağ bağlantısı ve API anahtarı gerektirmez.
 
-`REQUIRE_LLM=false` sunum dayanıklılığı için güvenli fallback'e izin verir; LLM hatası response içinde `generation_source: llm_error` ve hassas bilgi içermeyen `llm_error_type` ile görünür kalır. `REQUIRE_LLM=true` olduğunda LLM hatası agent endpointinden kontrollü `503` döndürür. Frontend response içindeki güvenli fallback'i gösterir ve kullanıcıya AI yanıtının üretilemediğini bildirir.
+`REQUIRE_LLM=false` sunum dayanıklılığı için güvenli fallback'e izin verir; LLM hatası response içinde `generation_source: llm_error` ve hassas bilgi içermeyen `llm_error_type` ile görünür kalır. `REQUIRE_LLM=true` olduğunda API anahtarı eksikse veya LLM üretimi başarısızsa agent endpointi kontrollü `503` döndürür. Frontend response içindeki güvenli fallback'i gösterir ve kullanıcıya AI yanıtının üretilemediğini bildirir.
 
 ## Bias Sözleşmesi
 
@@ -66,7 +66,7 @@ Bu normalizasyon koç ve final raporda aynı davranışın farklı adlarla böl�
 
 `backend/agents/data/rag_sources.json`, davranışsal finans çalışmalarının kısa Türkçe kaynak kartlarını içerir. Her kartta kimlik, bias etiketi, başlık, yazar, yıl, URL/dosya adı, özet, kullanan agentlar ve oyun içi kullanım alanı bulunur.
 
-`rag_service.py`, ignore edilen `research/pdfs/` klasöründeki PDF'leri `pypdf` ile sayfa sayfa okur. Metin yaklaşık 1200 karakterlik ve 180 karakter örtüşmeli parçalara ayrılır. Her parçada kaynak kimliği, sayfa numarası, bias etiketleri ve agent kullanım alanı korunur.
+`rag_service.py`, ignore edilen `research/pdfs/` klasöründeki PDF'leri `pypdf` ile sayfa sayfa okur. PDF dosya adları `rag_sources.json` içindeki `source` alanlarıyla eşleşir. Metin yaklaşık 1200 karakterlik ve 180 karakter örtüşmeli parçalara ayrılır. Her parçada kaynak kimliği, sayfa numarası, bias etiketleri ve agent kullanım alanı korunur.
 
 Embedding katmanı `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` modelini kullanır. Bu model Türkçe sorgular için çok dilli semantik temsil üretir. Model yerelde yoksa ve indirmeye izin verilmemişse aynı akış deterministik `hash_embedding` fallback'iyle çalışır; testler daima bu çevrimdışı yolu kullanır. `FINSIM_ALLOW_MODEL_DOWNLOAD=true` yalnız modeli ilk kez lokal cache'e almak istendiğinde açılmalıdır.
 
@@ -100,7 +100,7 @@ Altı intro sorusundaki `bias_skor` değerlerini beş boyutlu başlangıç vekt�
 
 Frontend koça güncel event ile birlikte `event_history` gönderir. Koç ilk karar, yeni bias, aynı biasın her üçüncü tekrarı, yüksek etkili karar ve her beş karar ölçütlerinde konuşur. Diğer anlarda `should_show: false` döner ve frontend paneli göstermez.
 
-Koçtan önce çalışan Decision Analyst; `detected_bias`, Türkçe bias adı, karar kanıtı, etki seviyesi, toplam karar sayısı ve tekrar sayısını üretir. RAG ve Bias Coach bu yapılandırılmış çıktıyı kullanır; ekonomi veya event sonucunu değiştirmez.
+Koçtan önce çalışan Decision Analyst; eventin genel bias etiketini seçilen seçenek metni, seçenek etkileri ve karar geçmişiyle doğrular. Güçlü bir çelişki varsa daha uygun etikete geçer; kanıt yoksa yeni bir bias uydurmaz. Ardından `detected_bias`, Türkçe bias adı, karar kanıtı, etki seviyesi, toplam karar sayısı ve tekrar sayısını üretir. RAG ve Bias Coach bu yapılandırılmış çıktıyı kullanır; ekonomi veya event sonucunu değiştirmez.
 
 ### Final Report
 

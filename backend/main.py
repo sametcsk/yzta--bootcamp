@@ -32,12 +32,24 @@ app.add_middleware(
 
 def _agent_response(flow_name: str, data: dict) -> dict:
     result = run_agent_flow(flow_name, data)
-    if llm_zorunlu_mu() and result.get("generation_source") == "llm_error":
+    generation_source = result.get("generation_source")
+    llm_unavailable = (
+        generation_source in {"llm_error", "rule_based_fallback"}
+        or result.get("llm_enabled") is False
+    )
+    if llm_zorunlu_mu() and llm_unavailable:
+        error_type = result.get("llm_error_type")
+        if not error_type:
+            error_type = (
+                "missing_api_key"
+                if not os.getenv("GEMINI_API_KEY", "").strip()
+                else "llm_required_but_unavailable"
+            )
         raise HTTPException(
             status_code=503,
             detail={
                 "message": "AI yanıtı şu an üretilemedi.",
-                "llm_error_type": result.get("llm_error_type") or "unknown",
+                "llm_error_type": error_type,
                 "fallback_response": result,
             },
         )

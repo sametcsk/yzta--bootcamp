@@ -1,4 +1,6 @@
 import os
+import sys
+from types import ModuleType
 from unittest.mock import patch
 from urllib.error import HTTPError
 
@@ -63,8 +65,8 @@ def test_llm_client_api_key_istemeden_fallback_doner():
     assert result["status"] == "disabled"
     assert result["text"] is None
     assert result["llm_enabled"] is False
-    assert result["model"] == "gemini-2.5-flash"
-    assert DEFAULT_GEMINI_MODEL == "gemini-2.5-flash"
+    assert result["model"] == "gemini-3.5-flash"
+    assert DEFAULT_GEMINI_MODEL == "gemini-3.5-flash"
 
 
 def test_llm_client_key_verilse_bile_testte_ag_cagrisi_fail_fast_olur(monkeypatch):
@@ -103,6 +105,16 @@ def test_require_llm_false_hata_bilgisiyle_fallback_doner(monkeypatch):
     assert result["intro_story"]
 
 
+def test_require_llm_false_api_key_yokken_fallback_doner(monkeypatch):
+    monkeypatch.setenv("REQUIRE_LLM", "false")
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    from main import _agent_response
+
+    result = _agent_response("profile", {"answers": PROFILE_ANSWERS})
+    assert result["generation_source"] == "rule_based_fallback"
+    assert result["intro_story"]
+
+
 def test_require_llm_true_kontrollu_503_doner(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test-only-key")
     monkeypatch.setenv("REQUIRE_LLM", "true")
@@ -119,6 +131,19 @@ def test_require_llm_true_kontrollu_503_doner(monkeypatch):
     assert error.value.status_code == 503
     assert error.value.detail["llm_error_type"] == "auth_error"
     assert error.value.detail["fallback_response"]["intro_story"]
+
+
+def test_require_llm_true_api_key_yokken_kontrollu_503_doner(monkeypatch):
+    monkeypatch.setenv("REQUIRE_LLM", "true")
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    from fastapi import HTTPException
+    from main import _agent_response
+
+    with pytest.raises(HTTPException) as error:
+        _agent_response("profile", {"answers": PROFILE_ANSWERS})
+    assert error.value.status_code == 503
+    assert error.value.detail["llm_error_type"] == "missing_api_key"
+    assert error.value.detail["fallback_response"]["generation_source"] == "rule_based_fallback"
 
 
 def test_bias_aliaslari_kanonik_etikete_donusur():
@@ -154,6 +179,25 @@ def test_decision_analyst_yapilandirilmis_sonuc_doner():
     assert result["evidence"]
     assert result["profile_bias_score"] == 72
     assert "72/100" in result["evidence"]
+
+
+def test_decision_analyst_riskten_kacinmayi_batik_maliyet_saymaz():
+    decision = {
+        "event_title": "Eski Dostun İş Teklifi",
+        "selected_option": "Dostum kusura bakma, emekliliğimde bu riske giremem.",
+        "bias_label": "sunk_cost",
+        "option_effects": {"cash_usd": 0, "patience": 5, "happiness": -5},
+    }
+    result = analyze_decision({
+        **decision,
+        "event_history": [decision],
+    })
+    assert result["source_bias_label"] == "sunk_cost"
+    assert result["detected_bias"] == "loss_aversion"
+    assert result["bias_name_tr"] == "Kayıptan Kaçınma"
+    assert result["bias_resolution"] == "selected_option_override"
+    assert result["occurrence_count"] == 1
+    assert result["option_effects"]["patience"] == 5
 
 
 def test_agent_hafizasi_tekrarlari_ve_son_kararlari_ozetler():
@@ -207,7 +251,7 @@ def test_profile_bos_cevapta_baskin_bias_ve_karar_uydurmaz():
     assert report["dominant_bias"] is None
 
 
-def test_profile_fallback_hikayesi_somut_intro_detaylarini_kullanir():
+def test_profile_fallback_hikayesi_oyun_yolculugunu_dogal_anlatir():
     answers = [
         {"question_id": 1, "selected_text": "Mütevazı destek", "bias_skor": {"zorluk": "Orta"}},
         {"question_id": 2, "selected_text": "Kesin ödülü seçtim", "bias_skor": {"loss_aversion": 100}},
@@ -219,6 +263,9 @@ def test_profile_fallback_hikayesi_somut_intro_detaylarini_kullanir():
     assert len(result["story_details"]) == 3
     assert "Kesin ödülü seçtim" in result["intro_story"]
     assert "Beklenmedik parayı harcadım" in result["intro_story"]
+    assert "Eski maliyete takıldım" in result["intro_story"]
+    assert "60 yıllık" in result["intro_story"]
+    assert "seçimin bu yolun izlerinden biri oldu" not in result["intro_story"]
     assert result["story_biases"] == ["loss_aversion", "mental_accounting"]
 
 
@@ -314,6 +361,50 @@ def test_rag_pdf_metnini_overlapli_chunklara_boler():
     assert len(chunks) > 2
     assert all(0 < len(chunk) <= 240 for chunk in chunks)
     assert chunks[0][-20:] in chunks[1]
+
+
+def test_rag_eslesen_gercek_pdf_adindan_chunk_ve_embedding_uretir(monkeypatch, tmp_path):
+    pdf_path = tmp_path / "Arkes & Blumer 1985.pdf"
+    pdf_path.write_bytes(b"%PDF-test")
+    readable_text = " ".join(
+        ["Past investments can influence current decisions even when future benefits are limited."] * 8
+    )
+
+    class FakePage:
+        def extract_text(self):
+            return readable_text
+
+    class FakePdfReader:
+        def __init__(self, _path):
+            self.pages = [FakePage()]
+
+    fake_pypdf = ModuleType("pypdf")
+    fake_pypdf.PdfReader = FakePdfReader
+    monkeypatch.setitem(sys.modules, "pypdf", fake_pypdf)
+    monkeypatch.setenv("FINSIM_RAG_DIR", str(tmp_path))
+    monkeypatch.setenv("FINSIM_RAG_CACHE", str(tmp_path / "rag-index.json"))
+    monkeypatch.setattr(
+        rag_service,
+        "kaynaklari_yukle",
+        lambda: [{
+            "id": "arkes_blumer_1985",
+            "bias_labels": ["sunk_cost"],
+            "title": "The Psychology of Sunk Cost",
+            "authors": "Arkes & Blumer",
+            "year": 1985,
+            "source": "Arkes & Blumer 1985.pdf",
+            "source_url": "",
+            "summary_tr": "Batık maliyet eğilimini açıklar.",
+            "used_by": ["bias_coach_agent"],
+            "game_usage": "Geçmiş maliyetle sürdürülen kararları değerlendirmek.",
+        }],
+    )
+
+    index = rag_service.rag_indeksini_yukle()
+    assert len(index["chunks"]) > 0
+    assert len(index["chunks"]) == len(index["embeddings"])
+    assert index["embedding_backend"] == "hash_embedding"
+    assert index["chunks"][0]["source_id"] == "arkes_blumer_1985"
 
 
 def test_rag_embedding_ile_en_ilgili_pdf_pasajini_secer(monkeypatch):

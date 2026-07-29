@@ -49,10 +49,32 @@ def _profile_step(state: dict) -> dict:
 
 
 def _decision_step(state: dict) -> dict:
+    request = state["request"]
+    analysis = analyze_decision(request)
+    history = (
+        request.get("event_history")
+        or request.get("event_gecmisi")
+        or request.get("event_kayitlari")
+        or []
+    )
+    corrected_history = list(history)
+    if corrected_history:
+        corrected_history[-1] = {
+            **corrected_history[-1],
+            "source_bias_label": analysis.get("source_bias_label"),
+            "bias_label": analysis["detected_bias"],
+            "bias": analysis["detected_bias"],
+        }
+    memory_request = {
+        **request,
+        "bias_label": analysis["detected_bias"],
+        "bias": analysis["detected_bias"],
+        "event_history": corrected_history,
+    }
     return {
         **state,
-        "agent_memory": build_agent_memory(state["request"]),
-        "decision_analysis": analyze_decision(state["request"]),
+        "agent_memory": build_agent_memory(memory_request),
+        "decision_analysis": analysis,
     }
 
 

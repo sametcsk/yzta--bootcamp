@@ -1601,10 +1601,30 @@ function AppInner() {
     setIsLevel(prev => Math.min(5, Math.max(1, prev + delta)))
   }
 
+  function kocBiasiniKaydaUygula(eventKaydi, yorum) {
+    const duzeltilmisBias = yorum?.bias_label
+    if (!duzeltilmisBias) return
+    setEventKayitlari(prev => prev.map(kayit => {
+      const ayniKarar = kayit.session_id === eventKaydi.session_id
+        && kayit.event_id === eventKaydi.event_id
+        && kayit.secim_id === eventKaydi.secim_id
+        && kayit.year === eventKaydi.year
+      return ayniKarar
+        ? {
+            ...kayit,
+            source_bias_label: kayit.source_bias_label || kayit.bias_label,
+            bias_label: duzeltilmisBias,
+            bias: duzeltilmisBias,
+          }
+        : kayit
+    }))
+  }
+
   async function kocYorumunuGetir(eventKaydi, eventGecmisi = eventKayitlari) {
     const cacheKey = `${eventKaydi.event_id}_${eventKaydi.secim_id}`;
     if (aiCacheRef.current[cacheKey]) {
       const cachedYorum = aiCacheRef.current[cacheKey];
+      kocBiasiniKaydaUygula(eventKaydi, cachedYorum)
       setCoachYorumu(cachedYorum.should_show === false ? null : cachedYorum);
       if (cachedYorum.should_show !== false) {
         setCoachKayitlari(prev => [...prev, cachedYorum].slice(-3));
@@ -1629,6 +1649,7 @@ function AppInner() {
       const yorum = res.ok
         ? payload
         : { ...payload.detail.fallback_response, ai_status_message: payload.detail.message }
+      kocBiasiniKaydaUygula(eventKaydi, yorum)
       setCoachYorumu(yorum.should_show === false ? null : yorum)
       if (yorum.should_show !== false) {
         setCoachKayitlari(prev => [...prev, yorum].slice(-3))
@@ -1841,6 +1862,14 @@ function AppInner() {
       event_title: secilenEvent.baslik,
       selected_option: secenek.metin,
       bias_label: secilenEvent.bias_etiketi,
+      source_bias_label: secilenEvent.bias_etiketi,
+      option_effects: {
+        cash: secenek.nakit_etki ?? 0,
+        cash_usd: secenek.nakit_etki_usd ?? 0,
+        patience: secenek.sabir_etki ?? 0,
+        happiness: secenek.mutluluk_etki ?? 0,
+        risk: secenek.risk_etki ?? secenek.risk ?? null,
+      },
       profile_type: karakterProfili?.profile_type || null,
       bias_scores: karakterProfili?.bias_scores || {},
       session_id: agentSessionId,

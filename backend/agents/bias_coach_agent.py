@@ -102,10 +102,15 @@ def _history_label(item: dict) -> str:
 
 
 def _coach_trigger(data: dict, bias_label: str) -> tuple[bool, str, int, int]:
+    analysis = data.get("decision_analysis") or {}
     history = _event_history(data)
     labels = [_history_label(item) for item in history]
-    decision_count = len(history) or 1
-    occurrence_count = labels.count(bias_label) if labels else 1
+    decision_count = analysis.get("decision_count") or len(history) or 1
+    occurrence_count = (
+        analysis.get("occurrence_count")
+        if isinstance(analysis.get("occurrence_count"), int)
+        else labels.count(bias_label) if labels else 1
+    )
     if decision_count == 1:
         return True, "İlk karar değerlendirmesi", occurrence_count, decision_count
     if data.get("high_impact") or data.get("buyuk_etki"):
