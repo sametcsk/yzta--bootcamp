@@ -85,26 +85,7 @@ def _has_behavioral_answers(answers: list[dict]) -> bool:
     return False
 
 
-def _details_story_line(details: list[str]) -> str:
-    selected = [detail.strip().rstrip(".!?") for detail in details[:3] if detail.strip()]
-    if len(selected) >= 3:
-        return (
-            f'Yolun başında “{selected[0]}” yaklaşımın öne çıktı; '
-            f'“{selected[1]}” düşüncen kararlarına başka bir yön verdi. '
-            f'“{selected[2]}” tercihin de bu ilk dönemin somut izlerinden biri oldu.'
-        )
-    if len(selected) == 2:
-        return (
-            f'Yolun başında “{selected[0]}” yaklaşımın öne çıktı; '
-            f'“{selected[1]}” düşüncen de kararlarına yön verdi.'
-        )
-    if selected:
-        return f'Yolun başında “{selected[0]}” yaklaşımın kararlarına yön verdi.'
-    return ""
-
-
 def _fallback_story(difficulty: str, dominant_biases: list[str], details: list[str]) -> str:
-    details_line = _details_story_line(details)
     tendency_lines = " ".join(BIAS_STORY_LINES[label] for label in dominant_biases[:2])
     epic_ending = (
         "Bugünden itibaren piyasalara yatırım yapabilecek, kariyerinde kritik adımlar atabilecek "
@@ -114,16 +95,7 @@ def _fallback_story(difficulty: str, dominant_biases: list[str], details: list[s
         "karakterinin gerçek yüzünü detaylıca göreceksin. Bol şans!"
     )
     
-    return " ".join(
-        part
-        for part in (
-            DIFFICULTY_OPENINGS.get(difficulty, DIFFICULTY_OPENINGS["orta"]),
-            details_line,
-            tendency_lines,
-            epic_ending,
-        )
-        if part
-    )
+    return f"{DIFFICULTY_OPENINGS.get(difficulty, DIFFICULTY_OPENINGS['orta'])} {tendency_lines} {epic_ending}"
 
 
 def generate_profile(data: dict) -> dict:

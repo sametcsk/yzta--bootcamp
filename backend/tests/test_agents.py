@@ -261,9 +261,7 @@ def test_profile_fallback_hikayesi_oyun_yolculugunu_dogal_anlatir():
     result = generate_profile({"answers": answers})
     assert result["generation_source"] == "rule_based_fallback"
     assert len(result["story_details"]) == 3
-    assert "Kesin ödülü seçtim" in result["intro_story"]
-    assert "Beklenmedik parayı harcadım" in result["intro_story"]
-    assert "Eski maliyete takıldım" in result["intro_story"]
+    assert all(detail not in result["intro_story"] for detail in result["story_details"])
     assert "60 yıllık" in result["intro_story"]
     assert "seçimin bu yolun izlerinden biri oldu" not in result["intro_story"]
     assert result["story_biases"] == ["loss_aversion", "mental_accounting"]
