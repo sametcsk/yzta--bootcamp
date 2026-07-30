@@ -196,6 +196,7 @@ function AppInner() {
     }
   })
   const [bars, setBars] = useState({ sabir: 50, mutluluk: 50 })
+  const [psikolojiGecmisi, setPsikolojiGecmisi] = useState([])
   const [nakit, setNakit] = useState(25000)
   const [introTamamlandi, setIntroTamamlandi] = useState(false)
   const [hikayeGoruldu, setHikayeGoruldu] = useState(false)
@@ -660,6 +661,7 @@ function AppInner() {
   };
 
   async function yilAtla(opsiyonAksiyon = null) {
+    setPsikolojiGecmisi(prev => [...prev, { yil, mutluluk: bars.mutluluk, sabir: bars.sabir }]);
     setHacizUyarisiAcik(false)
     setAktifSayfa("ana")
     setLoading(true)
@@ -1961,6 +1963,23 @@ function AppInner() {
     setFinalRaporLoading(true)
     setFinalRaporHata(false)
     try {
+      const ortalamaMutluluk = psikolojiGecmisi.length > 0 ? (psikolojiGecmisi.reduce((acc, curr) => acc + curr.mutluluk, 0) / psikolojiGecmisi.length).toFixed(0) : bars.mutluluk;
+      const ortalamaSabir = psikolojiGecmisi.length > 0 ? (psikolojiGecmisi.reduce((acc, curr) => acc + curr.sabir, 0) / psikolojiGecmisi.length).toFixed(0) : bars.sabir;
+      const krizYiliSayisi = psikolojiGecmisi.filter(p => p.mutluluk < 30).length;
+      const tukenmislikYiliSayisi = psikolojiGecmisi.filter(p => p.sabir < 30).length;
+      
+      let enBuyukSabirDusus = 0;
+      let enBuyukSabirDususYili = "-";
+      for(let i = 1; i < psikolojiGecmisi.length; i++) {
+          const dusus = psikolojiGecmisi[i-1].sabir - psikolojiGecmisi[i].sabir;
+          if(dusus > enBuyukSabirDusus) {
+              enBuyukSabirDusus = dusus;
+              enBuyukSabirDususYili = psikolojiGecmisi[i].yil;
+          }
+      }
+
+      const psikolojiMetrikleriStr = `Oyuncu psikolojik istatistikleri: Ortalama Mutluluk %${ortalamaMutluluk}, Ortalama Sabır %${ortalamaSabir}. Mutluluğun %30 altında kaldığı kriz yılı sayısı: ${krizYiliSayisi}. Sabrın %30 altında kaldığı tükenmişlik yılı sayısı: ${tukenmislikYiliSayisi}. En büyük sabır kırılması (${enBuyukSabirDusus} puanlık düşüş) ${enBuyukSabirDususYili}. yılda yaşanmıştır. Bu kesin metrikleri baz alarak oyuncunun kriz anlarındaki psikolojik dayanıklılığı hakkında sayısal verilere dayanan kısa bir davranışsal yorum ekle.`;
+
       const res = await fetch(`${API_BASE_URL}/ajanlar/final-rapor`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1974,6 +1993,7 @@ function AppInner() {
             cash: nakit,
             net_worth: toplamDeger,
             bankruptcy_count: iflasSayisi,
+            psikoloji_ozeti: psikolojiMetrikleriStr,
             bias_metrics: biasMetrics,
             swing_trade_metrics: {
                 total_trades: swingTradeGecmisi.length,
@@ -2405,6 +2425,7 @@ function AppInner() {
         toplamDeger={toplamDeger}
         nakit={nakit}
         oturum={oturum}
+        psikolojiGecmisi={psikolojiGecmisi}
         liderlikKaydedildi={liderlikKaydedildi}
         onLiderlikKaydedildi={() => setLiderlikKaydedildi(true)}
         onTekrarDene={finalRaporuOlustur}

@@ -3,6 +3,11 @@ import { BASLANGIC, SORULAR } from "./data/sorular"
 import { MESLEKLER } from "./data/meslekler"
 import erkekImg from "./assets/erkek.png"
 import kadinImg from "./assets/kadin.png"
+import lossAversionImg from "./assets/bias/loss_aversion.png"
+import mentalAccountingImg from "./assets/bias/mental_accounting.png"
+import anchoringImg from "./assets/bias/anchoring.png"
+import dispositionImg from "./assets/bias/disposition_effect.png"
+import presentBiasImg from "./assets/bias/present_bias.png"
 
 
 function kilitliMi(kilit, nakit, sabir, mutluluk) {
@@ -125,21 +130,38 @@ export default function IntroEkrani({ onBitis }) {
   if (gecisEkraniGoster) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-background p-6">
-        <div className="max-w-md w-full bg-surface-container border border-outline rounded-3xl p-8 text-center card-shadow">
+        <div className="max-w-6xl w-full bg-surface-container border border-outline rounded-3xl p-8 text-center card-shadow overflow-y-auto max-h-[90dvh]">
           <span className="material-symbols-outlined text-6xl text-primary mb-4 block">
             psychology
           </span>
           <h2 className="font-headline-md text-headline-md text-on-surface mb-4">
-            Yatırımcı Kimliğiniz
+            Değerlendirilecek Yatırımcı Eğilimleri (Bias)
           </h2>
-          <p className="text-on-surface-variant text-body-lg mb-8 leading-relaxed">
-            Şimdi sorulacak sorular, senin gizli yatırımcı kimliğini (Bilişsel Önyargılarını) belirlemeye yardımcı olacak. Oyun içinde yaptığın her finansal hamle bu kimliği şekillendirecek ve oyun sonu raporunda nasıl bir yatırımcı olduğunu detaylı olarak görebileceksin.
+          <p className="text-on-surface-variant text-body-lg mb-8 leading-relaxed max-w-3xl mx-auto">
+            Oyun içindeki finansal kararların aşağıdaki 5 temel davranışsal eğilime göre analiz edilecek. Mantıklı kararlar alarak bu tuzaklara düşmemeye çalış.
           </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-10">
+            {[
+              { img: lossAversionImg, title: "Kayıptan Kaçınma", desc: "Zarar etme korkusuyla mantıksız kararlar almak." },
+              { img: mentalAccountingImg, title: "Zih. Muhasebe", desc: "Paranın kaynağına göre harcama sınırlarını değiştirmek." },
+              { img: anchoringImg, title: "Çıpalama", desc: "Duyulan ilk değere takılıp kalmak." },
+              { img: dispositionImg, title: "Elden Çıkarma", desc: "Kârdaki yatırımı erken satıp, zarardakini inatla tutmak." },
+              { img: presentBiasImg, title: "Anlık Haz", desc: "Gelecekteki büyük ödülü anlık tatmine feda etmek." }
+            ].map((bias, i) => (
+              <div key={i} className="flex flex-col items-center p-6 bg-surface rounded-2xl border border-outline-variant shadow-sm text-center transform hover:-translate-y-1 transition-transform">
+                <img src={bias.img} alt={bias.title} className="w-32 h-32 mb-4 object-contain drop-shadow-md" />
+                <h3 className="text-primary font-bold mb-2 text-sm uppercase tracking-wide">{bias.title}</h3>
+                <p className="text-xs text-on-surface-variant leading-relaxed">{bias.desc}</p>
+              </div>
+            ))}
+          </div>
+
           <button
             onClick={gecisiAtla}
-            className="w-full bg-primary text-on-primary font-data-lg text-data-lg py-4 px-6 rounded-2xl hover:opacity-90 active:scale-95 transition-all shadow-md"
+            className="w-full max-w-md mx-auto bg-primary text-on-primary font-data-lg text-data-lg py-4 px-6 rounded-2xl hover:opacity-90 active:scale-95 transition-all shadow-md block"
           >
-            Devam Et
+            Anladım, Oyuna Başla
           </button>
         </div>
       </div>

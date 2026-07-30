@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react"
 import { supabase } from "./supabaseClient"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
+import lossAversionImg from "./assets/bias/loss_aversion.png"
+import mentalAccountingImg from "./assets/bias/mental_accounting.png"
+import anchoringImg from "./assets/bias/anchoring.png"
+import dispositionImg from "./assets/bias/disposition_effect.png"
+import presentBiasImg from "./assets/bias/present_bias.png"
 
 
 function money(value) {
@@ -65,6 +70,34 @@ function FirsatMaliyetiGrafigi({ veri }) {
   )
 }
 
+function PsikolojiGecmisiGrafigi({ veri }) {
+  if (!veri || veri.length < 1) return null;
+
+  return (
+    <div className="bg-surface-container border border-outline card-shadow p-stack-md flex flex-col gap-stack-sm mt-stack-md">
+      <div className="flex justify-between items-center border-b border-outline-variant pb-2">
+        <h2 className="font-headline-md text-headline-md text-on-surface uppercase">Psikolojik Dayanıklılık Seyri</h2>
+        <span className="material-symbols-outlined text-on-surface-variant">psychology</span>
+      </div>
+      <p className="text-on-surface-variant text-body-md">
+        Oyun boyunca aldığın kararların ve ekonomik koşulların mutluluk (sarı) ve sabır (mavi) seviyelerine etkisi.
+      </p>
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={veri}>
+            <XAxis dataKey="yil" tick={{ fontSize: 11, fill: "#8a8168" }} />
+            <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#8a8168" }} />
+            <Tooltip
+              contentStyle={{ background: "#110e06", border: "1px solid #4e4634", borderRadius: 0, fontFamily: "JetBrains Mono", fontSize: 12 }}
+            />
+            <Line type="monotone" dataKey="mutluluk" name="Mutluluk" stroke="#f5c842" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="sabir" name="Sabır" stroke="#60a5fa" strokeWidth={2} dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
 
 export default function BitisSayfasi({
   bitisSebebi,
@@ -79,6 +112,7 @@ export default function BitisSayfasi({
   onTekrarDene,
   onTekrarOyna,
   firsatMaliyetiGecmisi,
+  psikolojiGecmisi,
   nakitGerekenEventSayisi = 0,
   nakitYetersizKalanEventSayisi = 0,
   iflasSayisi = 0,
@@ -249,15 +283,34 @@ export default function BitisSayfasi({
 
               {/* Psikolojik Profil Barları */}
               {finalRapor.bias_scores && (
-                <div className="mt-4 mb-2 bg-surface-variant p-4 border border-outline">
-                  <div className="font-data-sm text-data-sm uppercase text-on-surface mb-3 font-bold border-b border-outline-variant pb-2">Davranışsal Finans Eğilimleri (0-100)</div>
+                <div className="mt-4 mb-2 bg-surface-variant p-stack-sm border border-outline">
+                  <div className="font-data-lg text-data-lg uppercase text-primary mb-6 font-bold border-b border-outline-variant pb-2 text-center">Temel Davranışsal Eğilimlerin</div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+                    {[
+                      { key: 'loss_aversion', label: 'Kayıptan Kaçınma', img: lossAversionImg },
+                      { key: 'anchoring', label: 'Çıpalama', img: anchoringImg },
+                      { key: 'disposition_effect', label: 'Elden Çıkarma', img: dispositionImg },
+                      { key: 'mental_accounting', label: 'Zih. Muhasebe', img: mentalAccountingImg },
+                      { key: 'present_bias', label: 'Anlık Haz', img: presentBiasImg },
+                    ].map(bias => {
+                      const score = finalRapor.bias_scores[bias.key] ?? 0;
+                      return (
+                        <div key={bias.key} className="flex flex-col items-center bg-surface-container border border-outline-variant rounded-xl p-4 text-center transform hover:scale-105 transition-transform shadow-sm">
+                          <img src={bias.img} alt={bias.label} className="w-20 h-20 mb-3 object-contain drop-shadow-md" />
+                          <div className="font-bold text-xs uppercase mb-2 h-8 flex items-center justify-center text-on-surface leading-tight">{bias.label}</div>
+                          <div className={`font-black text-3xl ${score > 70 ? 'text-error' : score > 40 ? 'text-[#f5c842]' : 'text-[#34d399]'}`}>
+                            {score}
+                          </div>
+                          <div className="text-[10px] text-on-surface-variant mt-1 uppercase font-bold">/ 100 Puan</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  
+                  <div className="font-data-sm text-data-sm uppercase text-on-surface mb-3 font-bold border-b border-outline-variant pb-2 mt-4">Diğer Eğilimler</div>
                   <div className="flex flex-col gap-3">
                     {[
-                      { key: 'loss_aversion', label: 'Kayıptan Kaçınma' },
-                      { key: 'anchoring', label: 'Çıpalama (Fiyata Bağlılık)' },
-                      { key: 'disposition_effect', label: 'Elden Çıkarma (Kârı Erken Kesme)' },
-                      { key: 'mental_accounting', label: 'Zihinsel Muhasebe (Havadan Gelen Parayı Harcama)' },
-                      { key: 'present_bias', label: 'Anlık Haz Eğilimi (Borçla Lüks)' },
                       { key: 'overconfidence', label: 'Aşırı Özgüven' },
                       { key: 'herd_behavior', label: 'Sürü Davranışı' },
                       { key: 'status_quo_bias', label: 'Mevcut Durumu Koruma' },
@@ -265,7 +318,8 @@ export default function BitisSayfasi({
                       { key: 'moral_hazard', label: 'Ahlaki Tehlike' },
                       { key: 'confirmation_bias', label: 'Doğrulama Yanlılığı' }
                     ].map(bias => {
-                      const score = finalRapor.bias_scores[bias.key] ?? 0;
+                      const score = finalRapor.bias_scores[bias.key];
+                      if (score === undefined || score === null) return null;
                       return (
                         <div key={bias.key} className="flex flex-col gap-1">
                           <div className="flex justify-between text-[10px] uppercase font-bold text-on-surface-variant">
@@ -375,6 +429,11 @@ export default function BitisSayfasi({
           {/* Fırsat Maliyeti Grafiği */}
           {!finalRaporLoading && finalRapor && (
             <FirsatMaliyetiGrafigi veri={firsatMaliyetiGecmisi} />
+          )}
+
+          {/* Psikoloji Geçmişi Grafiği */}
+          {!finalRaporLoading && finalRapor && psikolojiGecmisi && (
+            <PsikolojiGecmisiGrafigi veri={psikolojiGecmisi} />
           )}
 
           {/* Leaderboard */}
