@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { siradakiPortreyiAl, getPortraitPath } from "./utils/portraits";
 import { luksPuaniHesapla } from "./data/standartlar";
+import sahilImg from "./assets/travel/sahil.png";
+import restoranImg from "./assets/travel/restoran.png";
+import yurtdisiImg from "./assets/travel/yurtdisi.png";
 
 const ISIMLER_KADIN = ["Ayşe", "Fatma", "Zeynep", "Elif", "Merve", "Aslı", "Selin", "Burcu", "Ceren", "Eda"];
 const ISIMLER_ERKEK = ["Ali", "Ahmet", "Mehmet", "Can", "Burak", "Emre", "Ozan", "Cem", "Deniz", "Kerem"];
@@ -737,7 +740,7 @@ export default function IliskilerSayfasi({
               className="bg-surface-container-high border border-outline p-0 hover:border-tertiary transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] flex flex-col group overflow-hidden"
             >
               <div className="h-32 w-full overflow-hidden border-b border-outline">
-                <img src="/src/assets/travel/sahil.png" alt="Sahil" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img src={sahilImg} alt="Sahil" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               </div>
               <div className="p-3 text-left">
                 <div className="font-bold text-on-surface">Sahilde Yürüyüş</div>
@@ -750,7 +753,7 @@ export default function IliskilerSayfasi({
               className="bg-surface-container-high border border-outline p-0 hover:border-tertiary transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] flex flex-col group overflow-hidden"
             >
               <div className="h-32 w-full overflow-hidden border-b border-outline">
-                <img src="/src/assets/travel/restoran.png" alt="Restoran" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img src={restoranImg} alt="Restoran" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               </div>
               <div className="p-3 text-left">
                 <div className="font-bold text-on-surface">Lüks Restoran</div>
@@ -763,7 +766,7 @@ export default function IliskilerSayfasi({
               className="bg-surface-container-high border border-outline p-0 hover:border-tertiary transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] flex flex-col group overflow-hidden"
             >
               <div className="h-32 w-full overflow-hidden border-b border-outline">
-                <img src="/src/assets/travel/yurtdisi.png" alt="Yurtdışı Tatili" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img src={yurtdisiImg} alt="Yurtdışı Tatili" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               </div>
               <div className="p-3 text-left">
                 <div className="font-bold text-on-surface">Yurtdışı Tatili</div>
