@@ -2606,13 +2606,6 @@ function AppInner() {
         {aktifSayfa === "ana" && (
           <div className="flex flex-col gap-6">
 
-            {/* TEST BUTONU - GEÇİCİ */}
-            <button
-              onClick={() => { setYas(75); setYil(2077); nakitiGuncelle(nakitRef.current + 5000000); }}
-              className="bg-error-container text-on-error-container font-data-sm text-data-sm py-1 px-3 uppercase border border-error btn-shadow"
-            >
-              [DEV TEST] 75 YAŞINA ATLA VE PARA EKLE
-            </button>
 
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-outline-variant pb-stack-md">

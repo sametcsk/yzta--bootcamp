@@ -170,21 +170,6 @@ export default function IntroEkrani({ onBitis }) {
 
   return (
     <div className="bg-surface text-on-surface min-h-screen flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop font-body-md relative">
-      <button
-        onClick={() => onBitis({
-          nakit: 250000,
-          sabir: 60,
-          mutluluk: 60,
-          yillikGelir: 300000,
-          answers: [],
-          meslek: "beyaz_yaka",
-          cinsiyet: "erkek",
-          tutorialGoster: tutorialGoster
-        })}
-        className="absolute top-4 right-4 text-data-sm font-data-sm opacity-30 hover:opacity-100 hover:text-primary uppercase"
-      >
-        [GELİŞTİRİCİ_ATLA]
-      </button>
 
       <label className="absolute top-12 right-4 flex items-center gap-2 bg-surface-container border border-outline px-3 py-2 z-50 cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-surface-container-high transition-colors">
         <input
