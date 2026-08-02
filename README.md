@@ -70,10 +70,15 @@ Daily Scrum toplantılarının Slack üzerinden yürütülmesine karar verilmiş
 - **Sprint board update**: Sprint board screenshotları: 
 ![Sprint Board](sprint1-board.jpg)
 
-- **Ürün Durumu**: Ekran görüntüleri:
+- **Ürün Durumu**: 
+  <details>
+  <summary>Sprint 1 Görsellerini Göster / Gizle</summary>
+
   ![Screenshot 1](docs/images/urundurumu1.png)
   ![Screenshot 2](docs/images/urundurumu2.png)
   ![Screenshot 3](docs/images/varliklar.png)
+
+  </details>
 
 - **Sprint Review**: 
 Alınan kararlar:
@@ -218,6 +223,42 @@ Sprint 3 Sprint Board - 2 (Sprint Sonu): Sprint 3 süresince Story'lerin ilerlem
 
 
 - **Ürün Durumu**: 
+  <details>
+  <summary>Sprint 3 Görsellerini Göster / Gizle</summary>
+
+  ### Ana Sayfa
+  ![Ana Sayfa](frontend/public/sprint3ss/anasayfas3.png)
+
+  ### Kariyer
+  ![Kariyer](frontend/public/sprint3ss/kariyers3.png)
+
+  ### İlişkiler
+  ![İlişkiler 1](frontend/public/sprint3ss/iliskis3.png)
+  ![İlişkiler 2](frontend/public/sprint3ss/iliski2s3.png)
+
+  ### Varlıklar
+  ![Varlıklar 1](frontend/public/sprint3ss/varlıklars3.png)
+  ![Varlıklar 2](frontend/public/sprint3ss/varlıklar2s3.png)
+
+  ### Portföy
+  ![Portföy](frontend/public/sprint3ss/portföys3.png)
+
+  ### Swing Trade
+  ![Swing Trade 1](frontend/public/sprint3ss/swingtrades3.png)
+  ![Swing Trade 2](frontend/public/sprint3ss/swingtrade2s3.png)
+
+  ### Opsiyonlar
+  ![Opsiyonlar](frontend/public/sprint3ss/opsiyons3.png)
+
+  ### Kredi
+  ![Kredi](frontend/public/sprint3ss/kredis3.png)
+
+  ### Sonuç ve Yapay Zeka Raporu
+  ![Rapor 1](frontend/public/sprint3ss/rapor1s3.png)
+  ![Rapor 2](frontend/public/sprint3ss/rapor2s3.png)
+  ![Rapor 3](frontend/public/sprint3ss/rapor3s3.png)
+
+  </details>
 
 - **Sprint Review**:
 Alınan kararlar:
@@ -248,3 +289,41 @@ Sprint Review Katılımcıları:
 
   
 ---
+
+# Projeyi Bilgisayarınızda (Local) Çalıştırma
+
+Bu projeyi bilgisayarınızda yerel olarak (local) çalıştırmak için aşağıdaki adımları izleyebilirsiniz.
+
+### 1. Depoyu Klonlayın
+```bash
+git clone https://github.com/sametcsk/yzta--bootcamp.git
+cd yzta--bootcamp
+```
+
+### 2. Backend (Python/FastAPI) Kurulumu
+Backend tarafı Python ile geliştirilmiş olup FastAPI kullanmaktadır.
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows için: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Çevre değişkenlerinizi ayarlayın (.env)
+# API anahtarlarınızı (örn: GEMINI_API_KEY) backend klasörü içindeki .env dosyasına eklemeyi unutmayın.
+
+# Sunucuyu başlatın
+uvicorn main:app --reload
+```
+
+### 3. Frontend (React/Vite) Kurulumu
+Frontend tarafı React ve Vite ile geliştirilmiştir. (Yeni bir terminal sekmesi açarak devam edin)
+```bash
+# Projenin ana dizinine geri dönüp frontend klasörüne girin
+cd ../frontend
+npm install
+
+# Geliştirme sunucusunu başlatın
+npm run dev
+```
+
+Projeyi başarıyla başlattıktan sonra tarayıcınızdan `http://localhost:5173` adresine giderek uygulamayı deneyimleyebilirsiniz.
