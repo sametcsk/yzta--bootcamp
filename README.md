@@ -210,7 +210,11 @@ Yapılan geliştirmeler şu şekilde özetlenebilir:
 Sprint 3 süresince Daily Scrum toplantıları Slack üzerinden düzenli olarak gerçekleştirilmeye devam etmiştir. Günlük toplantılarda entegrasyon süreçleri, testlerde tespit edilen hatalar ve performans iyileştirmeleri değerlendirilmiş, görev dağılımları güncellenerek geliştirme sürecinin planlanan takvim doğrultusunda ilerlemesi sağlanmıştır.
 
 - **Sprint board update**: Sprint board screenshotları:
+![Sprint Board](docs/images/Sprint3-board.jpg)
+Sprint 3 Sprint Board - 1 (Başlangıç): Sprint 3 başlangıcında Product Backlog'da yer alan Story'ler öncelik sırasına göre Sprint Board'a aktarılmıştır. Final sürüm kapsamında geliştirilecek davranışsal finans mekanikleri, yapay zekâ destekli analiz sistemleri, kariyer ve finans modülleri ile performans iyileştirmelerine ait görevler Backlog, To Do, In Progress, Review, Done ve Rejected sütunlarına yerleştirilerek sprint planlaması oluşturulmuştur.
 
+![Sprint Board](docs/images/Sprint3-board1.jpg)
+Sprint 3 Sprint Board - 2 (Sprint Sonu): Sprint 3 süresince Story'lerin ilerleme durumu Miro Sprint Board üzerinden takip edilmiş, tamamlanan görevler geliştirme ve test süreçlerinin ardından Done sütununa taşınmıştır. Sprint sonunda planlanan tüm kullanıcı hikâyeleri başarıyla tamamlanarak ürünün final sürümü teslim edilebilir duruma getirilmiştir.
 
 
 - **Ürün Durumu**: 
@@ -229,14 +233,14 @@ Sprint Review Katılımcıları:
 - Development Team
 
 - **Sprint Retrospective:**
-- Davranışsal finans mekaniklerinin oyuna entegre edilmesi ürünün eğitim ve farkındalık yönünü önemli ölçüde güçlendirdi.
-- Gemini, LangChain ve yerel RAG altyapısının kullanılmasıyla yapay zekâ tarafından oluşturulan analizlerin doğruluğu ve kişiselleştirme seviyesi artırıldı.
-- Agent Memory ve Safety Agent mekanizmalarının eklenmesi, AI çıktılarının daha güvenilir ve tutarlı hale gelmesini sağladı.
+- Davranışsal finans mekaniklerinin oyuna entegre edilmesi, ürünün eğitim ve farkındalık odaklı yapısını önemli ölçüde güçlendirdi.
+- Gemini, LangChain ve yerel RAG altyapısının kullanılmasıyla yapay zekâ tarafından oluşturulan analizlerin doğruluğu, bağlamsallığı ve kişiselleştirme seviyesi artırıldı.
+- Agent Memory ve Safety Agent mekanizmalarının eklenmesi, AI çıktılarının daha güvenilir, tutarlı ve sürdürülebilir hale gelmesini sağladı.
 - Kural tabanlı fallback sistemi sayesinde dış servislerde yaşanabilecek sorunların oyun deneyimini etkilememesi sağlandı.
-- Yeni eklenen kariyer, kredi, yatırım ve sosyal yaşam sistemlerinin mevcut oyun yapısına modüler şekilde entegre edilmesi geliştirme sürecini kolaylaştırdı.
-- Final sprint boyunca gerçekleştirilen kapsamlı testler sayesinde kullanıcı deneyimini olumsuz etkileyen hatalar giderildi ve performans iyileştirmeleri başarıyla tamamlandı.
-- Takım içi iletişim ve düzenli görev takibi sayesinde sprint hedefleri planlanan süre içerisinde tamamlandı.
-- Final sürüm ile birlikte ürünün hem teknik altyapısı hem de eğitim odaklı yapısı hedeflenen seviyeye ulaştırılmış oldu.
+- Kariyer sistemi, kredi ve haciz mekanikleri, yatırım araçları ile sosyal yaşam modüllerinin mevcut oyun mimarisine modüler şekilde entegre edilmesi geliştirme sürecini kolaylaştırdı.
+- Final sprint boyunca gerçekleştirilen kapsamlı testler, hata düzeltmeleri ve performans optimizasyonları sayesinde kullanıcı deneyimi iyileştirildi ve sistem kararlılığı artırıldı.
+- Takım içi iletişim, düzenli görev takibi ve sprint planlaması sayesinde tüm sprint hedefleri planlanan süre içerisinde başarıyla tamamlandı.
+- Final sprint sonunda ürünün planlanan tüm temel özellikleri tamamlanmış, teknik altyapısı güçlendirilmiş ve sunuma hazır, sürdürülebilir bir final sürümüne ulaşılmıştır.
 
 
 
