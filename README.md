@@ -72,7 +72,7 @@ Daily Scrum toplantılarının Slack üzerinden yürütülmesine karar verilmiş
 
 - **Ürün Durumu**: 
   <details>
-  <summary>Sprint 1 Görsellerini Göster / Gizle</summary>
+  <summary><h3>🖼️ Sprint 1 Görsellerini Göster / Gizle</h3></summary>
 
   ![Screenshot 1](docs/images/urundurumu1.png)
   ![Screenshot 2](docs/images/urundurumu2.png)
@@ -128,7 +128,7 @@ Sprint 2 Sprint Board - 2 (Sprint Sonu): Sprint 2 süresince Story'lerin ilerlem
 
 - **Ürün Durumu**: 
   <details>
-  <summary>Görselleri Göster / Gizle</summary>
+  <summary><h3>🖼️ Sprint 2 Görsellerini Göster / Gizle</h3></summary>
 
   ### Giriş Ekranı
   ![Giriş Ekranı](docs/images/sprint2/giris.png)
@@ -224,7 +224,7 @@ Sprint 3 Sprint Board - 2 (Sprint Sonu): Sprint 3 süresince Story'lerin ilerlem
 
 - **Ürün Durumu**: 
   <details>
-  <summary>Sprint 3 Görsellerini Göster / Gizle</summary>
+  <summary><h3>🖼️ Sprint 3 Görsellerini Göster / Gizle</h3></summary>
 
   ### Ana Sayfa
   ![Ana Sayfa](frontend/public/sprint3ss/anasayfas3.png)
@@ -241,7 +241,7 @@ Sprint 3 Sprint Board - 2 (Sprint Sonu): Sprint 3 süresince Story'lerin ilerlem
   ![Varlıklar 2](frontend/public/sprint3ss/varlıklar2s3.png)
 
   ### Portföy
-  ![Portföy](frontend/public/sprint3ss/portföys3.png)
+  ![Portföy](frontend/public/sprint3ss/portfoys3.png)
 
   ### Swing Trade
   ![Swing Trade 1](frontend/public/sprint3ss/swingtrades3.png)
