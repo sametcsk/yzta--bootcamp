@@ -183,4 +183,64 @@ Sprint Review Katılımcıları:
 
 # Sprint 3
 
+
+- **Backlog düzeni ve Story seçimleri**:
+Sprint 3 kapsamında ürünün final sürümünü tamamlamaya yönelik geliştirmelere odaklanılmıştır. Önceki sprintlerde geliştirilen temel oyun mekanikleri; davranışsal finans, yapay zekâ destekli analizler ve oyuncu deneyimini zenginleştiren yeni sistemlerle geliştirilmiştir. Ayrıca oynanabilirliği ve sistem kararlılığını artırmak amacıyla performans iyileştirmeleri ve hata düzeltmeleri gerçekleştirilmiştir.
+
+Yapılan geliştirmeler şu şekilde özetlenebilir:
+
+- Davranışsal finans altyapısı geliştirilerek Loss Aversion, Anchoring, Disposition Effect, Mental Accounting ve Present Bias eğilimleri başlangıç profili ve oyun mekanikleriyle ilişkilendirildi.
+- Oyun başlangıcına davranışsal finans eğilimlerini tanıtan bilgilendirme ekranı ve bias ikonları eklendi.
+- Oyuncunun sabır ve mutluluk değerleri oyun boyunca takip edilerek oyun sonunda çizgi grafik ile görselleştirildi.
+- Yapay zekâ destekli davranış raporu; ortalama mutluluk, kriz yılı sayısı ve sabır değişimi gibi yeni metriklerle zenginleştirildi.
+- Sprint 2’de kural tabanlı olarak geliştirilen AI agentları Gemini ile entegre edildi.
+- LangChain kullanılarak Decision Analyst, Bias Coach, Final Report, Learning Plan ve Safety Agent arasında veri aktarımına dayalı iş akışları oluşturuldu.
+- Akademik kaynaklardan hazırlanan yerel RAG sisteminde MiniLM embedding ve benzerlik araması kullanılarak AI yorumlarının kaynak destekli ve bağlamsal geri bildirimler üretmesi sağlandı.
+- Agent Memory yapısı sayesinde Bias Coach’un oyuncunun önceki kararlarını ve tekrar eden davranışlarını takip etmesi sağlandı.
+- AI tarafından oluşturulan metinlerin yatırım tavsiyesi, garanti getiri veya klinik teşhis içermemesi için Safety Agent kontrolü eklendi.
+- Gemini veya embedding modelinin kullanılamadığı durumlarda oyunun kesintiye uğramaması için kural tabanlı fallback sistemi geliştirildi.
+- Üniversite eğitimi, iş başvuruları, kariyer ilerlemesi ve terfi mekaniklerinden oluşan kariyer sistemi oyuna eklendi.
+- Dinamik kredi sistemi, portföy bazlı kredi limiti, faiz hesaplamaları ve iflas/haciz mekanikleri geliştirildi.
+- Swing Trade ve Opsiyon Piyasası ekranları eklenerek yüksek risk içeren finansal kararların deneyimlenebileceği yeni oyun mekanikleri oluşturuldu.
+- Sosyal yaşam sistemi geliştirilerek evlilik, çocuk, miras, boşanma, nafaka ve yaşam standartlarına bağlı harcama mekanikleri oyuna eklendi.
+- Testlerde tespit edilen hatalar giderildi, kullanıcı arayüzü iyileştirildi ve performans optimizasyonları gerçekleştirildi.
+
+
+- **Daily Scrum**:
+Sprint 3 süresince Daily Scrum toplantıları Slack üzerinden düzenli olarak gerçekleştirilmeye devam etmiştir. Günlük toplantılarda entegrasyon süreçleri, testlerde tespit edilen hatalar ve performans iyileştirmeleri değerlendirilmiş, görev dağılımları güncellenerek geliştirme sürecinin planlanan takvim doğrultusunda ilerlemesi sağlanmıştır.
+
+- **Sprint board update**: Sprint board screenshotları:
+
+
+
+- **Ürün Durumu**: 
+
+- **Sprint Review**:
+Alınan kararlar:
+Sprint 3 sonunda ürünün planlanan tüm temel özellikleri başarıyla tamamlanmış ve final sürümüne ulaşılmıştır. Davranışsal finans altyapısı oyun mekaniklerine entegre edilmiş, oyuncuların yatırım eğilimlerini analiz eden başlangıç profili ve bilgilendirme ekranları sisteme eklenmiştir.
+
+Sprint 2'de oluşturulan kural tabanlı AI ajanları Gemini ile entegre edilmiş, LangChain altyapısı kullanılarak Decision Analyst, Bias Coach, Final Report, Learning Plan ve Safety Agent arasında veri akışı sağlanmıştır. Yerel RAG sistemi sayesinde yapay zekâ analizleri akademik kaynaklarla desteklenmiş, Agent Memory ile oyuncuların geçmiş kararlarının değerlendirilmesi mümkün hale getirilmiştir. Ayrıca Safety Agent ve fallback mekanizması sayesinde yapay zekâ sisteminin güvenli ve kesintisiz çalışması sağlanmıştır.
+
+Bunun yanında kariyer sistemi, kredi ve haciz mekanikleri, Swing Trade, Opsiyon Piyasası ve sosyal yaşam sistemi oyuna başarıyla entegre edilmiştir. Sprint sonunda gerçekleştirilen testlerle tespit edilen hatalar giderilmiş, kullanıcı arayüzü geliştirilmiş ve performans optimizasyonları tamamlanarak ürün sunuma hazır final sürümüne ulaştırılmıştır.
+
+Sprint Review Katılımcıları:
+- Product Owner
+- Scrum Master
+- Development Team
+
+- **Sprint Retrospective:**
+- Davranışsal finans mekaniklerinin oyuna entegre edilmesi ürünün eğitim ve farkındalık yönünü önemli ölçüde güçlendirdi.
+- Gemini, LangChain ve yerel RAG altyapısının kullanılmasıyla yapay zekâ tarafından oluşturulan analizlerin doğruluğu ve kişiselleştirme seviyesi artırıldı.
+- Agent Memory ve Safety Agent mekanizmalarının eklenmesi, AI çıktılarının daha güvenilir ve tutarlı hale gelmesini sağladı.
+- Kural tabanlı fallback sistemi sayesinde dış servislerde yaşanabilecek sorunların oyun deneyimini etkilememesi sağlandı.
+- Yeni eklenen kariyer, kredi, yatırım ve sosyal yaşam sistemlerinin mevcut oyun yapısına modüler şekilde entegre edilmesi geliştirme sürecini kolaylaştırdı.
+- Final sprint boyunca gerçekleştirilen kapsamlı testler sayesinde kullanıcı deneyimini olumsuz etkileyen hatalar giderildi ve performans iyileştirmeleri başarıyla tamamlandı.
+- Takım içi iletişim ve düzenli görev takibi sayesinde sprint hedefleri planlanan süre içerisinde tamamlandı.
+- Final sürüm ile birlikte ürünün hem teknik altyapısı hem de eğitim odaklı yapısı hedeflenen seviyeye ulaştırılmış oldu.
+
+
+
+
+
+  
 ---
